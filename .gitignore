@@ -1,0 +1,46 @@
+# Build folders
+/build/
+/out/
+/bin/
+/lib/
+
+# CMake artifacts
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+install_manifest.txt
+CMakeUserPresets.json
+
+# Ninja build artifacts
+build.ninja
+.ninja_deps
+.ninja_log
+rules.ninja
+
+# vcpkg-related
+vcpkg_installed/
+.vcpkg-root
+*.vcpkg_lock.json
+
+# Generated project files (e.g. for Visual Studio)
+*.vcxproj*
+*.sln
+*.user
+*.opensdf
+*.sdf
+*.suo
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Editor-specific
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs and temporary files
+*.log
+*.tmp
