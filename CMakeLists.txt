@@ -4,6 +4,6 @@ project(ape)
 
 find_package(SDL3 CONFIG REQUIRED)
 
-add_executable(ape main.cpp)
+add_executable(ape src/main.cpp)
 
 target_link_libraries(ape PRIVATE SDL3::SDL3)
