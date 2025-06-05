@@ -8,6 +8,8 @@ find_package(glm CONFIG REQUIRED)
 
 add_executable(ape 
 	src/main.cpp
+	src/App.cpp
+	src/AppRunner.cpp
 	src/render/Renderer.cpp
 )
 

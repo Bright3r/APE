@@ -1,5 +1,4 @@
 #include "render/Renderer.h"
-#include <SDL3/SDL_video.h>
 
 Renderer::Renderer(int width, int height) 
 	: width(width), height(height) 
@@ -43,14 +42,12 @@ int Renderer::init() {
 	return 0;
 }
 
-void Renderer::draw() const {
-	clear();
-
-	SDL_GL_SwapWindow(window);
-}
-
 void Renderer::clear() const {
 	glViewport(0, 0, width, height);
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void Renderer::display() const {
+	SDL_GL_SwapWindow(window);
 }
