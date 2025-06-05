@@ -54,16 +54,24 @@ void run() {
 		renderer->display();
 
 
-		// Calculate Time of Last Frame 
+		// Calculate Frame Computation Time
 		auto endTime = std::chrono::high_resolution_clock::now();
-		lastFrameTimeSec = std::chrono::duration<float>(endTime - startTime).count();
+		float deltaTime = std::chrono::duration<float>(endTime - startTime).count();
 
 		// Wait Until Next Frame Window
 		float targetFrameTime = 1.f / framerate;
-		float delayTime = (targetFrameTime - lastFrameTimeSec) * 1000.f;
-		if (delayTime > 0.f) {
-			SDL_Delay(static_cast<Uint32>(delayTime));
+		float delayTime = (targetFrameTime - deltaTime) * 1000.f;
+		if (delayTime > 1.0f) {
+			// Sleep until 1ms before next frame
+			SDL_Delay(static_cast<Uint32>(delayTime - 1.0f));
 		}
+		// Spin-wait to delay the last 1ms accurately
+		while (std::chrono::high_resolution_clock::now() - endTime < 
+			std::chrono::duration<float>(targetFrameTime - deltaTime)) { }
+
+		// Calculate the total frame time
+		endTime = std::chrono::high_resolution_clock::now();
+		lastFrameTimeSec = std::chrono::duration<float>(endTime - startTime).count();
 	}
 }
 
