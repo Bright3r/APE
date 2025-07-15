@@ -16,7 +16,8 @@ void App::draw() {
 }
 
 void App::onKeyDown(SDL_KeyboardEvent key) {
-
+	if (key.key == SDLK_Q)
+		AppRunner::setQuit(true);
 }
 
 void App::onKeyUp(SDL_KeyboardEvent key) {

@@ -12,23 +12,27 @@ namespace AppRunner {
 	// Main Functions
 	//
 	void init(int window_width, int window_height);
-	bool pollEvents(SDL_Event& event);
-	bool stepGameloop(SDL_Event& event);
+	void pollEvents();
+	void stepGameloop();
 	void run();
 
 
 	// Utility Functions
 	//
-	void setFrameRate(int fps);
-	int frameRate();
+	bool quit();
+	void setQuit(bool quit);
+	int framerate();
+	void setFramerate(int fps);
 	APE::Timing::seconds lastFrameTimeSec();
 	APE::Timing::millis lastFrameTimeMS();
 
+
 	// Application State
 	//
-	static std::unique_ptr<App> app;
-	static std::unique_ptr<Renderer> renderer;
+	static std::unique_ptr<App> m_app;
+	static std::unique_ptr<Renderer> m_renderer;
 
-	static int framerate;
-	static APE::Timing::millis last_frame_time;
+	static bool m_quit;
+	static int m_framerate;
+	static APE::Timing::millis m_last_frame_time;
 };

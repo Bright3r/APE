@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL_timer.h>
 #include <chrono>
+#include <type_traits>
 
 namespace APE {
 
@@ -17,12 +18,20 @@ decltype(auto) timeFunctionCall(F&& f, std::chrono::duration<Rep, Period>& execu
 {
 	// Time function execution time
 	auto start_time = std::chrono::high_resolution_clock::now();
-	auto res = f();
-	auto end_time = std::chrono::high_resolution_clock::now();
 
-	// Return execution time and function result
-	execution_time = end_time - start_time;
-	return res;
+	if constexpr (std::is_void_v<std::invoke_result_t<F>>) {
+		// Return execution time
+		f();
+		auto end_time = std::chrono::high_resolution_clock::now();
+		execution_time = end_time - start_time;
+	}
+	else {
+		// Return execution time and function result
+		auto res = f();
+		auto end_time = std::chrono::high_resolution_clock::now();
+		execution_time = end_time - start_time;
+		return res;
+	}
 }
 
 template <typename Rep, typename Period>
