@@ -1,6 +1,7 @@
 #include "AppRunner.h"
 
-int main() {
+int main() 
+{
 	AppRunner::init(1200, 800);
 	AppRunner::run();
 

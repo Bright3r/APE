@@ -6,7 +6,9 @@ void App::setup() {
 }
 
 void App::update() {
-	std::cout << "Last Frame Time: " << AppRunner::getLastFrameTimeMS() << std::endl;
+	std::cout << "Last Frame Time: " 
+		<< AppRunner::lastFrameTimeMS().count() 
+		<< std::endl;
 }
 
 void App::draw() {

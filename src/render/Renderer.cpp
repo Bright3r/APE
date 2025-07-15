@@ -9,13 +9,15 @@ Renderer::Renderer(int width, int height)
 	}
 }
 
-Renderer::~Renderer() {
+Renderer::~Renderer() 
+{
 	SDL_GL_DestroyContext(context);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
 }
 
-int Renderer::init() {
+int Renderer::init() 
+{
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		std::cerr << "SDL_Init Failed " << SDL_GetError() << std::endl;
 		return SDL_APP_FAILURE;
@@ -42,12 +44,15 @@ int Renderer::init() {
 	return 0;
 }
 
-void Renderer::clear() const {
+void Renderer::clear() const 
+{
 	glViewport(0, 0, width, height);
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void Renderer::display() const {
+void Renderer::display() const 
+{
 	SDL_GL_SwapWindow(window);
 }
+

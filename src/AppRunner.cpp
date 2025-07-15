@@ -3,15 +3,60 @@
 
 namespace AppRunner {
 
-void init(int windowWidth, int windowHeight) {
+void init(int window_width, int window_height) 
+{
 	framerate = 60.f;
-	lastFrameTimeSec = 0.f;
+	last_frame_time = std::chrono::milliseconds(0);
 
 	app = std::make_unique<App>();
-	renderer = std::make_unique<Renderer>(windowWidth, windowHeight);
+	renderer = std::make_unique<Renderer>(window_width, window_height);
 }
 
-void run() {
+bool pollEvents(SDL_Event& event)
+{
+	bool quit = false;
+	while (SDL_PollEvent(&event) != 0) {
+		switch (event.type) {
+			case SDL_EVENT_QUIT:
+				quit = true;
+				break;
+			case SDL_EVENT_KEY_DOWN:
+				app->onKeyDown(event.key);
+				break;
+			case SDL_EVENT_KEY_UP:
+				app->onKeyUp(event.key);
+				break;
+			case SDL_EVENT_MOUSE_BUTTON_DOWN:
+				app->onMouseDown(event.button);
+				break;
+			case SDL_EVENT_MOUSE_BUTTON_UP:
+				app->onMouseUp(event.button);
+				break;
+			case SDL_EVENT_MOUSE_MOTION:
+				app->onMouseMove(event.motion.x, event.motion.y);
+				break;
+		}
+	}
+	return quit;
+}
+
+bool stepGameloop(SDL_Event& event)
+{
+	bool quit = pollEvents(event);
+
+	// Update App Data
+	app->update();
+
+	// Draw To Screen
+	renderer->clear();
+	app->draw();
+	renderer->display();
+
+	return quit;
+}
+
+void run() 
+{
 	// Initial Setup
 	app->setup();
 
@@ -19,76 +64,42 @@ void run() {
 	bool quit = false;
 	SDL_Event event;
 	while (!quit) {
-		auto startTime = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now();
 
-		// Poll Events
-		while (SDL_PollEvent(&event) != 0) {
-			switch (event.type) {
-				case SDL_EVENT_QUIT:
-					quit = true;
-					break;
-				case SDL_EVENT_KEY_DOWN:
-					app->onKeyDown(event.key);
-					break;
-				case SDL_EVENT_KEY_UP:
-					app->onKeyUp(event.key);
-					break;
-				case SDL_EVENT_MOUSE_BUTTON_DOWN:
-					app->onMouseDown(event.button);
-					break;
-				case SDL_EVENT_MOUSE_BUTTON_UP:
-					app->onMouseUp(event.button);
-					break;
-				case SDL_EVENT_MOUSE_MOTION:
-					app->onMouseMove(event.motion.x, event.motion.y);
-					break;
-			}
-		}
+		// Time the execution of gameloop iteration
+		APE::Timing::millis loop_time_ms; 
+		quit = APE::Timing::timeFunctionCall([&]() {
+			return stepGameloop(event);
+		}, loop_time_ms);
 
-		// Update App Data
-		app->update();
+		// Wait until the next frame time
+		APE::Timing::seconds target_frame_time { 1.0 / framerate };
+		APE::Timing::waitFor(target_frame_time - loop_time_ms);
 
-		// Draw To Screen
-		renderer->clear();
-		app->draw();
-		renderer->display();
-
-
-		// Calculate Frame Computation Time
-		auto endTime = std::chrono::high_resolution_clock::now();
-		float deltaTime = std::chrono::duration<float>(endTime - startTime).count();
-
-		// Wait Until Next Frame Window
-		float targetFrameTime = 1.f / framerate;
-		float delayTime = (targetFrameTime - deltaTime) * 1000.f;
-		if (delayTime > 1.0f) {
-			// Sleep until 1ms before next frame
-			SDL_Delay(static_cast<Uint32>(delayTime - 1.0f));
-		}
-		// Spin-wait to delay the last 1ms accurately
-		while (std::chrono::high_resolution_clock::now() - endTime < 
-			std::chrono::duration<float>(targetFrameTime - deltaTime)) { }
-
-		// Calculate the total frame time
-		endTime = std::chrono::high_resolution_clock::now();
-		lastFrameTimeSec = std::chrono::duration<float>(endTime - startTime).count();
+		// Track total time of frame
+		auto end = std::chrono::high_resolution_clock::now();
+		last_frame_time = end - start;
 	}
 }
 
-void setFrameRate(int fps) {
+void setFrameRate(int fps) 
+{
 	framerate = fps;
 }
 
-int getFrameRate() {
+int frameRate() 
+{
 	return framerate;
 }
 
-float getLastFrameTimeSec() {
-	return lastFrameTimeSec;
+APE::Timing::seconds lastFrameTimeSec() 
+{
+	return std::chrono::duration_cast<APE::Timing::seconds>(last_frame_time);
 }
 
-float getLastFrameTimeMS() {
-	return lastFrameTimeSec * 1000.f;
+APE::Timing::millis lastFrameTimeMS() 
+{
+	return std::chrono::duration_cast<APE::Timing::millis>(last_frame_time);
 }
 
 };
