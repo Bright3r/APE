@@ -3,6 +3,7 @@
 #include "render/Context.h"
 #include "render/Shader.h"
 
+#include <functional>
 #include <memory>
 
 namespace APE {
@@ -27,7 +28,7 @@ public:
 
 	// API Functions
 	void createPipelines(std::shared_ptr<Shader> new_shader);
-	void draw();
+	void draw(std::function<void(SDL_GPURenderPass*)> draw_scene);
 };
 
 }; // end of namespace Render

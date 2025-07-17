@@ -1,5 +1,6 @@
 #include "App.h"
 #include "AppRunner.h"
+#include <iostream>
 
 void App::setup() {
 
@@ -11,8 +12,8 @@ void App::update() {
 		<< std::endl;
 }
 
-void App::draw() {
-
+void App::draw(SDL_GPURenderPass *render_pass) {
+	SDL_DrawGPUPrimitives(render_pass, 3, 1, 0, 0);
 }
 
 void App::onKeyDown(SDL_KeyboardEvent key) {

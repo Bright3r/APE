@@ -2,6 +2,7 @@
 #include "render/Shader.h"
 #include <SDL3/SDL_gpu.h>
 #include <cassert>
+#include <functional>
 #include <iostream>
 #include <memory>
 
@@ -72,7 +73,7 @@ void Renderer::createPipelines(std::shared_ptr<Shader> new_shader) {
 	}
 }
 
-void Renderer::draw()
+void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 {
 	SDL_GPUCommandBuffer *cmd_buffer = SDL_AcquireGPUCommandBuffer(context->device);
 	if (!cmd_buffer) {
@@ -109,7 +110,10 @@ void Renderer::draw()
 		}
 
 		SDL_BindGPUGraphicsPipeline(render_pass, render_pipeline);
-		SDL_DrawGPUPrimitives(render_pass, 3, 1, 0, 0);
+
+		// SDL_DrawGPUPrimitives(render_pass, 3, 1, 0, 0);
+		draw_scene(render_pass);
+
 		SDL_EndGPURenderPass(render_pass);
 	}
 

@@ -1,20 +1,23 @@
 #include "AppRunner.h"
 #include <SDL3/SDL_video.h>
 #include <chrono>
+#include <functional>
 
 namespace AppRunner {
 
 void init(int window_width, int window_height) 
 {
+	// Initialize w/ default app settings
 	m_quit = false;
 	m_framerate = 60.f;
 	m_last_frame_time = std::chrono::milliseconds(0);
 
+	// Create user-defined app
 	m_app = std::make_unique<App>();
 
+	// Initialize renderer
 	m_context = std::make_shared<APE::Render::Context>("Test", 600, 400, 
 						    SDL_WINDOW_RESIZABLE);
-
 	m_shader = std::make_shared<APE::Render::Shader>(
 			"res/shaders/RawTriangle.vert.spv",
 			"res/shaders/SolidColor.frag.spv",
@@ -23,7 +26,6 @@ void init(int window_width, int window_height)
 			0,
 			0,
 			0);
-
 	m_renderer = std::make_unique<APE::Render::Renderer>(m_context, m_shader);
 }
 
@@ -63,10 +65,9 @@ void stepGameloop()
 	m_app->update();
 
 	// Draw To Screen
-	// m_renderer->clear();
-	// m_app->draw();
-	// m_renderer->display();
-	m_renderer->draw();
+	m_renderer->draw([&](SDL_GPURenderPass *render_pass) {
+		m_app->draw(render_pass);
+	});
 }
 
 void run() 
