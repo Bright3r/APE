@@ -1,144 +1,128 @@
 #include "render/Shader.h"
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath) 
+#include <SDL3/SDL_gpu.h>
+#include <SDL3/SDL_iostream.h>
+#include <SDL3/SDL_stdinc.h>
+#include <filesystem>
+#include <iostream>
+
+namespace APE {
+namespace Render {
+
+Shader::Shader(const std::filesystem::path& vert_filepath,
+	  const std::filesystem::path& frag_filepath,
+	  SDL_GPUDevice *device,
+	  Uint32 num_samplers,
+	  Uint32 num_uniform_buffers,
+	  Uint32 num_storage_buffers,
+	  Uint32 num_storage_textures)
+	: device(device)
 {
-	// get source code from filePath
-	std::string vertexCode, fragmentCode;
-	std::ifstream vShaderFile, fShaderFile;
+	vert_shader = loadShader(vert_filepath, SDL_GPU_SHADERSTAGE_VERTEX, num_samplers, 
+			 num_uniform_buffers, num_storage_buffers, num_storage_textures);
 
-	// enable exceptions
-	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	frag_shader = loadShader(frag_filepath, SDL_GPU_SHADERSTAGE_FRAGMENT, num_samplers, 
+			 num_uniform_buffers, num_storage_buffers, num_storage_textures);
+}
 
-	try {
-		// open files
-		vShaderFile.open(vertexPath);
-		fShaderFile.open(fragmentPath);
+Shader::~Shader()
+{
+	SDL_ReleaseGPUShader(device, vert_shader);
+	SDL_ReleaseGPUShader(device, frag_shader);
+}
 
-		// read file buffers into streams
-		std::stringstream vShaderStream, fShaderStream;
-		vShaderStream << vShaderFile.rdbuf();
-		fShaderStream << fShaderFile.rdbuf();
+Shader::Shader(Shader&& other)
+	: device(other.device), vert_shader(other.vert_shader), frag_shader(other.frag_shader)
+{
+	other.device = nullptr;
+	other.vert_shader = nullptr;
+	other.frag_shader = nullptr;
+}
 
-		// close files
-		vShaderFile.close();
-		fShaderFile.close();
+Shader& Shader::operator=(Shader&& other)
+{
+	if (this != &other) {
+		// Release our shaders
+		if (vert_shader)
+			SDL_ReleaseGPUShader(device, vert_shader);
 
-		// convert streams to strings
-		vertexCode = vShaderStream.str();
-		fragmentCode = fShaderStream.str();
-	}
-	catch (std::ifstream::failure e) {
-		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
-	}
+		if (frag_shader)
+			SDL_ReleaseGPUShader(device, frag_shader);
 
-	// compile shaders
-	const char* vShaderCode = vertexCode.c_str();
-	const char* fShaderCode = fragmentCode.c_str();
-	int success;
-	char infoLog[512];
+		// Move other's pointers into ours
+		vert_shader = other.vert_shader;
+		frag_shader = other.frag_shader;
 
-	// vertex shader
-	unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex, 1, &vShaderCode, NULL);
-	glCompileShader(vertex);
-
-	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	// fragment shader
-	unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment, 1, &fShaderCode, NULL);
-	glCompileShader(fragment);
-
-	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		// Clear other
+		other.vert_shader = nullptr;
+		other.frag_shader = nullptr;
 	}
 
-	// shader program
-	ID = glCreateProgram();
-	glAttachShader(ID, vertex);
-	glAttachShader(ID, fragment);
-	glLinkProgram(ID);
+	return *this;
+}
 
-	glGetProgramiv(ID, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(ID, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+SDL_GPUShader* Shader::loadShader(const std::filesystem::path& filepath,
+			  SDL_GPUShaderStage stage,
+			  Uint32 num_samplers,
+			  Uint32 num_uniform_buffers,
+			  Uint32 num_storage_buffers,
+			  Uint32 num_storage_textures)
+{
+	// Read shader code into buffer
+	size_t code_size;
+	void *code = SDL_LoadFile(filepath.c_str(), &code_size);
+	if (!code) {
+		std::cerr << "Failed to load shader code from " << filepath << ": "
+			<< SDL_GetError() << "\n";
+		return nullptr;
 	}
 
-	// delete shaders
-	glDeleteShader(vertex);
-	glDeleteShader(fragment);
+	// Detect shader format and corresponding shader entrypoint
+	std::string entrypoint;
+	SDL_GPUShaderFormat backend_formats = SDL_GetGPUShaderFormats(device);
+	SDL_GPUShaderFormat format = SDL_GPU_SHADERFORMAT_INVALID;
+
+	if (backend_formats & SDL_GPU_SHADERFORMAT_SPIRV) {
+		format = SDL_GPU_SHADERFORMAT_SPIRV;
+		entrypoint = "main";
+	}
+	else if (backend_formats & SDL_GPU_SHADERFORMAT_MSL) {
+		format = SDL_GPU_SHADERFORMAT_MSL;
+		entrypoint = "main0";
+	}
+	else if (backend_formats & SDL_GPU_SHADERFORMAT_DXIL) {
+		format = SDL_GPU_SHADERFORMAT_DXIL;
+		entrypoint = "main";
+	}
+	else {
+		std::cerr << "Failed to detect shader format in " << filepath << " : " 
+			<< SDL_GetError() << "\n";
+
+		return nullptr;
+	}
+
+	SDL_GPUShaderCreateInfo shaderInfo = {
+		.code_size = code_size,
+		.code = static_cast<Uint8*>(code),
+		.entrypoint = entrypoint.c_str(),
+		.format = format,
+		.stage = stage,
+		.num_samplers = num_samplers,
+		.num_storage_textures = num_storage_textures,
+		.num_storage_buffers = num_storage_buffers,
+		.num_uniform_buffers = num_uniform_buffers
+	};
+
+	SDL_GPUShader *shader = SDL_CreateGPUShader(device, &shaderInfo);
+	if (!shader) {
+		std::cerr << "SDL_CreateGPUShader Failed: " << SDL_GetError() << "\n";
+		SDL_free(code);
+		return nullptr;
+	}
+
+	SDL_free(code);
+	return shader;
 }
 
-void Shader::use() const 
-{
-	glUseProgram(ID);
-}
-
-void Shader::setBool(const std::string& name, bool value) const 
-{
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), (int) value);
-}
-
-void Shader::setInt(const std::string& name, int value) const 
-{
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
-}
-
-void Shader::setFloat(const std::string& name, float value) const 
-{
-	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
-}
-
-void Shader::setVec2(const std::string& name, const glm::vec2& value) const 
-{
-	glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
-}
-
-void Shader::setVec2(const std::string& name, float x, float y) const 
-{
-	glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
-}
-
-void Shader::setVec3(const std::string& name, const glm::vec3& value) const 
-{
-	glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
-}
-
-void Shader::setVec3(const std::string& name, float x, float y, float z) const 
-{
-	glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
-}
-
-void Shader::setVec4(const std::string& name, const glm::vec4& value) const 
-{
-	glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
-}
-
-void Shader::setVec4(const std::string& name, float x, float y, float z, float w) const 
-{
-	glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
-}
-
-void Shader::setMat2(const std::string& name, const glm::mat2& mat) const 
-{
-	glUniformMatrix2fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-}
-
-void Shader::setMat3(const std::string& name, const glm::mat3& mat) const 
-{
-	glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-}
-
-void Shader::setMat4(const std::string& name, const glm::mat4& mat) const 
-{
-	glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-}
-
+};	// end of namespace Render
+};	// end of namespace APE

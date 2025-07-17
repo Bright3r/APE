@@ -1,7 +1,9 @@
 {
   "dependencies": [
-	"sdl3",
-	"glad",
+	{
+		"name": "sdl3",
+		"features": [ "vulkan", "wayland" ]
+	},
 	"glm"
   ]
 }

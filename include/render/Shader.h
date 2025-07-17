@@ -1,32 +1,41 @@
 #pragma once
 
-#include <glad/glad.h>
+#include <SDL3/SDL_gpu.h>
+#include <filesystem>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
+namespace APE {
+namespace Render {
 
-class Shader {
-public:
-	unsigned int ID;
+struct Shader {
+	SDL_GPUShader *vert_shader;
+	SDL_GPUShader *frag_shader;
+	SDL_GPUDevice *device;
 
-	Shader() = default;
-	Shader(const char* vertexPath, const char* fragmentPath);
-	void use() const;
-	void setBool(const std::string& name, bool value) const;
-	void setInt(const std::string& name, int value) const;
-	void setFloat(const std::string& name, float value) const;
-	void setVec2(const std::string& name, const glm::vec2& value) const;
-	void setVec2(const std::string& name, float x, float y) const;
-	void setVec3(const std::string& name, const glm::vec3& value) const;
-	void setVec3(const std::string& name, float x, float y, float z) const;
-	void setVec4(const std::string& name, const glm::vec4& value) const;
-	void setVec4(const std::string& name, float x, float y, float z, float w) const;
-	void setMat2(const std::string& name, const glm::mat2& mat) const;
-	void setMat3(const std::string& name, const glm::mat3& mat) const;
-	void setMat4(const std::string& name, const glm::mat4& mat) const;
+	Shader(const std::filesystem::path& vert_filepath,
+			  const std::filesystem::path& frag_filepath,
+			  SDL_GPUDevice *device,
+			  Uint32 num_samplers,
+			  Uint32 num_uniform_buffers,
+			  Uint32 num_storage_buffers,
+			  Uint32 num_storage_textures);
+
+	~Shader();
+
+	Shader(const Shader& other) = delete;
+	Shader& operator=(const Shader& other) = delete;
+	Shader(Shader&& other);
+	Shader& operator=(Shader&& other);
+
+	SDL_GPUShader* loadShader(const std::filesystem::path& filepath,
+			  SDL_GPUShaderStage stage,
+			  Uint32 num_samplers,
+			  Uint32 num_uniform_buffers,
+			  Uint32 num_storage_buffers,
+			  Uint32 num_storage_textures);
 };
+
+};	// end of namespace Render
+};	// end of namespace APE

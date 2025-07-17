@@ -5,7 +5,6 @@
 #include <type_traits>
 
 namespace APE {
-
 namespace Timing {
 
 // Type Aliases

@@ -1,29 +1,34 @@
 #pragma once
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_init.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_video.h>
-#include <glad/glad.h>
-#include <iostream>
+#include "render/Context.h"
+#include "render/Shader.h"
 
-class Renderer {
-public:
-	Renderer(int width, int height);
-	~Renderer();
+#include <memory>
 
-	int init();
-	void draw() const;
-	void clear() const;
-	void display() const;
+namespace APE {
+namespace Render {
 
-public:
-	// Public Class Members
-	int width, height;
+struct Renderer {
+	std::shared_ptr<Context> context;
+	std::shared_ptr<Shader> shader;
+	bool wireframe_mode;
+	SDL_FColor clear_color;
 
 private:
-	// Private Data
-	SDL_Window *window;
-	SDL_GLContext context;
+	SDL_GPUGraphicsPipeline *fill_pipeline;
+	SDL_GPUGraphicsPipeline *line_pipeline;
+
+public:
+	// Special Member Functions
+	Renderer(std::shared_ptr<Context> context, std::shared_ptr<Shader> shader);
+	~Renderer();
+	Renderer(const Renderer& other) = delete;
+	Renderer& operator=(const Renderer& other) = delete;
+
+	// API Functions
+	void createPipelines(std::shared_ptr<Shader> new_shader);
+	void draw();
 };
+
+}; // end of namespace Render
+}; // end of namespace APE

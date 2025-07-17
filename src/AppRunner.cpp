@@ -1,4 +1,5 @@
 #include "AppRunner.h"
+#include <SDL3/SDL_video.h>
 #include <chrono>
 
 namespace AppRunner {
@@ -10,7 +11,20 @@ void init(int window_width, int window_height)
 	m_last_frame_time = std::chrono::milliseconds(0);
 
 	m_app = std::make_unique<App>();
-	m_renderer = std::make_unique<Renderer>(window_width, window_height);
+
+	m_context = std::make_shared<APE::Render::Context>("Test", 600, 400, 
+						    SDL_WINDOW_RESIZABLE);
+
+	m_shader = std::make_shared<APE::Render::Shader>(
+			"res/shaders/RawTriangle.vert.spv",
+			"res/shaders/SolidColor.frag.spv",
+			m_context->device,
+			0,
+			0,
+			0,
+			0);
+
+	m_renderer = std::make_unique<APE::Render::Renderer>(m_context, m_shader);
 }
 
 void pollEvents()
@@ -49,9 +63,10 @@ void stepGameloop()
 	m_app->update();
 
 	// Draw To Screen
-	m_renderer->clear();
-	m_app->draw();
-	m_renderer->display();
+	// m_renderer->clear();
+	// m_app->draw();
+	// m_renderer->display();
+	m_renderer->draw();
 }
 
 void run() 
