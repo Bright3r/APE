@@ -9,15 +9,27 @@
 namespace APE {
 namespace Render {
 
-Renderer::Renderer(std::shared_ptr<Context> context, std::shared_ptr<Shader> shader)
-	: context(context), 
-	shader(shader),
+Renderer::Renderer(std::shared_ptr<Context> context)
+	: context(context),
 	fill_pipeline(nullptr),
 	line_pipeline(nullptr),
 	wireframe_mode(false), 
 	clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 {
-	createPipelines(shader);
+	// Construct default shader
+	std::unique_ptr<Shader> shader = createShader(default_shader_desc);
+
+	useShader(shader.get());
+}
+
+Renderer::Renderer(std::shared_ptr<Context> context, Shader* shader)
+	: context(context), 
+	fill_pipeline(nullptr),
+	line_pipeline(nullptr),
+	wireframe_mode(false), 
+	clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
+{
+	useShader(shader);
 }
 
 Renderer::~Renderer()
@@ -29,8 +41,16 @@ Renderer::~Renderer()
 		SDL_ReleaseGPUGraphicsPipeline(context->device, line_pipeline);
 }
 
-void Renderer::createPipelines(std::shared_ptr<Shader> new_shader) {
-	shader = new_shader;
+std::unique_ptr<Shader> Renderer::createShader(ShaderDescription shader_desc) const
+{
+	return std::make_unique<Shader>(shader_desc, context->device);
+}
+
+void Renderer::useShader(Shader* shader) {
+	if (!shader) {
+		std::cerr << "useShader Failed: Cannot apply null shader\n";
+		return;
+	}
 
 	if (fill_pipeline)
 		SDL_ReleaseGPUGraphicsPipeline(context->device, fill_pipeline);
@@ -59,16 +79,16 @@ void Renderer::createPipelines(std::shared_ptr<Shader> new_shader) {
 	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
 	fill_pipeline = SDL_CreateGPUGraphicsPipeline(context->device, &pipelineCreateInfo);
 	if (!fill_pipeline) {
-		std::cerr << "SDL_CreateGPUGraphicsPipeline Failed for fill_pipeline: "
-			<< SDL_GetError() << std::endl;
+		std::cerr << "SDL_CreateGPUGraphicsPipeline Failed \
+			for fill_pipeline: " << SDL_GetError() << std::endl;
 		return;
 	}
 
 	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_LINE;
 	line_pipeline = SDL_CreateGPUGraphicsPipeline(context->device, &pipelineCreateInfo);
 	if (!line_pipeline) {
-		std::cerr << "SDL_CreateGPUGraphicsPipeline Failed for line_pipeline: "
-			<< SDL_GetError() << std::endl;
+		std::cerr << "SDL_CreateGPUGraphicsPipeline Failed \
+			for line_pipeline: " << SDL_GetError() << std::endl;
 		return;
 	}
 }

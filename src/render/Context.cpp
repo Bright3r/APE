@@ -7,7 +7,7 @@
 namespace APE {
 namespace Render {
 
-Context::Context(const std::string& title,
+Context::Context(std::string_view title,
 		 int window_width,
 		 int window_height,
 		 int window_flags)
@@ -33,7 +33,8 @@ Context::Context(const std::string& title,
 		return;
 	}
 
-	window = SDL_CreateWindow(title.c_str(), window_width, window_height, window_flags);
+	window = SDL_CreateWindow(this->title.c_str(), window_width, window_height, 
+			   window_flags);
 	if (!window) {
 		std::cerr << "SDL_CreateWindow Failed: " << SDL_GetError() << "\n";
 		return;

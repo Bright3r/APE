@@ -1,11 +1,12 @@
 #include "AppRunner.h"
+#include "render/Shader.h"
 #include <SDL3/SDL_video.h>
 #include <chrono>
 #include <functional>
 
 namespace AppRunner {
 
-void init(int window_width, int window_height) 
+void init(std::string_view window_title, int window_width, int window_height) 
 {
 	// Initialize w/ default app settings
 	m_quit = false;
@@ -15,18 +16,11 @@ void init(int window_width, int window_height)
 	// Create user-defined app
 	m_app = std::make_unique<App>();
 
-	// Initialize renderer
-	m_context = std::make_shared<APE::Render::Context>("Test", 600, 400, 
-						    SDL_WINDOW_RESIZABLE);
-	m_shader = std::make_shared<APE::Render::Shader>(
-			"res/shaders/RawTriangle.vert.spv",
-			"res/shaders/SolidColor.frag.spv",
-			m_context->device,
-			0,
-			0,
-			0,
-			0);
-	m_renderer = std::make_unique<APE::Render::Renderer>(m_context, m_shader);
+	// Initialize renderer w/ default shader
+	m_context = std::make_shared<APE::Render::Context>(
+		window_title, window_width, window_height, SDL_WINDOW_RESIZABLE);
+
+	m_renderer = std::make_unique<APE::Render::Renderer>(m_context);
 }
 
 void pollEvents()
@@ -95,6 +89,18 @@ void run()
 	}
 }
 
+std::unique_ptr<APE::Render::Shader> createShader(
+	const APE::Render::ShaderDescription& shader_desc)
+{
+	return m_renderer->createShader(shader_desc);
+}
+
+void setShader(std::shared_ptr<APE::Render::Shader> shader)
+{
+	m_shader = shader;
+	m_renderer->useShader(shader.get());
+}
+
 bool quit() 
 {
 	return m_quit;
@@ -126,4 +132,5 @@ APE::Timing::millis lastFrameTimeMS()
 	return std::chrono::duration_cast<APE::Timing::millis>(m_last_frame_time);
 }
 
-};
+};	// end of namespace AppRunner
+

@@ -5,7 +5,9 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_video.h>
+
 #include <string>
+#include <string_view>
 
 namespace APE {
 namespace Render {
@@ -18,7 +20,7 @@ struct Context {
 	int window_height;
 	int window_flags;
 
-	Context(const std::string& title, int window_width, 
+	Context(std::string_view title, int window_width, 
 		int window_height, int window_flags);
 	~Context();
 	Context(const Context& other) = delete;

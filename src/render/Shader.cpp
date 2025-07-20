@@ -3,26 +3,18 @@
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_stdinc.h>
-#include <filesystem>
+
 #include <iostream>
+#include <string_view>
 
 namespace APE {
 namespace Render {
 
-Shader::Shader(const std::filesystem::path& vert_filepath,
-	  const std::filesystem::path& frag_filepath,
-	  SDL_GPUDevice *device,
-	  Uint32 num_samplers,
-	  Uint32 num_uniform_buffers,
-	  Uint32 num_storage_buffers,
-	  Uint32 num_storage_textures)
+Shader::Shader(const ShaderDescription& shader_desc, SDL_GPUDevice *device)
 	: device(device)
 {
-	vert_shader = loadShader(vert_filepath, SDL_GPU_SHADERSTAGE_VERTEX, num_samplers, 
-			 num_uniform_buffers, num_storage_buffers, num_storage_textures);
-
-	frag_shader = loadShader(frag_filepath, SDL_GPU_SHADERSTAGE_FRAGMENT, num_samplers, 
-			 num_uniform_buffers, num_storage_buffers, num_storage_textures);
+	vert_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_VERTEX); 
+	frag_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_FRAGMENT);
 }
 
 Shader::~Shader()
@@ -32,7 +24,9 @@ Shader::~Shader()
 }
 
 Shader::Shader(Shader&& other)
-	: device(other.device), vert_shader(other.vert_shader), frag_shader(other.frag_shader)
+	: device(other.device), 
+	vert_shader(other.vert_shader), 
+	frag_shader(other.frag_shader)
 {
 	other.device = nullptr;
 	other.vert_shader = nullptr;
@@ -61,19 +55,19 @@ Shader& Shader::operator=(Shader&& other)
 	return *this;
 }
 
-SDL_GPUShader* Shader::loadShader(const std::filesystem::path& filepath,
-			  SDL_GPUShaderStage stage,
-			  Uint32 num_samplers,
-			  Uint32 num_uniform_buffers,
-			  Uint32 num_storage_buffers,
-			  Uint32 num_storage_textures)
+SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc, 
+				  SDL_GPUShaderStage stage)
 {
 	// Read shader code into buffer
 	size_t code_size;
+	std::string filepath = 
+		(stage == SDL_GPU_SHADERSTAGE_VERTEX) ?
+		shader_desc.vert_shader_filepath : 
+		shader_desc.frag_shader_filepath;
 	void *code = SDL_LoadFile(filepath.c_str(), &code_size);
 	if (!code) {
-		std::cerr << "Failed to load shader code from " << filepath << ": "
-			<< SDL_GetError() << "\n";
+		std::cerr << "Failed to load shader code from " 
+			<< filepath << ": " << SDL_GetError() << "\n";
 		return nullptr;
 	}
 
@@ -95,8 +89,8 @@ SDL_GPUShader* Shader::loadShader(const std::filesystem::path& filepath,
 		entrypoint = "main";
 	}
 	else {
-		std::cerr << "Failed to detect shader format in " << filepath << " : " 
-			<< SDL_GetError() << "\n";
+		std::cerr << "Failed to detect shader format in " 
+			<< filepath << " : " << SDL_GetError() << "\n";
 
 		return nullptr;
 	}
@@ -107,15 +101,16 @@ SDL_GPUShader* Shader::loadShader(const std::filesystem::path& filepath,
 		.entrypoint = entrypoint.c_str(),
 		.format = format,
 		.stage = stage,
-		.num_samplers = num_samplers,
-		.num_storage_textures = num_storage_textures,
-		.num_storage_buffers = num_storage_buffers,
-		.num_uniform_buffers = num_uniform_buffers
+		.num_samplers = shader_desc.num_samplers,
+		.num_storage_textures = shader_desc.num_storage_textures,
+		.num_storage_buffers = shader_desc.num_storage_buffers,
+		.num_uniform_buffers = shader_desc.num_uniform_buffers
 	};
 
 	SDL_GPUShader *shader = SDL_CreateGPUShader(device, &shaderInfo);
 	if (!shader) {
-		std::cerr << "SDL_CreateGPUShader Failed: " << SDL_GetError() << "\n";
+		std::cerr << "SDL_CreateGPUShader Failed: " << 
+			SDL_GetError() << "\n";
 		SDL_free(code);
 		return nullptr;
 	}

@@ -1,7 +1,11 @@
 #pragma once
 
+#include "render/Shader.h"
+
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_gpu.h>
+
+#include <memory>
 
 class App {
 public:
@@ -17,6 +21,6 @@ public:
 
 private:
 	// App Data
-	
+	std::unique_ptr<APE::Render::Shader> shader;
 };
 
