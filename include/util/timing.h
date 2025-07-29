@@ -1,7 +1,7 @@
 #pragma once
 
-#include <SDL3/SDL_timer.h>
 #include <chrono>
+#include <thread>
 #include <type_traits>
 
 namespace APE {
@@ -58,7 +58,7 @@ void waitFor(const std::chrono::duration<Rep, Period>& wait_time)
 	// Wait until 1ms before end of wait
 	if (wait_time > milliseconds(1)) {
 		auto coarse_delay_time = wait_time - milliseconds(1);
-		SDL_Delay(static_cast<Uint32>(coarse_delay_time.count()));
+		std::this_thread::sleep_for(coarse_delay_time);
 	}
 
 	// Spin wait for final 1ms of wait
