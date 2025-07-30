@@ -12,58 +12,59 @@
 #include <SDL3/SDL_events.h>
 #include <string_view>
 
-namespace AppRunner {
+class AppRunner {
+private:
 	// Application State
 	//
 	static std::unique_ptr<App> m_app;
 
 	// Rendering
+	//
 	static std::shared_ptr<APE::Render::Context> m_context;
 	static std::shared_ptr<APE::Render::Shader> m_shader;
 	static std::unique_ptr<APE::Render::Renderer> m_renderer;
 	static std::unique_ptr<APE::Render::Camera> m_main_camera;
 
 	// Timing
+	//
 	static bool m_quit;
 	static int m_framerate;
 	static APE::Timing::millis m_last_frame_time;
 
-
-
+public:
 	// Main Functions
 	//
-	void init(std::string_view window_title, int window_width, int window_height);
+	static void 
+	init(std::string_view window_title, int window_width, int window_height);
 
-	void pollEvents();
+	static void pollEvents();
 
-	void stepGameloop();
+	static void stepGameloop();
 
-	void run();
+	static void run();
+
 
 	// Graphics Functions
-	std::unique_ptr<APE::Render::Shader> createShader(
-		const APE::Render::ShaderDescription& shader_desc
-	);
+	static std::unique_ptr<APE::Render::Shader> 
+	createShader(const APE::Render::ShaderDescription& shader_desc);
 
-	void useShader(std::shared_ptr<APE::Render::Shader> shader);
+	static void useShader(std::shared_ptr<APE::Render::Shader> shader);
 
-	APE::Render::Camera* getMainCamera();
-
+	static APE::Render::Camera* getMainCamera();
 
 
 	// Utility Functions
 	//
-	bool quit();
+	static bool getQuit();
 
-	void setQuit(bool quit);
+	static void setQuit(bool quit);
 
-	int framerate();
+	static int getFramerate();
 
-	void setFramerate(int fps);
+	static void setFramerate(int fps);
 
-	APE::Timing::seconds lastFrameTimeSec();
+	static APE::Timing::seconds getLastFrameTimeSec();
 
-	APE::Timing::millis lastFrameTimeMS();
-
-};	// end of namespace AppRunner
+	static APE::Timing::millis getLastFrameTimeMS();
+};
 

@@ -23,7 +23,7 @@ void App::draw(SDL_GPURenderPass *render_pass) {
 void App::onKeyDown(SDL_KeyboardEvent key) {
 	APE::Render::Camera* cam = AppRunner::getMainCamera();
 	float speed = 5.f;
-	float dt = AppRunner::lastFrameTimeSec().count();
+	float dt = AppRunner::getLastFrameTimeSec().count();
 
 	switch (key.key) {
 		case SDLK_Q:

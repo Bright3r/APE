@@ -1,7 +1,7 @@
 #include "render/Renderer.h"
 #include "render/Shader.h"
+
 #include <SDL3/SDL_gpu.h>
-#include <cassert>
 #include <functional>
 #include <glm/fwd.hpp>
 #include <iostream>
@@ -12,13 +12,13 @@ namespace APE {
 namespace Render {
 
 Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
-	: context(context)
-	, cam(cam)
-	, fill_pipeline(nullptr)
-	, line_pipeline(nullptr)
-	, vertex_buffer(nullptr)
-	, wireframe_mode(false) 
-	, clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
+	: m_context(context)
+	, m_cam(cam)
+	, m_fill_pipeline(nullptr)
+	, m_line_pipeline(nullptr)
+	, m_vertex_buffer(nullptr)
+	, m_wireframe_mode(false) 
+	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 {
 	if (!cam) {
 		std::cerr << "Renderer() Failed: cam must not be null";
@@ -33,13 +33,13 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 }
 
 Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader)
-	: context(context)
-	, cam(cam)
-	, fill_pipeline(nullptr)
-	, line_pipeline(nullptr)
-	, vertex_buffer(nullptr)
-	, wireframe_mode(false) 
-	, clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
+	: m_context(context)
+	, m_cam(cam)
+	, m_fill_pipeline(nullptr)
+	, m_line_pipeline(nullptr)
+	, m_vertex_buffer(nullptr)
+	, m_wireframe_mode(false) 
+	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 {
 	if (!cam) {
 		std::cerr << "Renderer() Failed: cam must not be null";
@@ -53,19 +53,19 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 
 Renderer::~Renderer()
 {
-	if (fill_pipeline)
-		SDL_ReleaseGPUGraphicsPipeline(context->device, fill_pipeline);
+	if (m_fill_pipeline)
+		SDL_ReleaseGPUGraphicsPipeline(m_context->device, m_fill_pipeline);
 
-	if (line_pipeline)
-		SDL_ReleaseGPUGraphicsPipeline(context->device, line_pipeline);
+	if (m_line_pipeline)
+		SDL_ReleaseGPUGraphicsPipeline(m_context->device, m_line_pipeline);
 
-	if (vertex_buffer)
-		SDL_ReleaseGPUBuffer(context->device, vertex_buffer);
+	if (m_vertex_buffer)
+		SDL_ReleaseGPUBuffer(m_context->device, m_vertex_buffer);
 }
 
 std::unique_ptr<Shader> Renderer::createShader(ShaderDescription shader_desc) const
 {
-	return std::make_unique<Shader>(shader_desc, context->device);
+	return std::make_unique<Shader>(shader_desc, m_context->device);
 }
 
 void Renderer::useShader(Shader* shader) {
@@ -75,11 +75,11 @@ void Renderer::useShader(Shader* shader) {
 	}
 
 	// Destroy previous pipelines
-	if (fill_pipeline)
-		SDL_ReleaseGPUGraphicsPipeline(context->device, fill_pipeline);
+	if (m_fill_pipeline)
+		SDL_ReleaseGPUGraphicsPipeline(m_context->device, m_fill_pipeline);
 
-	if (line_pipeline)
-		SDL_ReleaseGPUGraphicsPipeline(context->device, line_pipeline);
+	if (m_line_pipeline)
+		SDL_ReleaseGPUGraphicsPipeline(m_context->device, m_line_pipeline);
 
 	// Setup new pipeline config
 	SDL_GPUVertexBufferDescription vertex_buffer_description[] = {{
@@ -110,15 +110,15 @@ void Renderer::useShader(Shader* shader) {
 
 	SDL_GPUColorTargetDescription color_target_description[] = {{
 		.format = SDL_GetGPUSwapchainTextureFormat(
-			context->device, 
-			context->window
+			m_context->device, 
+			m_context->window
 		),
 		.blend_state = {},
 	}};
 
 	SDL_GPUGraphicsPipelineCreateInfo pipelineCreateInfo = {
-		.vertex_shader = shader->vert_shader,
-		.fragment_shader = shader->frag_shader,
+		.vertex_shader = shader->getVertexShader(),
+		.fragment_shader = shader->getFragmentShader(),
 		.vertex_input_state = vertex_input_state,
 		.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
 		.target_info = {
@@ -129,8 +129,8 @@ void Renderer::useShader(Shader* shader) {
 
 	// Create fill pipeline
 	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
-	fill_pipeline = SDL_CreateGPUGraphicsPipeline(context->device, &pipelineCreateInfo);
-	if (!fill_pipeline) {
+	m_fill_pipeline = SDL_CreateGPUGraphicsPipeline(m_context->device, &pipelineCreateInfo);
+	if (!m_fill_pipeline) {
 		std::cerr << "SDL_CreateGPUGraphicsPipeline Failed \
 			for fill_pipeline: " << SDL_GetError() << std::endl;
 		return;
@@ -138,8 +138,8 @@ void Renderer::useShader(Shader* shader) {
 
 	// Create wireframe pipeline
 	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_LINE;
-	line_pipeline = SDL_CreateGPUGraphicsPipeline(context->device, &pipelineCreateInfo);
-	if (!line_pipeline) {
+	m_line_pipeline = SDL_CreateGPUGraphicsPipeline(m_context->device, &pipelineCreateInfo);
+	if (!m_line_pipeline) {
 		std::cerr << "SDL_CreateGPUGraphicsPipeline Failed \
 			for line_pipeline: " << SDL_GetError() << std::endl;
 		return;
@@ -148,7 +148,7 @@ void Renderer::useShader(Shader* shader) {
 
 void Renderer::useVertexData(std::vector<PositionColorVertex> vertex_data)
 {
-	vertex_buffer = uploadBuffer<PositionColorVertex>(
+	m_vertex_buffer = uploadBuffer<PositionColorVertex>(
 		vertex_data, 
 		SDL_GPU_BUFFERUSAGE_VERTEX
 	);
@@ -156,13 +156,13 @@ void Renderer::useVertexData(std::vector<PositionColorVertex> vertex_data)
 
 float Renderer::getAspectRatio() const
 {
-	return context->window_width / static_cast<float>(context->window_height);
+	return m_context->window_width / static_cast<float>(m_context->window_height);
 }
 
 void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 {
 	SDL_GPUCommandBuffer *cmd_buffer = SDL_AcquireGPUCommandBuffer(
-		context->device
+		m_context->device
 	);
 	if (!cmd_buffer) {
 		std::cerr << "SDL_AcquireGPUCommandBuffer Failed: "
@@ -172,7 +172,7 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 
 	SDL_GPUTexture *swapchain_texture;
 	if (!SDL_WaitAndAcquireGPUSwapchainTexture(
-		cmd_buffer, context->window, &swapchain_texture, NULL, NULL
+		cmd_buffer, m_context->window, &swapchain_texture, NULL, NULL
 	)) {
 		std::cerr << "SDL_WaitAndAcquireGPUSwapchainTexture Failed: "
 			<< SDL_GetError() << std::endl;
@@ -182,7 +182,7 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 	if (swapchain_texture) {
 		SDL_GPUColorTargetInfo color_target_info = {
 			.texture = swapchain_texture,
-			.clear_color = clear_color,
+			.clear_color = m_clear_color,
 			.load_op = SDL_GPU_LOADOP_CLEAR,
 			.store_op = SDL_GPU_STOREOP_STORE,
 		};
@@ -195,7 +195,7 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 		);
 
 		SDL_GPUGraphicsPipeline *render_pipeline = 
-			wireframe_mode ? line_pipeline : fill_pipeline;
+			m_wireframe_mode ? m_line_pipeline : m_fill_pipeline;
 		if (!render_pipeline) {
 			std::cerr << "No render pipeline available in draw()." 
 				<< "\n";
@@ -212,8 +212,8 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 		);
 		ModelViewProjUniform mvp_uniform { 
 			glm::transpose(model),		
-			glm::transpose(cam->getViewMatrix()), 
-			glm::transpose(cam->getProjectionMatrix(getAspectRatio()))
+			glm::transpose(m_cam->getViewMatrix()), 
+			glm::transpose(m_cam->getProjectionMatrix(getAspectRatio()))
 		};
 		SDL_PushGPUVertexUniformData(
 			cmd_buffer,
@@ -224,7 +224,7 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 
 		// Bind vertex buffers
 		SDL_GPUBufferBinding buffer_binding = {
-			.buffer = vertex_buffer,
+			.buffer = m_vertex_buffer,
 			.offset = 0,
 		};
 		SDL_BindGPUVertexBuffers(

@@ -34,19 +34,20 @@ static const ShaderDescription default_shader_desc {
 	.num_storage_textures = 0,
 };
 
-struct Renderer {
-	std::shared_ptr<Context> context;
-	bool wireframe_mode;
-	SDL_FColor clear_color;
-
+class Renderer {
 private:
-	SDL_GPUGraphicsPipeline *fill_pipeline;
-	SDL_GPUGraphicsPipeline *line_pipeline;
-	SDL_GPUBuffer *vertex_buffer;
-	Camera *cam;
+	std::shared_ptr<Context> m_context;
+	bool m_wireframe_mode;
+	SDL_FColor m_clear_color;
+	Camera* m_cam;
+	SDL_GPUBuffer* m_vertex_buffer;
+
+	SDL_GPUGraphicsPipeline* m_fill_pipeline;
+	SDL_GPUGraphicsPipeline* m_line_pipeline;
 
 public:
 	// Special Member Functions
+	//
 	Renderer(std::shared_ptr<Context> context, Camera *cam);
 	Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader);
 	~Renderer();
@@ -54,6 +55,7 @@ public:
 	Renderer& operator=(const Renderer& other) = delete;
 
 	// API Functions
+	//
 	std::unique_ptr<Shader> createShader(ShaderDescription shader_desc) const;
 
 	void useShader(Shader* shader);
@@ -137,7 +139,7 @@ private:
 		};
 
 		SDL_GPUBuffer *buffer = SDL_CreateGPUBuffer(
-			context->device,
+			m_context->device,
 			&buffer_info
 		);
 
@@ -148,14 +150,14 @@ private:
 		};
 
 		SDL_GPUTransferBuffer *transfer_buffer = SDL_CreateGPUTransferBuffer(
-			context->device, 
+			m_context->device, 
 			&transfer_info
 		);
 
 		// Write data to transfer buffer
 		T *mapped = static_cast<T*>(
 			SDL_MapGPUTransferBuffer(
-				context->device, 
+				m_context->device, 
 				transfer_buffer, 
 				false
 			)
@@ -163,11 +165,11 @@ private:
 
 		std::memcpy(mapped, data.data(), buffer_size);
 
-		SDL_UnmapGPUTransferBuffer(context->device, transfer_buffer);
+		SDL_UnmapGPUTransferBuffer(m_context->device, transfer_buffer);
 
 		// Upload transfer buffer to GPU read-only memory
 		SDL_GPUCommandBuffer *cmd_buffer = SDL_AcquireGPUCommandBuffer(
-			context->device
+			m_context->device
 		);
 		SDL_GPUCopyPass *copy_pass = SDL_BeginGPUCopyPass(cmd_buffer);
 
@@ -187,7 +189,7 @@ private:
 		// Cleanup resources
 		SDL_EndGPUCopyPass(copy_pass);
 		SDL_SubmitGPUCommandBuffer(cmd_buffer);
-		SDL_ReleaseGPUTransferBuffer(context->device, transfer_buffer);
+		SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buffer);
 
 		return buffer;
 	}

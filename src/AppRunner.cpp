@@ -3,12 +3,32 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_video.h>
 #include <chrono>
-#include <functional>
 
-namespace AppRunner {
 
-void init(std::string_view window_title, int window_width, int window_height) 
-{
+// Application State
+//
+std::unique_ptr<App> AppRunner::m_app;
+
+// Rendering
+//
+std::shared_ptr<APE::Render::Context> AppRunner::m_context;
+std::shared_ptr<APE::Render::Shader> AppRunner::m_shader;
+std::unique_ptr<APE::Render::Renderer> AppRunner::m_renderer;
+std::unique_ptr<APE::Render::Camera> AppRunner::m_main_camera;
+
+// Timing
+//
+bool AppRunner::m_quit;
+int AppRunner::m_framerate;
+APE::Timing::millis AppRunner::m_last_frame_time;
+
+
+
+void AppRunner::init(
+	std::string_view window_title,
+	int window_width,
+	int window_height
+) {
 	// Initialize w/ default app settings
 	m_quit = false;
 	m_framerate = 60.f;
@@ -32,7 +52,7 @@ void init(std::string_view window_title, int window_width, int window_height)
 	);
 }
 
-void pollEvents()
+void AppRunner::pollEvents()
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event) != 0) {
@@ -59,7 +79,7 @@ void pollEvents()
 	}
 }
 
-void stepGameloop()
+void AppRunner::stepGameloop()
 {
 	// Poll User Input
 	pollEvents();
@@ -73,7 +93,7 @@ void stepGameloop()
 	});
 }
 
-void run() 
+void AppRunner::run() 
 {
 	// Initial Setup
 	m_app->setup();
@@ -98,52 +118,50 @@ void run()
 	}
 }
 
-std::unique_ptr<APE::Render::Shader> createShader(
+std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
 	const APE::Render::ShaderDescription& shader_desc
 ) {
 	return m_renderer->createShader(shader_desc);
 }
 
-void useShader(std::shared_ptr<APE::Render::Shader> shader)
+void AppRunner::useShader(std::shared_ptr<APE::Render::Shader> shader)
 {
 	m_shader = shader;
 	m_renderer->useShader(shader.get());
 }
 
-APE::Render::Camera* getMainCamera() 
+APE::Render::Camera* AppRunner::getMainCamera() 
 {
 	return m_main_camera.get();
 }
 
-bool quit() 
+bool AppRunner::getQuit() 
 {
 	return m_quit;
 }
 
-void setQuit(bool quit) 
+void AppRunner::setQuit(bool quit) 
 {
 	m_quit = quit;
 }
 
-int framerate() 
+int AppRunner::getFramerate() 
 {
 	return m_framerate;
 }
 
-void setFramerate(int fps) 
+void AppRunner::setFramerate(int fps) 
 {
 	m_framerate = fps;
 }
 
-APE::Timing::seconds lastFrameTimeSec() 
+APE::Timing::seconds AppRunner::getLastFrameTimeSec() 
 {
 	return std::chrono::duration_cast<APE::Timing::seconds>(m_last_frame_time);
 }
 
-APE::Timing::millis lastFrameTimeMS() 
+APE::Timing::millis AppRunner::getLastFrameTimeMS() 
 {
 	return std::chrono::duration_cast<APE::Timing::millis>(m_last_frame_time);
 }
-
-};	// end of namespace AppRunner
 

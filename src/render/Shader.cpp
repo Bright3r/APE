@@ -10,45 +10,45 @@ namespace APE {
 namespace Render {
 
 Shader::Shader(const ShaderDescription& shader_desc, SDL_GPUDevice *device)
-	: device(device)
+	: m_device(device)
 {
-	vert_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_VERTEX); 
-	frag_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_FRAGMENT);
+	m_vert_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_VERTEX); 
+	m_frag_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_FRAGMENT);
 }
 
 Shader::~Shader()
 {
-	SDL_ReleaseGPUShader(device, vert_shader);
-	SDL_ReleaseGPUShader(device, frag_shader);
+	SDL_ReleaseGPUShader(m_device, m_vert_shader);
+	SDL_ReleaseGPUShader(m_device, m_frag_shader);
 }
 
 Shader::Shader(Shader&& other)
-	: device(other.device), 
-	vert_shader(other.vert_shader), 
-	frag_shader(other.frag_shader)
+	: m_device(other.m_device), 
+	m_vert_shader(other.m_vert_shader), 
+	m_frag_shader(other.m_frag_shader)
 {
-	other.device = nullptr;
-	other.vert_shader = nullptr;
-	other.frag_shader = nullptr;
+	other.m_device = nullptr;
+	other.m_vert_shader = nullptr;
+	other.m_frag_shader = nullptr;
 }
 
 Shader& Shader::operator=(Shader&& other)
 {
 	if (this != &other) {
 		// Release our shaders
-		if (vert_shader)
-			SDL_ReleaseGPUShader(device, vert_shader);
+		if (m_vert_shader)
+			SDL_ReleaseGPUShader(m_device, m_vert_shader);
 
-		if (frag_shader)
-			SDL_ReleaseGPUShader(device, frag_shader);
+		if (m_frag_shader)
+			SDL_ReleaseGPUShader(m_device, m_frag_shader);
 
 		// Move other's pointers into ours
-		vert_shader = other.vert_shader;
-		frag_shader = other.frag_shader;
+		m_vert_shader = other.m_vert_shader;
+		m_frag_shader = other.m_frag_shader;
 
 		// Clear other
-		other.vert_shader = nullptr;
-		other.frag_shader = nullptr;
+		other.m_vert_shader = nullptr;
+		other.m_frag_shader = nullptr;
 	}
 
 	return *this;
@@ -72,7 +72,7 @@ SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc,
 
 	// Detect shader format and corresponding shader entrypoint
 	std::string entrypoint;
-	SDL_GPUShaderFormat backend_formats = SDL_GetGPUShaderFormats(device);
+	SDL_GPUShaderFormat backend_formats = SDL_GetGPUShaderFormats(m_device);
 	SDL_GPUShaderFormat format = SDL_GPU_SHADERFORMAT_INVALID;
 
 	if (backend_formats & SDL_GPU_SHADERFORMAT_SPIRV) {
@@ -106,7 +106,7 @@ SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc,
 		.num_uniform_buffers = shader_desc.num_uniform_buffers
 	};
 
-	SDL_GPUShader *shader = SDL_CreateGPUShader(device, &shaderInfo);
+	SDL_GPUShader *shader = SDL_CreateGPUShader(m_device, &shaderInfo);
 	if (!shader) {
 		std::cerr << "SDL_CreateGPUShader Failed: " << 
 			SDL_GetError() << "\n";
@@ -116,6 +116,22 @@ SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc,
 
 	SDL_free(code);
 	return shader;
+}
+
+
+SDL_GPUShader* Shader::getVertexShader() const
+{
+	return m_vert_shader;
+}
+
+SDL_GPUShader* Shader::getFragmentShader() const
+{
+	return m_frag_shader;
+}
+
+SDL_GPUDevice* Shader::getDevice() const
+{
+	return m_device;
 }
 
 };	// end of namespace Render

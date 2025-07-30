@@ -7,13 +7,15 @@
 namespace APE {
 namespace Render {
 
-struct Camera {
+class Camera {
+private:
 	glm::vec3 position;
 	float pitch;	// rotation around x-axis
 	float yaw;	// rotation around y-axis
 	float fov;	// field of view in degrees
 	float sensitivity;
 
+public:
 	Camera(const glm::vec3 pos = { 0, 0, 1 },
 		float pitch = 0.f,
 		float yaw = -90.f,

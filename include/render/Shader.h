@@ -18,11 +18,13 @@ struct ShaderDescription {
 	Uint32 num_storage_textures;
 };
 
-struct Shader {
-	SDL_GPUShader *vert_shader;
-	SDL_GPUShader *frag_shader;
-	SDL_GPUDevice *device;
+class Shader {
+private:
+	SDL_GPUShader* m_vert_shader;
+	SDL_GPUShader* m_frag_shader;
+	SDL_GPUDevice* m_device;
 
+public:
 	Shader(const ShaderDescription& shader_desc, SDL_GPUDevice *device);
 	~Shader();
 	Shader(const Shader& other) = delete;
@@ -34,6 +36,10 @@ struct Shader {
 		const ShaderDescription& shader_desc, 
 		SDL_GPUShaderStage stage
 	);
+
+	SDL_GPUShader* getVertexShader() const;
+	SDL_GPUShader* getFragmentShader() const;
+	SDL_GPUDevice* getDevice() const;
 };
 
 };	// end of namespace Render
