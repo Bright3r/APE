@@ -1,4 +1,10 @@
-float4 main(float4 Color : TEXCOORD0) : SV_Target0
+
+struct Input
 {
-    return Color;
+	float4 Color : TEXCOORD0;
+};
+
+float4 main(Input input) : SV_Target
+{
+    return input.Color;
 }

@@ -1,5 +1,6 @@
 #include "AppRunner.h"
 #include "render/Shader.h"
+#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_video.h>
 #include <chrono>
 #include <functional>
@@ -18,15 +19,17 @@ void init(std::string_view window_title, int window_width, int window_height)
 
 	// Initialize renderer w/ default shader
 	m_context = std::make_shared<APE::Render::Context>(
-		window_title, window_width, window_height, SDL_WINDOW_RESIZABLE);
-
-	m_renderer = std::make_unique<APE::Render::Renderer>(
-		m_context, 
-		m_main_camera.get()
+		window_title, window_width, window_height, SDL_WINDOW_RESIZABLE
 	);
 
 	// Initialize main cam
 	m_main_camera = std::make_unique<APE::Render::Camera>();
+
+	// Create Renderer
+	m_renderer = std::make_unique<APE::Render::Renderer>(
+		m_context, 
+		m_main_camera.get()
+	);
 }
 
 void pollEvents()
@@ -50,7 +53,7 @@ void pollEvents()
 				m_app->onMouseUp(event.button);
 				break;
 			case SDL_EVENT_MOUSE_MOTION:
-				m_app->onMouseMove(event.motion.x, event.motion.y);
+				m_app->onMouseMove(event.motion);
 				break;
 		}
 	}
@@ -96,8 +99,8 @@ void run()
 }
 
 std::unique_ptr<APE::Render::Shader> createShader(
-	const APE::Render::ShaderDescription& shader_desc)
-{
+	const APE::Render::ShaderDescription& shader_desc
+) {
 	return m_renderer->createShader(shader_desc);
 }
 
@@ -107,7 +110,8 @@ void useShader(std::shared_ptr<APE::Render::Shader> shader)
 	m_renderer->useShader(shader.get());
 }
 
-APE::Render::Camera* getMainCamera() {
+APE::Render::Camera* getMainCamera() 
+{
 	return m_main_camera.get();
 }
 

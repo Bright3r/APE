@@ -1,10 +1,4 @@
 
-cbuffer CameraBuffer : register(b0)
-{
-	float4x4 uView;
-	float4x4 uProj;
-};
-
 struct Input
 {
 	float3 Position : TEXCOORD0;
@@ -22,8 +16,7 @@ Output main(Input input)
 	Output output;
 	output.Color = input.Color;
 
-	float4 worldPosition = float4(input.Position, 1.0f);
-	output.Position = mul(mul(worldPosition, uView), uProj);
+	output.Position = float4(input.Position, 1.0f);
 
 	return output;
 }

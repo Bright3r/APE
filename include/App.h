@@ -17,7 +17,7 @@ public:
 	void onKeyUp(SDL_KeyboardEvent key);
 	void onMouseDown(SDL_MouseButtonEvent mButton);
 	void onMouseUp(SDL_MouseButtonEvent mButton);
-	void onMouseMove(float x, float y);
+	void onMouseMove(SDL_MouseMotionEvent mEvent);
 
 private:
 	// App Data

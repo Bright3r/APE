@@ -30,8 +30,10 @@ struct Shader {
 	Shader(Shader&& other);
 	Shader& operator=(Shader&& other);
 
-	SDL_GPUShader* loadShader(const ShaderDescription& shader_desc, 
-			   SDL_GPUShaderStage stage);
+	SDL_GPUShader* loadShader(
+		const ShaderDescription& shader_desc, 
+		SDL_GPUShaderStage stage
+	);
 };
 
 };	// end of namespace Render

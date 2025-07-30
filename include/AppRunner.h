@@ -29,28 +29,41 @@ namespace AppRunner {
 	static APE::Timing::millis m_last_frame_time;
 
 
+
 	// Main Functions
 	//
 	void init(std::string_view window_title, int window_width, int window_height);
+
 	void pollEvents();
+
 	void stepGameloop();
+
 	void run();
 
 	// Graphics Functions
 	std::unique_ptr<APE::Render::Shader> createShader(
 		const APE::Render::ShaderDescription& shader_desc
 	);
+
 	void useShader(std::shared_ptr<APE::Render::Shader> shader);
+
 	APE::Render::Camera* getMainCamera();
+
 
 
 	// Utility Functions
 	//
 	bool quit();
+
 	void setQuit(bool quit);
+
 	int framerate();
+
 	void setFramerate(int fps);
+
 	APE::Timing::seconds lastFrameTimeSec();
+
 	APE::Timing::millis lastFrameTimeMS();
 
 };	// end of namespace AppRunner
+

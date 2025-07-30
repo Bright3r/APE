@@ -5,7 +5,6 @@
 #include <SDL3/SDL_stdinc.h>
 
 #include <iostream>
-#include <string_view>
 
 namespace APE {
 namespace Render {

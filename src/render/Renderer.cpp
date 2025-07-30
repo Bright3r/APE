@@ -3,6 +3,7 @@
 #include <SDL3/SDL_gpu.h>
 #include <cassert>
 #include <functional>
+#include <glm/fwd.hpp>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -19,9 +20,13 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	, wireframe_mode(false) 
 	, clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 {
+	if (!cam) {
+		std::cerr << "Renderer() Failed: cam must not be null";
+		return;
+	}
+
 	// Construct default shader
 	std::unique_ptr<Shader> shader = createShader(default_shader_desc);
-
 	useShader(shader.get());
 
 	useVertexData(vertex_data);
@@ -36,6 +41,11 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 	, wireframe_mode(false) 
 	, clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 {
+	if (!cam) {
+		std::cerr << "Renderer() Failed: cam must not be null";
+		return;
+	}
+
 	useShader(shader);
 
 	useVertexData(vertex_data);
@@ -159,7 +169,7 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 			<< SDL_GetError() << std::endl;
 		return;
 	}
-	
+
 	SDL_GPUTexture *swapchain_texture;
 	if (!SDL_WaitAndAcquireGPUSwapchainTexture(
 		cmd_buffer, context->window, &swapchain_texture, NULL, NULL
@@ -193,6 +203,24 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 		}
 
 		SDL_BindGPUGraphicsPipeline(render_pass, render_pipeline);
+
+		/* Push Uniform Buffers */
+		// Bind camera uniform
+		glm::mat4 model = glm::translate(
+			glm::mat4(1.0f), 
+			glm::vec3(0.f, 0.f, 0.0f)
+		);
+		ModelViewProjUniform mvp_uniform { 
+			glm::transpose(model),		
+			glm::transpose(cam->getViewMatrix()), 
+			glm::transpose(cam->getProjectionMatrix(getAspectRatio()))
+		};
+		SDL_PushGPUVertexUniformData(
+			cmd_buffer,
+			0,
+			&mvp_uniform,
+			sizeof(mvp_uniform)
+		);
 
 		// Bind vertex buffers
 		SDL_GPUBufferBinding buffer_binding = {

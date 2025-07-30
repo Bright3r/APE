@@ -19,18 +19,19 @@ struct PositionColorVertex {
 	Uint8 r, g, b, a;
 };
 
-struct CameraUniform {
+struct ModelViewProjUniform {
+	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
 };
 
 static const ShaderDescription default_shader_desc {
-	"res/shaders/PositionColor.vert.spv",
-	"res/shaders/SolidColor.frag.spv",
-	0, 
-	0, 
-	0, 
-	0
+	.vert_shader_filepath = "res/shaders/PositionColorUniform.vert.spv",
+	.frag_shader_filepath = "res/shaders/SolidColor.frag.spv",
+	.num_samplers = 0, 
+	.num_uniform_buffers = 1, 
+	.num_storage_buffers = 0, 
+	.num_storage_textures = 0,
 };
 
 struct Renderer {
@@ -69,62 +70,61 @@ private:
 	// 	{     1,    -1, 0,   0, 255,   0, 255 },
 	// 	{     0,     1, 0,   0,   0, 255, 255 }
 	// };
-	
 
 	std::vector<PositionColorVertex> vertex_data = {
-		// Front face (z = +0.2)
-		{ -0.2, -.2,  .2, 255,   0,   0, 255 }, // Bottom-left
-		{  0.2, -.2,  .2,   0, 255,   0, 255 }, // Bottom-right
-		{  0.2,  .2,  .2,   0,   0, 255, 255 }, // Top-right
+		// Front face (z = +0.5)
+		{ -0.5, -0.5,  0.5, 255,   0,   0, 255 }, // Bottom-left
+		{  0.5, -0.5,  0.5,   0, 255,   0, 255 }, // Bottom-right
+		{  0.5,  0.5,  0.5,   0,   0, 255, 255 }, // Top-right
 
-		{ -0.2, -.2,  .2, 255,   0,   0, 255 }, // Bottom-left
-		{  0.2,  .2,  .2,   0,   0, 255, 255 }, // Top-right
-		{ -0.2,  .2,  .2, 255, 255,   0, 255 }, // Top-left
+		{ -0.5, -0.5,  0.5, 255,   0,   0, 255 }, // Bottom-left
+		{  0.5,  0.5,  0.5,   0,   0, 255, 255 }, // Top-right
+		{ -0.5,  0.5,  0.5, 255, 255,   0, 255 }, // Top-left
 
-		// Back face (z = -0.2)
-		{  0.2, -.2, -.2, 255,   0, 255, 255 }, // Bottom-right
-		{ -0.2, -.2, -.2,   0, 255, 255, 255 }, // Bottom-left
-		{ -0.2,  .2, -.2, 255, 255, 255, 255 }, // Top-left
+		// Back face (z = -0.5)
+		{  0.5, -0.5, -0.5, 255,   0, 255, 255 }, // Bottom-right
+		{ -0.5, -0.5, -0.5,   0, 255, 255, 255 }, // Bottom-left
+		{ -0.5,  0.5, -0.5, 255, 255, 255, 255 }, // Top-left
 
-		{  0.2, -.2, -.2, 255,   0, 255, 255 }, // Bottom-right
-		{ -0.2,  .2, -.2, 255, 255, 255, 255 }, // Top-left
-		{  0.2,  .2, -.2,   0,   0,   0, 255 }, // Top-right
+		{  0.5, -0.5, -0.5, 255,   0, 255, 255 }, // Bottom-right
+		{ -0.5,  0.5, -0.5, 255, 255, 255, 255 }, // Top-left
+		{  0.5,  0.5, -0.5,   0,   0,   0, 255 }, // Top-right
 
-		// Left face (x = -0.2)
-		{ -0.2, -.2, -.2,   0, 255, 255, 255 }, // Bottom-back
-		{ -0.2, -.2,  .2, 255,   0,   0, 255 }, // Bottom-front
-		{ -0.2,  .2,  .2, 255, 255,   0, 255 }, // Top-front
+		// Left face (x = -0.5)
+		{ -0.5, -0.5, -0.5,   0, 255, 255, 255 }, // Bottom-back
+		{ -0.5, -0.5,  0.5, 255,   0,   0, 255 }, // Bottom-front
+		{ -0.5,  0.5,  0.5, 255, 255,   0, 255 }, // Top-front
 
-		{ -0.2, -.2, -.2,   0, 255, 255, 255 }, // Bottom-back
-		{ -0.2,  .2,  .2, 255, 255,   0, 255 }, // Top-front
-		{ -0.2,  .2, -.2, 255, 255, 255, 255 }, // Top-back
+		{ -0.5, -0.5, -0.5,   0, 255, 255, 255 }, // Bottom-back
+		{ -0.5,  0.5,  0.5, 255, 255,   0, 255 }, // Top-front
+		{ -0.5,  0.5, -0.5, 255, 255, 255, 255 }, // Top-back
 
-		// Right face (x = +0.2)
-		{  0.2, -.2,  .2,   0, 255,   0, 255 }, // Bottom-front
-		{  0.2, -.2, -.2, 255,   0, 255, 255 }, // Bottom-back
-		{  0.2,  .2, -.2,   0,   0,   0, 255 }, // Top-back
+		// Right face (x = +0.5)
+		{  0.5, -0.5,  0.5,   0, 255,   0, 255 }, // Bottom-front
+		{  0.5, -0.5, -0.5, 255,   0, 255, 255 }, // Bottom-back
+		{  0.5,  0.5, -0.5,   0,   0,   0, 255 }, // Top-back
 
-		{  0.2, -.2,  .2,   0, 255,   0, 255 }, // Bottom-front
-		{  0.2,  .2, -.2,   0,   0,   0, 255 }, // Top-back
-		{  0.2,  .2,  .2,   0,   0, 255, 255 }, // Top-front
+		{  0.5, -0.5,  0.5,   0, 255,   0, 255 }, // Bottom-front
+		{  0.5,  0.5, -0.5,   0,   0,   0, 255 }, // Top-back
+		{  0.5,  0.5,  0.5,   0,   0, 255, 255 }, // Top-front
 
-		// Top face (y = +0.2)
-		{ -0.2,  .2,  .2, 255, 255,   0, 255 }, // Front-left
-		{  0.2,  .2,  .2,   0,   0, 255, 255 }, // Front-right
-		{  0.2,  .2, -.2,   0,   0,   0, 255 }, // Back-right
+		// Top face (y = +0.5)
+		{ -0.5,  0.5,  0.5, 255, 255,   0, 255 }, // Front-left
+		{  0.5,  0.5,  0.5,   0,   0, 255, 255 }, // Front-right
+		{  0.5,  0.5, -0.5,   0,   0,   0, 255 }, // Back-right
 
-		{ -0.2,  .2,  .2, 255, 255,   0, 255 }, // Front-left
-		{  0.2,  .2, -.2,   0,   0,   0, 255 }, // Back-right
-		{ -0.2,  .2, -.2, 255, 255, 255, 255 }, // Back-left
+		{ -0.5,  0.5,  0.5, 255, 255,   0, 255 }, // Front-left
+		{  0.5,  0.5, -0.5,   0,   0,   0, 255 }, // Back-right
+		{ -0.5,  0.5, -0.5, 255, 255, 255, 255 }, // Back-left
 
-		// Bottom face (y = -0.2)
-		{ -0.2, -.2, -.2,   0, 255, 255, 255 }, // Back-left
-		{  0.2, -.2, -.2, 255,   0, 255, 255 }, // Back-right
-		{  0.2, -.2,  .2,   0, 255,   0, 255 }, // Front-right
+		// Bottom face (y = -0.5)
+		{ -0.5, -0.5, -0.5,   0, 255, 255, 255 }, // Back-left
+		{  0.5, -0.5, -0.5, 255,   0, 255, 255 }, // Back-right
+		{  0.5, -0.5,  0.5,   0, 255,   0, 255 }, // Front-right
 
-		{ -0.2, -.2, -.2,   0, 255, 255, 255 }, // Back-left
-		{  0.2, -.2,  .2,   0, 255,   0, 255 }, // Front-right
-		{ -0.2, -.2,  .2, 255,   0,   0, 255 }, // Front-left
+		{ -0.5, -0.5, -0.5,   0, 255, 255, 255 }, // Back-left
+		{  0.5, -0.5,  0.5,   0, 255,   0, 255 }, // Front-right
+		{ -0.5, -0.5,  0.5, 255,   0,   0, 255 }, // Front-left
 	};
 
 	template <typename T>

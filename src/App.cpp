@@ -1,16 +1,19 @@
 #include "App.h"
 #include "AppRunner.h"
 
-#include <iostream>
+#include <glm/fwd.hpp>
 
 void App::setup() {
 
 }
 
 void App::update() {
-	std::cout << "Last Frame Time: " 
-		<< AppRunner::lastFrameTimeMS().count() 
-		<< std::endl;
+	// std::cout << "Last Frame Time: " 
+	// 	<< AppRunner::lastFrameTimeMS().count() 
+	// 	<< std::endl;
+	
+	APE::Render::Camera* cam = AppRunner::getMainCamera();
+	cam->print();
 }
 
 void App::draw(SDL_GPURenderPass *render_pass) {
@@ -20,7 +23,7 @@ void App::draw(SDL_GPURenderPass *render_pass) {
 void App::onKeyDown(SDL_KeyboardEvent key) {
 	APE::Render::Camera* cam = AppRunner::getMainCamera();
 	float speed = 5.f;
-	float dt = AppRunner::lastFrameTimeMS().count();
+	float dt = AppRunner::lastFrameTimeSec().count();
 
 	switch (key.key) {
 		case SDLK_Q:
@@ -56,7 +59,8 @@ void App::onMouseUp(SDL_MouseButtonEvent mButton) {
 
 }
 
-void App::onMouseMove(float x, float y) {
-
+void App::onMouseMove(SDL_MouseMotionEvent mEvent) {
+	APE::Render::Camera* cam = AppRunner::getMainCamera();
+	cam->rotate(mEvent.xrel, mEvent.yrel);
 }
 
