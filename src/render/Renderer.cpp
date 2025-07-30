@@ -5,46 +5,39 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <vector>
 
 namespace APE {
 namespace Render {
 
-Renderer::Renderer(std::shared_ptr<Context> context)
-	: context(context),
-	fill_pipeline(nullptr),
-	line_pipeline(nullptr),
-	vertex_buffer(nullptr),
-	wireframe_mode(false), 
-	clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
+Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
+	: context(context)
+	, cam(cam)
+	, fill_pipeline(nullptr)
+	, line_pipeline(nullptr)
+	, vertex_buffer(nullptr)
+	, wireframe_mode(false) 
+	, clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 {
 	// Construct default shader
 	std::unique_ptr<Shader> shader = createShader(default_shader_desc);
 
 	useShader(shader.get());
 
-	std::vector<PositionColorVertex> vertex_data = {
-		{    -1,    -1, 0, 255,   0,   0, 255 },
-		{     1,    -1, 0,   0, 255,   0, 255 },
-		{     0,     1, 0,   0,   0, 255, 255 }
-	};
 	useVertexData(vertex_data);
 }
 
-Renderer::Renderer(std::shared_ptr<Context> context, Shader* shader)
-	: context(context), 
-	fill_pipeline(nullptr),
-	line_pipeline(nullptr),
-	vertex_buffer(nullptr),
-	wireframe_mode(false), 
-	clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
+Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader)
+	: context(context)
+	, cam(cam)
+	, fill_pipeline(nullptr)
+	, line_pipeline(nullptr)
+	, vertex_buffer(nullptr)
+	, wireframe_mode(false) 
+	, clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 {
 	useShader(shader);
 
-	std::vector<PositionColorVertex> vertex_data = {
-		{    -1,    -1, 0, 255,   0,   0, 255 },
-		{     1,    -1, 0,   0, 255,   0, 255 },
-		{     0,     1, 0,   0,   0, 255, 255 }
-	};
 	useVertexData(vertex_data);
 }
 
@@ -145,75 +138,15 @@ void Renderer::useShader(Shader* shader) {
 
 void Renderer::useVertexData(std::vector<PositionColorVertex> vertex_data)
 {
-	// Create a vertex buffer
-	Uint32 buffer_size = static_cast<Uint32>(
-			sizeof(PositionColorVertex) * vertex_data.size()
+	vertex_buffer = uploadBuffer<PositionColorVertex>(
+		vertex_data, 
+		SDL_GPU_BUFFERUSAGE_VERTEX
 	);
+}
 
-	SDL_GPUBufferCreateInfo buffer_create_info = {
-		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,
-		.size = buffer_size,
-	};
-
-	vertex_buffer = SDL_CreateGPUBuffer(
-		context->device,
-		&buffer_create_info
-	);
-
-	// Create a transfer buffer
-	SDL_GPUTransferBufferCreateInfo transfer_buffer_create_info = {
-		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-		.size = buffer_size,
-	};
-
-	SDL_GPUTransferBuffer *transfer_buffer = SDL_CreateGPUTransferBuffer(
-		context->device,
-		&transfer_buffer_create_info
-	);
-
-	PositionColorVertex *transfer_data = static_cast<PositionColorVertex*>(
-		SDL_MapGPUTransferBuffer(
-			context->device,
-			transfer_buffer,
-			false
-		)
-   	);
-
-	// Use transfer buffer to submit data to vertex buffer
-	for (int i = 0; i < vertex_data.size(); ++i) {
-		transfer_data[i] = vertex_data[i];
-	}
-
-	SDL_UnmapGPUTransferBuffer(context->device, transfer_buffer);
-
-	// Upload transfer data to vertex buffer
-	SDL_GPUCommandBuffer *upload_cmd_buffer = SDL_AcquireGPUCommandBuffer(
-		context->device
-	);
-	SDL_GPUCopyPass *copy_pass = SDL_BeginGPUCopyPass(upload_cmd_buffer);
-
-	SDL_GPUTransferBufferLocation transfer_buffer_loc = {
-		.transfer_buffer = transfer_buffer,
-		.offset = 0,
-	};
-
-	SDL_GPUBufferRegion buffer_region = {
-		.buffer = vertex_buffer,
-		.offset = 0,
-		.size = buffer_size,
-	};
-
-	SDL_UploadToGPUBuffer(
-		copy_pass,
-		&transfer_buffer_loc,
-		&buffer_region,
-		false
-	);
-
-	// Clean up resources
-	SDL_EndGPUCopyPass(copy_pass);
-	SDL_SubmitGPUCommandBuffer(upload_cmd_buffer);
-	SDL_ReleaseGPUTransferBuffer(context->device, transfer_buffer);
+float Renderer::getAspectRatio() const
+{
+	return context->window_width / static_cast<float>(context->window_height);
 }
 
 void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
@@ -261,7 +194,7 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 
 		SDL_BindGPUGraphicsPipeline(render_pass, render_pipeline);
 
-		// draw_scene(render_pass);
+		// Bind vertex buffers
 		SDL_GPUBufferBinding buffer_binding = {
 			.buffer = vertex_buffer,
 			.offset = 0,
@@ -272,8 +205,11 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 			&buffer_binding,
 			1
 		);
-		SDL_DrawGPUPrimitives(render_pass, 3, 1, 0, 0);
 
+		// Draw Scene
+		SDL_DrawGPUPrimitives(render_pass, vertex_data.size(), 1, 0, 0);
+
+		// Cleanup
 		SDL_EndGPURenderPass(render_pass);
 	}
 

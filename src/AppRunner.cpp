@@ -20,7 +20,13 @@ void init(std::string_view window_title, int window_width, int window_height)
 	m_context = std::make_shared<APE::Render::Context>(
 		window_title, window_width, window_height, SDL_WINDOW_RESIZABLE);
 
-	m_renderer = std::make_unique<APE::Render::Renderer>(m_context);
+	m_renderer = std::make_unique<APE::Render::Renderer>(
+		m_context, 
+		m_main_camera.get()
+	);
+
+	// Initialize main cam
+	m_main_camera = std::make_unique<APE::Render::Camera>();
 }
 
 void pollEvents()
@@ -95,10 +101,14 @@ std::unique_ptr<APE::Render::Shader> createShader(
 	return m_renderer->createShader(shader_desc);
 }
 
-void setShader(std::shared_ptr<APE::Render::Shader> shader)
+void useShader(std::shared_ptr<APE::Render::Shader> shader)
 {
 	m_shader = shader;
 	m_renderer->useShader(shader.get());
+}
+
+APE::Render::Camera* getMainCamera() {
+	return m_main_camera.get();
 }
 
 bool quit() 
@@ -120,7 +130,6 @@ void setFramerate(int fps)
 {
 	m_framerate = fps;
 }
-
 
 APE::Timing::seconds lastFrameTimeSec() 
 {

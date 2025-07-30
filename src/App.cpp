@@ -18,8 +18,30 @@ void App::draw(SDL_GPURenderPass *render_pass) {
 }
 
 void App::onKeyDown(SDL_KeyboardEvent key) {
-	if (key.key == SDLK_Q)
-		AppRunner::setQuit(true);
+	APE::Render::Camera* cam = AppRunner::getMainCamera();
+	float speed = 5.f;
+	float dt = AppRunner::lastFrameTimeMS().count();
+
+	switch (key.key) {
+		case SDLK_Q:
+			AppRunner::setQuit(true);
+			break;
+		case SDLK_W:
+			cam->moveForward(speed, dt);
+			break;
+		case SDLK_S:
+			cam->moveForward(-speed, dt);
+			break;
+		case SDLK_A:
+			cam->moveRight(-speed, dt);
+			break;
+		case SDLK_D:
+			cam->moveRight(speed, dt);
+			break;
+		case SDLK_SPACE:
+			cam->moveUp(speed, dt);
+			break;
+	}
 }
 
 void App::onKeyUp(SDL_KeyboardEvent key) {

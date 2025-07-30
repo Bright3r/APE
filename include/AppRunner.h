@@ -1,6 +1,7 @@
 #pragma once
 
 #include "App.h"
+#include "render/Camera.h"
 #include "render/Context.h"
 #include "render/Renderer.h"
 #include "render/Shader.h"
@@ -15,10 +16,13 @@ namespace AppRunner {
 	// Application State
 	//
 	static std::unique_ptr<App> m_app;
+
 	// Rendering
 	static std::shared_ptr<APE::Render::Context> m_context;
 	static std::shared_ptr<APE::Render::Shader> m_shader;
 	static std::unique_ptr<APE::Render::Renderer> m_renderer;
+	static std::unique_ptr<APE::Render::Camera> m_main_camera;
+
 	// Timing
 	static bool m_quit;
 	static int m_framerate;
@@ -32,11 +36,12 @@ namespace AppRunner {
 	void stepGameloop();
 	void run();
 
-	// Grpahics Functions
+	// Graphics Functions
 	std::unique_ptr<APE::Render::Shader> createShader(
 		const APE::Render::ShaderDescription& shader_desc
 	);
 	void useShader(std::shared_ptr<APE::Render::Shader> shader);
+	APE::Render::Camera* getMainCamera();
 
 
 	// Utility Functions
@@ -47,4 +52,5 @@ namespace AppRunner {
 	void setFramerate(int fps);
 	APE::Timing::seconds lastFrameTimeSec();
 	APE::Timing::millis lastFrameTimeMS();
-};
+
+};	// end of namespace AppRunner
