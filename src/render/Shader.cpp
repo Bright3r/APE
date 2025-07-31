@@ -1,10 +1,9 @@
 #include "render/Shader.h"
+#include "util/Logger.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_stdinc.h>
-
-#include <iostream>
 
 namespace APE {
 namespace Render {
@@ -65,8 +64,10 @@ SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc,
 		shader_desc.frag_shader_filepath;
 	void *code = SDL_LoadFile(filepath.c_str(), &code_size);
 	if (!code) {
-		std::cerr << "Failed to load shader code from " 
-			<< filepath << ": " << SDL_GetError() << "\n";
+		APE_ERROR("Failed to load shader code from {} - {}", 
+	    		filepath, 
+	    		SDL_GetError()
+	   	);
 		return nullptr;
 	}
 
@@ -88,8 +89,11 @@ SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc,
 		entrypoint = "main";
 	}
 	else {
-		std::cerr << "Failed to detect shader format in " 
-			<< filepath << " : " << SDL_GetError() << "\n";
+		APE_ERROR(
+			"Failed to detect shader format from {} - {}",
+			filepath,
+			SDL_GetError()
+		);
 
 		return nullptr;
 	}
@@ -108,8 +112,11 @@ SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc,
 
 	SDL_GPUShader *shader = SDL_CreateGPUShader(m_device, &shaderInfo);
 	if (!shader) {
-		std::cerr << "SDL_CreateGPUShader Failed: " << 
-			SDL_GetError() << "\n";
+		APE_FATAL(
+			"SDL_CreateGPUShader Failed - {}",
+			SDL_GetError()
+		);
+
 		SDL_free(code);
 		return nullptr;
 	}

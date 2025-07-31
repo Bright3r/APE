@@ -1,8 +1,9 @@
 #include "render/Context.h"
+#include "util/Logger.h"
+
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
-#include <iostream>
 
 namespace APE {
 namespace Render {
@@ -17,7 +18,10 @@ Context::Context(std::string_view title,
 	window_flags(window_flags)
 {
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
-		std::cerr << "SDL_Init Failed: " << SDL_GetError() << "\n";
+		APE_FATAL(
+			"SDL_Init Failed - {}",
+			SDL_GetError()
+		);
 		return;
 	}
 
@@ -29,20 +33,28 @@ Context::Context(std::string_view title,
 		NULL
 	);
 	if (!device) {
-		std::cerr << "SDL_CreateGPUDevice Failed: " << SDL_GetError() << "\n";
+		APE_FATAL(
+			"SDL_CreateGPUDevice Failed - {}",
+			SDL_GetError()
+		);
 		return;
 	}
 
 	window = SDL_CreateWindow(this->title.c_str(), window_width, window_height, 
 			   window_flags);
 	if (!window) {
-		std::cerr << "SDL_CreateWindow Failed: " << SDL_GetError() << "\n";
+		APE_FATAL(
+			"SDL_CreateWindow Failed - {}",
+			SDL_GetError()
+		);
 		return;
 	}
 
 	if (!SDL_ClaimWindowForGPUDevice(device, window)) {
-		std::cerr << "SDL_ClaimWindowForGPUDevice Failed: " << 
-			SDL_GetError() << "\n";
+		APE_FATAL(
+			"SDL_ClaimWindowForGPUDevice Failed - {}",
+			SDL_GetError()
+		);
 		return;
 	}
 }

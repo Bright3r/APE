@@ -1,10 +1,10 @@
 #include "render/Renderer.h"
 #include "render/Shader.h"
+#include "util/Logger.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <functional>
 #include <glm/fwd.hpp>
-#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -21,7 +21,10 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 {
 	if (!cam) {
-		std::cerr << "Renderer() Failed: cam must not be null";
+		APE_FATAL(
+			"Renderer::Renderer(std::shared_ptr<Context> context, \
+			Camera *cam) Failed: cam == nullptr"
+		);
 		return;
 	}
 
@@ -42,7 +45,10 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 {
 	if (!cam) {
-		std::cerr << "Renderer() Failed: cam must not be null";
+		APE_FATAL(
+			"Renderer::Renderer(std::shared_ptr<Context> context, \
+			Camera *cam, Shader* shader) Failed: cam == nullptr"
+		);
 		return;
 	}
 
@@ -70,7 +76,9 @@ std::unique_ptr<Shader> Renderer::createShader(ShaderDescription shader_desc) co
 
 void Renderer::useShader(Shader* shader) {
 	if (!shader) {
-		std::cerr << "useShader Failed: Cannot apply null shader\n";
+		APE_ERROR(
+			"Renderer::useShader Failed: shader == nullptr"
+		);
 		return;
 	}
 
@@ -131,8 +139,10 @@ void Renderer::useShader(Shader* shader) {
 	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
 	m_fill_pipeline = SDL_CreateGPUGraphicsPipeline(m_context->device, &pipelineCreateInfo);
 	if (!m_fill_pipeline) {
-		std::cerr << "SDL_CreateGPUGraphicsPipeline Failed \
-			for fill_pipeline: " << SDL_GetError() << std::endl;
+		APE_FATAL(
+			"SDL_CreateGPUGraphicsPipeline Failed on fill_pipeline - {}",
+			SDL_GetError()
+		);
 		return;
 	}
 
@@ -140,8 +150,10 @@ void Renderer::useShader(Shader* shader) {
 	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_LINE;
 	m_line_pipeline = SDL_CreateGPUGraphicsPipeline(m_context->device, &pipelineCreateInfo);
 	if (!m_line_pipeline) {
-		std::cerr << "SDL_CreateGPUGraphicsPipeline Failed \
-			for line_pipeline: " << SDL_GetError() << std::endl;
+		APE_FATAL(
+			"SDL_CreateGPUGraphicsPipeline Failed on line_pipeline - {}",
+			SDL_GetError()
+		);
 		return;
 	}
 }
@@ -165,8 +177,10 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 		m_context->device
 	);
 	if (!cmd_buffer) {
-		std::cerr << "SDL_AcquireGPUCommandBuffer Failed: "
-			<< SDL_GetError() << std::endl;
+		APE_ERROR(
+			"SDL_AcquiredGPUCommandBuffer Failed - {}",
+			SDL_GetError()
+		);
 		return;
 	}
 
@@ -174,8 +188,10 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 	if (!SDL_WaitAndAcquireGPUSwapchainTexture(
 		cmd_buffer, m_context->window, &swapchain_texture, NULL, NULL
 	)) {
-		std::cerr << "SDL_WaitAndAcquireGPUSwapchainTexture Failed: "
-			<< SDL_GetError() << std::endl;
+		APE_ERROR(
+			"SDL_WaitAndAcquireGPUSwapchainTexture Failed - {}",
+			SDL_GetError()
+		);
 		return;
 	}
 
@@ -197,8 +213,9 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 		SDL_GPUGraphicsPipeline *render_pipeline = 
 			m_wireframe_mode ? m_line_pipeline : m_fill_pipeline;
 		if (!render_pipeline) {
-			std::cerr << "No render pipeline available in draw()." 
-				<< "\n";
+			APE_FATAL(
+				"Renderer::draw Failed: render_pipeline == nullptr"
+			);
 			return;
 		}
 

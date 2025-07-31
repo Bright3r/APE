@@ -1,8 +1,8 @@
 #pragma once
 
+#include "util/Logger.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
 
 namespace APE {
 namespace Render {
@@ -118,15 +118,19 @@ public:
 	}
 
 	void print() {
-		std::cout << "Camera state:" << std::endl;
-		std::cout << "  Position: (" 
-		      << position.x << ", " 
-		      << position.y << ", " 
-		      << position.z << ")" << std::endl;
-		std::cout << "  Pitch: " << pitch << std::endl;
-		std::cout << "  Yaw: " << yaw << std::endl;
-		std::cout << "  FOV: " << fov << std::endl;
-		std::cout << "  Sensitivity: " << sensitivity << std::endl;
+		APE_TRACE(
+			"Camera state:\n"
+			"  Position: ({}, {}, {})\n"
+			"  Pitch: {}\n"
+			"  Yaw: {}\n"
+			"  FOV: {}\n"
+			"  Sensitivity: {}",
+			position.x, position.y, position.z,
+			pitch,
+			yaw,
+			fov,
+			sensitivity
+		);
 	}
 };
 

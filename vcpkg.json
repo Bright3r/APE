@@ -4,6 +4,11 @@
 		"name": "sdl3",
 		"features": [ "vulkan", "wayland" ]
 	},
-	"glm"
+	{
+		"name": "glm"
+	},
+	{
+		"name": "spdlog"
+	}
   ]
 }
