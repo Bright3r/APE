@@ -9,7 +9,9 @@ namespace APE {
 namespace Render {
 
 Shader::Shader(const ShaderDescription& shader_desc, SDL_GPUDevice *device)
-	: m_device(device)
+	: m_vert_shader(nullptr)
+	, m_frag_shader(nullptr)
+	, m_device(device)
 {
 	m_vert_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_VERTEX); 
 	m_frag_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_FRAGMENT);
@@ -22,9 +24,9 @@ Shader::~Shader()
 }
 
 Shader::Shader(Shader&& other)
-	: m_device(other.m_device), 
-	m_vert_shader(other.m_vert_shader), 
-	m_frag_shader(other.m_frag_shader)
+	: m_vert_shader(other.m_vert_shader)
+	, m_frag_shader(other.m_frag_shader)
+	, m_device(other.m_device)
 {
 	other.m_device = nullptr;
 	other.m_vert_shader = nullptr;
@@ -112,13 +114,10 @@ SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc,
 
 	SDL_GPUShader *shader = SDL_CreateGPUShader(m_device, &shaderInfo);
 	if (!shader) {
-		APE_FATAL(
+		APE_ABORT(
 			"SDL_CreateGPUShader Failed - {}",
 			SDL_GetError()
 		);
-
-		SDL_free(code);
-		return nullptr;
 	}
 
 	SDL_free(code);

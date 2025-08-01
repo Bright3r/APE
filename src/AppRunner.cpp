@@ -7,48 +7,48 @@
 
 // Application State
 //
-std::unique_ptr<App> AppRunner::m_app;
+std::unique_ptr<App> AppRunner::s_app {};
 
 // Rendering
 //
-std::shared_ptr<APE::Render::Context> AppRunner::m_context;
-std::shared_ptr<APE::Render::Shader> AppRunner::m_shader;
-std::unique_ptr<APE::Render::Renderer> AppRunner::m_renderer;
-std::unique_ptr<APE::Render::Camera> AppRunner::m_main_camera;
+std::shared_ptr<APE::Render::Context> AppRunner::s_context {};
+std::shared_ptr<APE::Render::Shader> AppRunner::s_shader {};
+std::unique_ptr<APE::Render::Renderer> AppRunner::s_renderer {};
+std::unique_ptr<APE::Render::Camera> AppRunner::s_main_camera {};
 
 // Timing
 //
-bool AppRunner::m_quit;
-int AppRunner::m_framerate;
-APE::Timing::millis AppRunner::m_last_frame_time;
+bool AppRunner::s_quit {};
+int AppRunner::s_framerate {};
+APE::Timing::millis AppRunner::s_last_frame_time {};
 
 
 
 void AppRunner::init(
 	std::string_view window_title,
 	int window_width,
-	int window_height
-) {
+	int window_height) 
+{
 	// Initialize w/ default app settings
-	m_quit = false;
-	m_framerate = 60.f;
-	m_last_frame_time = std::chrono::milliseconds(0);
+	s_quit = false;
+	s_framerate = 60.f;
+	s_last_frame_time = std::chrono::milliseconds(0);
 
 	// Create user-defined app
-	m_app = std::make_unique<App>();
+	s_app = std::make_unique<App>();
 
 	// Initialize renderer w/ default shader
-	m_context = std::make_shared<APE::Render::Context>(
+	s_context = std::make_shared<APE::Render::Context>(
 		window_title, window_width, window_height, SDL_WINDOW_RESIZABLE
 	);
 
 	// Initialize main cam
-	m_main_camera = std::make_unique<APE::Render::Camera>();
+	s_main_camera = std::make_unique<APE::Render::Camera>();
 
 	// Create Renderer
-	m_renderer = std::make_unique<APE::Render::Renderer>(
-		m_context, 
-		m_main_camera.get()
+	s_renderer = std::make_unique<APE::Render::Renderer>(
+		s_context, 
+		s_main_camera.get()
 	);
 }
 
@@ -61,19 +61,19 @@ void AppRunner::pollEvents()
 				setQuit(true);
 				break;
 			case SDL_EVENT_KEY_DOWN:
-				m_app->onKeyDown(event.key);
+				s_app->onKeyDown(event.key);
 				break;
 			case SDL_EVENT_KEY_UP:
-				m_app->onKeyUp(event.key);
+				s_app->onKeyUp(event.key);
 				break;
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
-				m_app->onMouseDown(event.button);
+				s_app->onMouseDown(event.button);
 				break;
 			case SDL_EVENT_MOUSE_BUTTON_UP:
-				m_app->onMouseUp(event.button);
+				s_app->onMouseUp(event.button);
 				break;
 			case SDL_EVENT_MOUSE_MOTION:
-				m_app->onMouseMove(event.motion);
+				s_app->onMouseMove(event.motion);
 				break;
 		}
 	}
@@ -85,21 +85,21 @@ void AppRunner::stepGameloop()
 	pollEvents();
 
 	// Update App Data
-	m_app->update();
+	s_app->update();
 
 	// Draw To Screen
-	m_renderer->draw([&](SDL_GPURenderPass *render_pass) {
-		m_app->draw(render_pass);
+	s_renderer->draw([&](SDL_GPURenderPass *render_pass) {
+		s_app->draw(render_pass);
 	});
 }
 
 void AppRunner::run() 
 {
 	// Initial Setup
-	m_app->setup();
+	s_app->setup();
 
 	// Game Loop
-	while (!m_quit) {
+	while (!s_quit) {
 		auto start = std::chrono::high_resolution_clock::now();
 
 		// Time the execution of gameloop iteration
@@ -109,59 +109,59 @@ void AppRunner::run()
 		}, loop_time_ms);
 
 		// Wait until the next frame time
-		APE::Timing::seconds target_frame_time { 1.0 / m_framerate };
+		APE::Timing::seconds target_frame_time { 1.0 / s_framerate };
 		APE::Timing::waitFor(target_frame_time - loop_time_ms);
 
 		// Track total time of frame
 		auto end = std::chrono::high_resolution_clock::now();
-		m_last_frame_time = end - start;
+		s_last_frame_time = end - start;
 	}
 }
 
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
-	const APE::Render::ShaderDescription& shader_desc
-) {
-	return m_renderer->createShader(shader_desc);
+	const APE::Render::ShaderDescription& shader_desc) 
+{
+	return s_renderer->createShader(shader_desc);
 }
 
 void AppRunner::useShader(std::shared_ptr<APE::Render::Shader> shader)
 {
-	m_shader = shader;
-	m_renderer->useShader(shader.get());
+	s_shader = shader;
+	s_renderer->useShader(shader.get());
 }
 
 APE::Render::Camera* AppRunner::getMainCamera() 
 {
-	return m_main_camera.get();
+	return s_main_camera.get();
 }
 
 bool AppRunner::getQuit() 
 {
-	return m_quit;
+	return s_quit;
 }
 
 void AppRunner::setQuit(bool quit) 
 {
-	m_quit = quit;
+	s_quit = quit;
 }
 
 int AppRunner::getFramerate() 
 {
-	return m_framerate;
+	return s_framerate;
 }
 
 void AppRunner::setFramerate(int fps) 
 {
-	m_framerate = fps;
+	s_framerate = fps;
 }
 
 APE::Timing::seconds AppRunner::getLastFrameTimeSec() 
 {
-	return std::chrono::duration_cast<APE::Timing::seconds>(m_last_frame_time);
+	return std::chrono::duration_cast<APE::Timing::seconds>(s_last_frame_time);
 }
 
 APE::Timing::millis AppRunner::getLastFrameTimeMS() 
 {
-	return std::chrono::duration_cast<APE::Timing::millis>(m_last_frame_time);
+	return std::chrono::duration_cast<APE::Timing::millis>(s_last_frame_time);
 }
 

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
+set(CMAKE_TOOLCHAIN_FILE "$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+
 project(ape)
 
 find_package(SDL3 CONFIG REQUIRED)
@@ -14,6 +16,15 @@ add_executable(ape
 	src/render/Context.cpp
 	src/render/Renderer.cpp
 )
+
+target_compile_options(ape PRIVATE
+    -fsanitize=address
+    -fanalyzer
+    -fno-omit-frame-pointer
+)
+target_link_options(ape PRIVATE -fsanitize=address)
+
+
 
 target_include_directories(ape PRIVATE ${CMAKE_SOURCE_DIR}/include)
 

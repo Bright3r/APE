@@ -16,20 +16,20 @@ class AppRunner {
 private:
 	// Application State
 	//
-	static std::unique_ptr<App> m_app;
+	static std::unique_ptr<App> s_app;
 
 	// Rendering
 	//
-	static std::shared_ptr<APE::Render::Context> m_context;
-	static std::shared_ptr<APE::Render::Shader> m_shader;
-	static std::unique_ptr<APE::Render::Renderer> m_renderer;
-	static std::unique_ptr<APE::Render::Camera> m_main_camera;
+	static std::shared_ptr<APE::Render::Context> s_context;
+	static std::shared_ptr<APE::Render::Shader> s_shader;
+	static std::unique_ptr<APE::Render::Renderer> s_renderer;
+	static std::unique_ptr<APE::Render::Camera> s_main_camera;
 
 	// Timing
 	//
-	static bool m_quit;
-	static int m_framerate;
-	static APE::Timing::millis m_last_frame_time;
+	static bool s_quit;
+	static int s_framerate;
+	static APE::Timing::millis s_last_frame_time;
 
 public:
 	// Main Functions

@@ -18,11 +18,10 @@ Context::Context(std::string_view title,
 	window_flags(window_flags)
 {
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
-		APE_FATAL(
+		APE_ABORT(
 			"SDL_Init Failed - {}",
 			SDL_GetError()
 		);
-		return;
 	}
 
 	device = SDL_CreateGPUDevice(
@@ -33,29 +32,26 @@ Context::Context(std::string_view title,
 		NULL
 	);
 	if (!device) {
-		APE_FATAL(
+		APE_ABORT(
 			"SDL_CreateGPUDevice Failed - {}",
 			SDL_GetError()
 		);
-		return;
 	}
 
 	window = SDL_CreateWindow(this->title.c_str(), window_width, window_height, 
 			   window_flags);
 	if (!window) {
-		APE_FATAL(
+		APE_ABORT(
 			"SDL_CreateWindow Failed - {}",
 			SDL_GetError()
 		);
-		return;
 	}
 
 	if (!SDL_ClaimWindowForGPUDevice(device, window)) {
-		APE_FATAL(
+		APE_ABORT(
 			"SDL_ClaimWindowForGPUDevice Failed - {}",
 			SDL_GetError()
 		);
-		return;
 	}
 }
 

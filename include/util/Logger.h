@@ -31,5 +31,9 @@ public:
 #define APE_WARN(...)     ::APE::Logger::getCoreLogger()->warn(__VA_ARGS__)
 #define APE_ERROR(...)    ::APE::Logger::getCoreLogger()->error(__VA_ARGS__)
 #define APE_FATAL(...)    ::APE::Logger::getCoreLogger()->critical(__VA_ARGS__)
+#define APE_ABORT(...) {	\
+	::APE::Logger::getCoreLogger()->critical(__VA_ARGS__);	\
+	std::abort();	\
+}
 
 };	// end of namespace APE
