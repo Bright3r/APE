@@ -21,12 +21,10 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
 {
-	if (!cam) {
-		APE_ABORT(
-			"Renderer::Renderer(std::shared_ptr<Context> context, \
-			Camera *cam) Failed: cam == nullptr"
-		);
-	}
+	APE_CHECK((cam != nullptr),
+		"Renderer::Renderer(std::shared_ptr<Context> context, \
+		Camera *cam) Failed: cam == nullptr"
+	);
 
 	// Construct default shader
 	std::unique_ptr<Shader> shader = createShader(default_shader_desc);
@@ -44,12 +42,10 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
 {
-	if (!cam) {
-		APE_ABORT(
-			"Renderer::Renderer(std::shared_ptr<Context> context, \
-			Camera *cam, Shader* shader) Failed: cam == nullptr"
-		);
-	}
+	APE_CHECK((cam != nullptr),
+		"Renderer::Renderer(std::shared_ptr<Context> context, \
+		Camera *cam, Shader* shader) Failed: cam == nullptr"
+	);
 
 	useShader(shader);
 
@@ -137,22 +133,18 @@ void Renderer::useShader(Shader* shader) {
 	// Create fill pipeline
 	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
 	m_fill_pipeline = SDL_CreateGPUGraphicsPipeline(m_context->device, &pipelineCreateInfo);
-	if (!m_fill_pipeline) {
-		APE_ABORT(
-			"SDL_CreateGPUGraphicsPipeline Failed on fill_pipeline - {}",
-			SDL_GetError()
-		);
-	}
+	APE_CHECK((m_fill_pipeline != nullptr),
+		"SDL_CreateGPUGraphicsPipeline Failed on fill_pipeline - {}",
+		SDL_GetError()
+	);
 
 	// Create wireframe pipeline
 	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_LINE;
 	m_line_pipeline = SDL_CreateGPUGraphicsPipeline(m_context->device, &pipelineCreateInfo);
-	if (!m_line_pipeline) {
-		APE_ABORT(
-			"SDL_CreateGPUGraphicsPipeline Failed on line_pipeline - {}",
-			SDL_GetError()
-		);
-	}
+	APE_CHECK((m_line_pipeline != nullptr),
+		"SDL_CreateGPUGraphicsPipeline Failed on line_pipeline - {}",
+		SDL_GetError()
+	);
 }
 
 void Renderer::useVertexData(std::vector<PositionColorVertex> vertex_data)
@@ -173,22 +165,19 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 	SDL_GPUCommandBuffer *cmd_buffer = SDL_AcquireGPUCommandBuffer(
 		m_context->device
 	);
-	if (!cmd_buffer) {
-		APE_ABORT(
-			"SDL_AcquiredGPUCommandBuffer Failed - {}",
-			SDL_GetError()
-		);
-	}
+	APE_CHECK((cmd_buffer != nullptr),
+		"SDL_AcquiredGPUCommandBuffer Failed - {}",
+		SDL_GetError()
+	);
 
 	SDL_GPUTexture *swapchain_texture;
-	if (!SDL_WaitAndAcquireGPUSwapchainTexture(
+	bool succ_acquire_swapchain = SDL_WaitAndAcquireGPUSwapchainTexture(
 		cmd_buffer, m_context->window, &swapchain_texture, NULL, NULL
-	)) {
-		APE_ABORT(
-			"SDL_WaitAndAcquireGPUSwapchainTexture Failed - {}",
-			SDL_GetError()
-		);
-	}
+	);
+	APE_CHECK(succ_acquire_swapchain,
+		"SDL_WaitAndAcquireGPUSwapchainTexture Failed - {}",
+		SDL_GetError()
+	);
 
 	if (swapchain_texture) {
 		SDL_GPUColorTargetInfo color_target_info = {
@@ -207,11 +196,9 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 
 		SDL_GPUGraphicsPipeline *render_pipeline = 
 			m_wireframe_mode ? m_line_pipeline : m_fill_pipeline;
-		if (!render_pipeline) {
-			APE_ABORT(
-				"Renderer::draw Failed: render_pipeline == nullptr"
-			);
-		}
+		APE_CHECK((render_pipeline != nullptr),
+			"Renderer::draw Failed: render_pipeline == nullptr"
+		);
 
 		SDL_BindGPUGraphicsPipeline(render_pass, render_pipeline);
 

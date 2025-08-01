@@ -19,7 +19,6 @@ add_executable(ape
 
 target_compile_options(ape PRIVATE
     -fsanitize=address
-    -fanalyzer
     -fno-omit-frame-pointer
 )
 target_link_options(ape PRIVATE -fsanitize=address)

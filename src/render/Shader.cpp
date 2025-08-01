@@ -113,12 +113,10 @@ SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc,
 	};
 
 	SDL_GPUShader *shader = SDL_CreateGPUShader(m_device, &shaderInfo);
-	if (!shader) {
-		APE_ABORT(
-			"SDL_CreateGPUShader Failed - {}",
-			SDL_GetError()
-		);
-	}
+	APE_CHECK((shader != nullptr),
+		"SDL_CreateGPUShader Failed - {}",
+		SDL_GetError()
+	);
 
 	SDL_free(code);
 	return shader;

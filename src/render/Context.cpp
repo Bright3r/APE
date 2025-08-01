@@ -17,12 +17,11 @@ Context::Context(std::string_view title,
 	window_height(window_height),
 	window_flags(window_flags)
 {
-	if (!SDL_Init(SDL_INIT_VIDEO)) {
-		APE_ABORT(
-			"SDL_Init Failed - {}",
-			SDL_GetError()
-		);
-	}
+	bool succ_init = SDL_Init(SDL_INIT_VIDEO);
+	APE_CHECK(succ_init,
+		"SDL_Init Failed - {}",
+		SDL_GetError()
+	);
 
 	device = SDL_CreateGPUDevice(
 		SDL_GPU_SHADERFORMAT_SPIRV
@@ -31,28 +30,23 @@ Context::Context(std::string_view title,
 		true,
 		NULL
 	);
-	if (!device) {
-		APE_ABORT(
-			"SDL_CreateGPUDevice Failed - {}",
-			SDL_GetError()
-		);
-	}
+	APE_CHECK((device != nullptr),
+		"SDL_CreateGPUDevice Failed - {}",
+		SDL_GetError()
+	);
 
 	window = SDL_CreateWindow(this->title.c_str(), window_width, window_height, 
 			   window_flags);
-	if (!window) {
-		APE_ABORT(
-			"SDL_CreateWindow Failed - {}",
-			SDL_GetError()
-		);
-	}
+	APE_CHECK((window != nullptr),
+		"SDL_CreateWindow Failed - {}",
+		SDL_GetError()
+	);
 
-	if (!SDL_ClaimWindowForGPUDevice(device, window)) {
-		APE_ABORT(
-			"SDL_ClaimWindowForGPUDevice Failed - {}",
-			SDL_GetError()
-		);
-	}
+	bool succ_claim_window = SDL_ClaimWindowForGPUDevice(device, window);
+	APE_CHECK(succ_claim_window,
+		"SDL_ClaimWindowForGPUDevice Failed - {}",
+		SDL_GetError()
+	);
 }
 
 Context::~Context()

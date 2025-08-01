@@ -35,5 +35,6 @@ public:
 	::APE::Logger::getCoreLogger()->critical(__VA_ARGS__);	\
 	std::abort();	\
 }
+#define APE_CHECK(boolVal, ...) if (!boolVal) APE_ABORT(__VA_ARGS__);
 
 };	// end of namespace APE
