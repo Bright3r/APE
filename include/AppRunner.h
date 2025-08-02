@@ -53,9 +53,7 @@ public:
 
 	static APE::Render::Camera* getMainCamera();
 
-	static void drawMesh(
-		APE::Render::Mesh& mesh, 
-		SDL_GPURenderPass* render_pass);
+	static void draw(APE::Render::Mesh& mesh);
 
 
 	// Utility Functions

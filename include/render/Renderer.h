@@ -7,7 +7,6 @@
 
 #include <SDL3/SDL_gpu.h>
 #include <cstring>
-#include <functional>
 #include <glm/fwd.hpp>
 #include <memory>
 #include <vector>
@@ -21,14 +20,6 @@ struct ModelViewProjUniform {
 	glm::mat4 proj;
 };
 
-static const ShaderDescription default_shader_desc {
-	.vert_shader_filepath = "res/shaders/PositionColorUniform.vert.spv",
-	.frag_shader_filepath = "res/shaders/SolidColor.frag.spv",
-	.num_samplers = 0, 
-	.num_uniform_buffers = 1, 
-	.num_storage_buffers = 0, 
-	.num_storage_textures = 0,
-};
 
 class Renderer {
 private:
@@ -40,7 +31,10 @@ private:
 	SDL_GPUGraphicsPipeline* m_line_pipeline;
 
 	Camera* m_cam;
-	std::vector<std::weak_ptr<Mesh>> m_scene;
+	SDL_GPURenderPass* m_render_pass;
+	SDL_GPUCommandBuffer* m_cmd_buf;
+	bool m_is_drawing;
+
 
 public:
 	// Special Member Functions
@@ -59,9 +53,11 @@ public:
 
 	float getAspectRatio() const;
 
-	void drawMesh(Mesh* mesh, SDL_GPURenderPass* render_pass);
+	void beginDrawing();
 
-	void draw(std::function<void(SDL_GPURenderPass*)> draw_scene);
+	void endDrawing();
+
+	void draw(Mesh* mesh);
 
 private:
 	template <typename T>

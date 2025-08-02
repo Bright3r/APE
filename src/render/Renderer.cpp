@@ -8,10 +8,12 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	: m_context(context)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
-	, m_cam(cam)
-	, m_scene({})
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
+	, m_cam(cam)
+	, m_render_pass(nullptr)
+	, m_cmd_buf(nullptr)
+	, m_is_drawing(false)
 {
 	APE_CHECK((cam != nullptr),
 		"Renderer::Renderer(std::shared_ptr<Context> context, \
@@ -19,7 +21,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	);
 
 	// Construct default shader
-	std::unique_ptr<Shader> shader = createShader(default_shader_desc);
+	std::unique_ptr<Shader> shader = std::make_unique<Shader>(context->device);
 	useShader(shader.get());
 }
 
@@ -27,10 +29,12 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 	: m_context(context)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
-	, m_cam(cam)
-	, m_scene({})
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
+	, m_cam(cam)
+	, m_render_pass(nullptr)
+	, m_cmd_buf(nullptr)
+	, m_is_drawing(false)
 {
 	APE_CHECK((cam != nullptr),
 		"Renderer::Renderer(std::shared_ptr<Context> context, \
@@ -137,8 +141,100 @@ float Renderer::getAspectRatio() const
 	return m_context->window_width / static_cast<float>(m_context->window_height);
 }
 
-void Renderer::drawMesh(Mesh* mesh, SDL_GPURenderPass* render_pass)
+void Renderer::beginDrawing()
 {
+	// Check that we are not already drawing
+	APE_CHECK(!m_is_drawing,
+	   "Renderer::beginDrawing() Failed: endDrawing() not called from \
+	   previous beginDrawing() call"
+	);
+	m_is_drawing = true;
+
+	// Acquire cmd buffer
+	SDL_GPUCommandBuffer *cmd_buffer = SDL_AcquireGPUCommandBuffer(
+		m_context->device
+	);
+	APE_CHECK((cmd_buffer != nullptr),
+		"SDL_AcquiredGPUCommandBuffer Failed - {}",
+		SDL_GetError()
+	);
+	m_cmd_buf = cmd_buffer;
+
+	// Acquire swapchain texture
+	SDL_GPUTexture *swapchain_texture;
+	bool succ_acquire_swapchain = SDL_WaitAndAcquireGPUSwapchainTexture(
+		cmd_buffer, m_context->window, &swapchain_texture, NULL, NULL
+	);
+	APE_CHECK(succ_acquire_swapchain,
+		"SDL_WaitAndAcquireGPUSwapchainTexture Failed - {}",
+		SDL_GetError()
+	);
+
+	// Setup render pass
+	SDL_GPUColorTargetInfo color_target_info = {
+		.texture = swapchain_texture,
+		.clear_color = m_clear_color,
+		.load_op = SDL_GPU_LOADOP_CLEAR,
+		.store_op = SDL_GPU_STOREOP_STORE,
+	};
+	SDL_GPURenderPass *render_pass = SDL_BeginGPURenderPass(
+		cmd_buffer, 
+		&color_target_info, 
+		1, 
+		NULL
+	);
+	m_render_pass = render_pass;
+
+	// Bind render pipeline
+	SDL_GPUGraphicsPipeline *render_pipeline = 
+		m_wireframe_mode ? m_line_pipeline : m_fill_pipeline;
+	APE_CHECK((render_pipeline != nullptr),
+		"Renderer::draw Failed: render_pipeline == nullptr"
+	);
+	SDL_BindGPUGraphicsPipeline(render_pass, render_pipeline);
+
+	/* Push Uniform Buffers */
+	// Bind camera uniform
+	glm::mat4 model = glm::translate(
+		glm::mat4(1.0f), 
+		glm::vec3(0.f, 0.f, 0.0f)
+	);
+	ModelViewProjUniform mvp_uniform { 
+		glm::transpose(model),		
+		glm::transpose(m_cam->getViewMatrix()), 
+		glm::transpose(m_cam->getProjectionMatrix(getAspectRatio()))
+	};
+	SDL_PushGPUVertexUniformData(
+		cmd_buffer,
+		0,
+		&mvp_uniform,
+		sizeof(mvp_uniform)
+	);
+}
+
+void Renderer::endDrawing()
+{
+	// Check that we are already drawing
+	APE_CHECK(m_is_drawing,
+	   "Renderer::endDrawing() Failed: beginDrawing() not yet called"
+	);
+	m_is_drawing = false;
+
+	// Cleanup render pass
+	SDL_EndGPURenderPass(m_render_pass);
+	m_render_pass = nullptr;
+
+	// Draw scene
+	SDL_SubmitGPUCommandBuffer(m_cmd_buf);
+}
+
+void Renderer::draw(Mesh* mesh)
+{
+	// Check that we are already drawing
+	APE_CHECK(m_is_drawing,
+		"Renderer::drawMesh(Mesh* mesh) Failed: beginDrawing() not called"
+	);
+
 	// Check if gpu buffer was already created
 	if (!mesh->getVertexBuffer()) {
 		// Create GPU buffer with vertex data
@@ -166,83 +262,14 @@ void Renderer::drawMesh(Mesh* mesh, SDL_GPURenderPass* render_pass)
 		.offset = 0,
 	};
 	SDL_BindGPUVertexBuffers(
-		render_pass,
+		m_render_pass,
 		0,
 		&buffer_binding,
 		1
 	);
 
 	// Draw Scene
-	SDL_DrawGPUPrimitives(render_pass, mesh->getVertices().size(), 1, 0, 0);
-}
-
-void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
-{
-	SDL_GPUCommandBuffer *cmd_buffer = SDL_AcquireGPUCommandBuffer(
-		m_context->device
-	);
-	APE_CHECK((cmd_buffer != nullptr),
-		"SDL_AcquiredGPUCommandBuffer Failed - {}",
-		SDL_GetError()
-	);
-
-	SDL_GPUTexture *swapchain_texture;
-	bool succ_acquire_swapchain = SDL_WaitAndAcquireGPUSwapchainTexture(
-		cmd_buffer, m_context->window, &swapchain_texture, NULL, NULL
-	);
-	APE_CHECK(succ_acquire_swapchain,
-		"SDL_WaitAndAcquireGPUSwapchainTexture Failed - {}",
-		SDL_GetError()
-	);
-
-	if (swapchain_texture) {
-		SDL_GPUColorTargetInfo color_target_info = {
-			.texture = swapchain_texture,
-			.clear_color = m_clear_color,
-			.load_op = SDL_GPU_LOADOP_CLEAR,
-			.store_op = SDL_GPU_STOREOP_STORE,
-		};
-
-		SDL_GPURenderPass *render_pass = SDL_BeginGPURenderPass(
-				cmd_buffer, 
-				&color_target_info, 
-				1, 
-				NULL
-		);
-
-		SDL_GPUGraphicsPipeline *render_pipeline = 
-			m_wireframe_mode ? m_line_pipeline : m_fill_pipeline;
-		APE_CHECK((render_pipeline != nullptr),
-			"Renderer::draw Failed: render_pipeline == nullptr"
-		);
-
-		SDL_BindGPUGraphicsPipeline(render_pass, render_pipeline);
-
-		/* Push Uniform Buffers */
-		// Bind camera uniform
-		glm::mat4 model = glm::translate(
-			glm::mat4(1.0f), 
-			glm::vec3(0.f, 0.f, 0.0f)
-		);
-		ModelViewProjUniform mvp_uniform { 
-			glm::transpose(model),		
-			glm::transpose(m_cam->getViewMatrix()), 
-			glm::transpose(m_cam->getProjectionMatrix(getAspectRatio()))
-		};
-		SDL_PushGPUVertexUniformData(
-			cmd_buffer,
-			0,
-			&mvp_uniform,
-			sizeof(mvp_uniform)
-		);
-
-		draw_scene(render_pass);
-
-		// Cleanup
-		SDL_EndGPURenderPass(render_pass);
-	}
-
-	SDL_SubmitGPUCommandBuffer(cmd_buffer);
+	SDL_DrawGPUPrimitives(m_render_pass, mesh->getVertices().size(), 1, 0, 0);
 }
 
 }; // end of namespace Render

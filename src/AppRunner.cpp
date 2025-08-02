@@ -89,9 +89,9 @@ void AppRunner::stepGameloop()
 	s_app->update();
 
 	// Draw To Screen
-	s_renderer->draw([&](SDL_GPURenderPass *render_pass) {
-		s_app->draw(render_pass);
-	});
+	s_renderer->beginDrawing();
+	s_app->draw();
+	s_renderer->endDrawing();
 }
 
 void AppRunner::run() 
@@ -138,11 +138,9 @@ APE::Render::Camera* AppRunner::getMainCamera()
 	return s_main_camera.get();
 }
 
-void AppRunner::drawMesh(
-	APE::Render::Mesh& mesh, 
-	SDL_GPURenderPass* render_pass)
+void AppRunner::draw(APE::Render::Mesh& mesh)
 {
-	s_renderer->drawMesh(&mesh, render_pass);
+	s_renderer->draw(&mesh);
 }
 
 bool AppRunner::getQuit() 

@@ -13,7 +13,7 @@ public:
 	// Template Methods
 	void setup();
 	void update();
-	void draw(SDL_GPURenderPass *render_pass);
+	void draw();
 	void onKeyDown(SDL_KeyboardEvent key);
 	void onKeyUp(SDL_KeyboardEvent key);
 	void onMouseDown(SDL_MouseButtonEvent mButton);

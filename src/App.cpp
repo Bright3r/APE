@@ -19,8 +19,8 @@ void App::update() {
 	cam->print();
 }
 
-void App::draw(SDL_GPURenderPass *render_pass) {
-	AppRunner::drawMesh(mesh, render_pass);
+void App::draw() {
+	AppRunner::draw(mesh);
 }
 
 void App::onKeyDown(SDL_KeyboardEvent key) {

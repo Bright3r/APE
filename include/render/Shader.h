@@ -18,6 +18,15 @@ struct ShaderDescription {
 	Uint32 num_storage_textures;
 };
 
+static const ShaderDescription default_shader_desc {
+	.vert_shader_filepath = "res/shaders/PositionColorUniform.vert.spv",
+	.frag_shader_filepath = "res/shaders/SolidColor.frag.spv",
+	.num_samplers = 0, 
+	.num_uniform_buffers = 1, 
+	.num_storage_buffers = 0, 
+	.num_storage_textures = 0,
+};
+
 class Shader {
 private:
 	SDL_GPUShader* m_vert_shader;
@@ -25,7 +34,10 @@ private:
 	SDL_GPUDevice* m_device;
 
 public:
+	Shader(SDL_GPUDevice* device);
+
 	Shader(const ShaderDescription& shader_desc, SDL_GPUDevice *device);
+
 	~Shader();
 	Shader(const Shader& other) = delete;
 	Shader& operator=(const Shader& other) = delete;
@@ -34,11 +46,12 @@ public:
 
 	SDL_GPUShader* loadShader(
 		const ShaderDescription& shader_desc, 
-		SDL_GPUShaderStage stage
-	);
+		SDL_GPUShaderStage stage);
 
 	SDL_GPUShader* getVertexShader() const;
+
 	SDL_GPUShader* getFragmentShader() const;
+
 	SDL_GPUDevice* getDevice() const;
 };
 
