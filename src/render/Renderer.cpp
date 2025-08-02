@@ -1,13 +1,5 @@
 #include "render/Renderer.h"
-#include "render/Shader.h"
 #include "util/Logger.h"
-
-#include <SDL3/SDL_gpu.h>
-
-#include <glm/fwd.hpp>
-#include <functional>
-#include <memory>
-#include <vector>
 
 namespace APE {
 namespace Render {
@@ -17,7 +9,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 	, m_cam(cam)
-	, m_vertex_buffer(nullptr)
+	, m_scene({})
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
 {
@@ -29,8 +21,6 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	// Construct default shader
 	std::unique_ptr<Shader> shader = createShader(default_shader_desc);
 	useShader(shader.get());
-
-	useVertexData(vertex_data);
 }
 
 Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader)
@@ -38,7 +28,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
 	, m_cam(cam)
-	, m_vertex_buffer(nullptr)
+	, m_scene({})
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
 {
@@ -48,8 +38,6 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 	);
 
 	useShader(shader);
-
-	useVertexData(vertex_data);
 }
 
 Renderer::~Renderer()
@@ -59,9 +47,6 @@ Renderer::~Renderer()
 
 	if (m_line_pipeline)
 		SDL_ReleaseGPUGraphicsPipeline(m_context->device, m_line_pipeline);
-
-	if (m_vertex_buffer)
-		SDL_ReleaseGPUBuffer(m_context->device, m_vertex_buffer);
 }
 
 std::unique_ptr<Shader> Renderer::createShader(ShaderDescription shader_desc) const
@@ -101,7 +86,7 @@ void Renderer::useShader(Shader* shader) {
 		.location = 1,
 		.buffer_slot = 0,
 		.format = SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4_NORM,
-		.offset = sizeof(float) * 3,
+		.offset = sizeof(glm::vec3),
 	}};
 
 	SDL_GPUVertexInputState vertex_input_state = {
@@ -147,17 +132,48 @@ void Renderer::useShader(Shader* shader) {
 	);
 }
 
-void Renderer::useVertexData(std::vector<PositionColorVertex> vertex_data)
-{
-	m_vertex_buffer = uploadBuffer<PositionColorVertex>(
-		vertex_data, 
-		SDL_GPU_BUFFERUSAGE_VERTEX
-	);
-}
-
 float Renderer::getAspectRatio() const
 {
 	return m_context->window_width / static_cast<float>(m_context->window_height);
+}
+
+void Renderer::drawMesh(Mesh* mesh, SDL_GPURenderPass* render_pass)
+{
+	// Check if gpu buffer was already created
+	if (!mesh->getVertexBuffer()) {
+		// Create GPU buffer with vertex data
+		SDL_GPUBuffer* vertex_buffer = uploadBuffer<PositionColorVertex>(
+			mesh->getVertices(),
+			SDL_GPU_BUFFERUSAGE_VERTEX
+		);
+
+		// Give mesh gpu buffer wrapped with deleter
+		auto safe_vertex_buffer = SafeGPU::make_shared_gpu_buffer(
+			vertex_buffer,
+			[&](SDL_GPUBuffer* buf) {
+				if (m_context && m_context->device) {
+					SDL_ReleaseGPUBuffer(m_context->device, buf);
+				}
+			}
+		);
+		mesh->setVertexBuffer(safe_vertex_buffer);
+	}
+
+	
+	// Bind vertex buffers
+	SDL_GPUBufferBinding buffer_binding = {
+		.buffer = mesh->getVertexBuffer().get(),
+		.offset = 0,
+	};
+	SDL_BindGPUVertexBuffers(
+		render_pass,
+		0,
+		&buffer_binding,
+		1
+	);
+
+	// Draw Scene
+	SDL_DrawGPUPrimitives(render_pass, mesh->getVertices().size(), 1, 0, 0);
 }
 
 void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
@@ -220,20 +236,7 @@ void Renderer::draw(std::function<void(SDL_GPURenderPass*)> draw_scene)
 			sizeof(mvp_uniform)
 		);
 
-		// Bind vertex buffers
-		SDL_GPUBufferBinding buffer_binding = {
-			.buffer = m_vertex_buffer,
-			.offset = 0,
-		};
-		SDL_BindGPUVertexBuffers(
-			render_pass,
-			0,
-			&buffer_binding,
-			1
-		);
-
-		// Draw Scene
-		SDL_DrawGPUPrimitives(render_pass, vertex_data.size(), 1, 0, 0);
+		draw_scene(render_pass);
 
 		// Cleanup
 		SDL_EndGPURenderPass(render_pass);

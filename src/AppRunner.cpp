@@ -3,6 +3,7 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_video.h>
 #include <chrono>
+#include <exception>
 
 
 // Application State
@@ -116,6 +117,8 @@ void AppRunner::run()
 		auto end = std::chrono::high_resolution_clock::now();
 		s_last_frame_time = end - start;
 	}
+
+	std::terminate();
 }
 
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
@@ -133,6 +136,13 @@ void AppRunner::useShader(std::shared_ptr<APE::Render::Shader> shader)
 APE::Render::Camera* AppRunner::getMainCamera() 
 {
 	return s_main_camera.get();
+}
+
+void AppRunner::drawMesh(
+	APE::Render::Mesh& mesh, 
+	SDL_GPURenderPass* render_pass)
+{
+	s_renderer->drawMesh(&mesh, render_pass);
 }
 
 bool AppRunner::getQuit() 

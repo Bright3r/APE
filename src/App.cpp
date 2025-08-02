@@ -4,7 +4,10 @@
 #include <glm/fwd.hpp>
 
 void App::setup() {
-
+	mesh = APE::Render::Mesh(
+		vertex_data,
+		glm::mat4(1.f)
+	);
 }
 
 void App::update() {
@@ -17,7 +20,7 @@ void App::update() {
 }
 
 void App::draw(SDL_GPURenderPass *render_pass) {
-	SDL_DrawGPUPrimitives(render_pass, 3, 1, 0, 0);
+	AppRunner::drawMesh(mesh, render_pass);
 }
 
 void App::onKeyDown(SDL_KeyboardEvent key) {

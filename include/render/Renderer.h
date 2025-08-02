@@ -3,6 +3,7 @@
 #include "render/Camera.h"
 #include "render/Context.h"
 #include "render/Shader.h"
+#include "render/Mesh.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <cstring>
@@ -13,11 +14,6 @@
 
 namespace APE {
 namespace Render {
-
-struct PositionColorVertex {
-	float x, y, z;
-	Uint8 r, g, b, a;
-};
 
 struct ModelViewProjUniform {
 	glm::mat4 model;
@@ -39,11 +35,12 @@ private:
 	std::shared_ptr<Context> m_context;
 	bool m_wireframe_mode;
 	SDL_FColor m_clear_color;
-	Camera* m_cam;
-	SDL_GPUBuffer* m_vertex_buffer;
 
 	SDL_GPUGraphicsPipeline* m_fill_pipeline;
 	SDL_GPUGraphicsPipeline* m_line_pipeline;
+
+	Camera* m_cam;
+	std::vector<std::weak_ptr<Mesh>> m_scene;
 
 public:
 	// Special Member Functions
@@ -60,77 +57,16 @@ public:
 
 	void useShader(Shader* shader);
 
-	void useVertexData(std::vector<PositionColorVertex> vertex_data);
-
 	float getAspectRatio() const;
+
+	void drawMesh(Mesh* mesh, SDL_GPURenderPass* render_pass);
 
 	void draw(std::function<void(SDL_GPURenderPass*)> draw_scene);
 
 private:
-	// std::vector<PositionColorVertex> vertex_data = {
-	// 	{    -1,    -1, 0, 255,   0,   0, 255 },
-	// 	{     1,    -1, 0,   0, 255,   0, 255 },
-	// 	{     0,     1, 0,   0,   0, 255, 255 }
-	// };
-
-	std::vector<PositionColorVertex> vertex_data = {
-		// Front face (z = +0.5)
-		{ -0.5, -0.5,  0.5, 255,   0,   0, 255 }, // Bottom-left
-		{  0.5, -0.5,  0.5,   0, 255,   0, 255 }, // Bottom-right
-		{  0.5,  0.5,  0.5,   0,   0, 255, 255 }, // Top-right
-
-		{ -0.5, -0.5,  0.5, 255,   0,   0, 255 }, // Bottom-left
-		{  0.5,  0.5,  0.5,   0,   0, 255, 255 }, // Top-right
-		{ -0.5,  0.5,  0.5, 255, 255,   0, 255 }, // Top-left
-
-		// Back face (z = -0.5)
-		{  0.5, -0.5, -0.5, 255,   0, 255, 255 }, // Bottom-right
-		{ -0.5, -0.5, -0.5,   0, 255, 255, 255 }, // Bottom-left
-		{ -0.5,  0.5, -0.5, 255, 255, 255, 255 }, // Top-left
-
-		{  0.5, -0.5, -0.5, 255,   0, 255, 255 }, // Bottom-right
-		{ -0.5,  0.5, -0.5, 255, 255, 255, 255 }, // Top-left
-		{  0.5,  0.5, -0.5,   0,   0,   0, 255 }, // Top-right
-
-		// Left face (x = -0.5)
-		{ -0.5, -0.5, -0.5,   0, 255, 255, 255 }, // Bottom-back
-		{ -0.5, -0.5,  0.5, 255,   0,   0, 255 }, // Bottom-front
-		{ -0.5,  0.5,  0.5, 255, 255,   0, 255 }, // Top-front
-
-		{ -0.5, -0.5, -0.5,   0, 255, 255, 255 }, // Bottom-back
-		{ -0.5,  0.5,  0.5, 255, 255,   0, 255 }, // Top-front
-		{ -0.5,  0.5, -0.5, 255, 255, 255, 255 }, // Top-back
-
-		// Right face (x = +0.5)
-		{  0.5, -0.5,  0.5,   0, 255,   0, 255 }, // Bottom-front
-		{  0.5, -0.5, -0.5, 255,   0, 255, 255 }, // Bottom-back
-		{  0.5,  0.5, -0.5,   0,   0,   0, 255 }, // Top-back
-
-		{  0.5, -0.5,  0.5,   0, 255,   0, 255 }, // Bottom-front
-		{  0.5,  0.5, -0.5,   0,   0,   0, 255 }, // Top-back
-		{  0.5,  0.5,  0.5,   0,   0, 255, 255 }, // Top-front
-
-		// Top face (y = +0.5)
-		{ -0.5,  0.5,  0.5, 255, 255,   0, 255 }, // Front-left
-		{  0.5,  0.5,  0.5,   0,   0, 255, 255 }, // Front-right
-		{  0.5,  0.5, -0.5,   0,   0,   0, 255 }, // Back-right
-
-		{ -0.5,  0.5,  0.5, 255, 255,   0, 255 }, // Front-left
-		{  0.5,  0.5, -0.5,   0,   0,   0, 255 }, // Back-right
-		{ -0.5,  0.5, -0.5, 255, 255, 255, 255 }, // Back-left
-
-		// Bottom face (y = -0.5)
-		{ -0.5, -0.5, -0.5,   0, 255, 255, 255 }, // Back-left
-		{  0.5, -0.5, -0.5, 255,   0, 255, 255 }, // Back-right
-		{  0.5, -0.5,  0.5,   0, 255,   0, 255 }, // Front-right
-
-		{ -0.5, -0.5, -0.5,   0, 255, 255, 255 }, // Back-left
-		{  0.5, -0.5,  0.5,   0, 255,   0, 255 }, // Front-right
-		{ -0.5, -0.5,  0.5, 255,   0,   0, 255 }, // Front-left
-	};
-
 	template <typename T>
-	SDL_GPUBuffer* uploadBuffer(const std::vector<T>& data, Uint32 usage) {
+	SDL_GPUBuffer* uploadBuffer(const std::vector<T>& data, Uint32 usage)
+	{
 		// Create GPU buffer
 		Uint32 buffer_size = sizeof(T) * data.size();
 		SDL_GPUBufferCreateInfo buffer_info = {

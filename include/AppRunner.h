@@ -5,11 +5,12 @@
 #include "render/Context.h"
 #include "render/Renderer.h"
 #include "render/Shader.h"
+#include "render/Mesh.h"
 #include "util/timing.h"
 
-#include <memory>
-
+#include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_events.h>
+#include <memory>
 #include <string_view>
 
 class AppRunner {
@@ -45,12 +46,16 @@ public:
 
 
 	// Graphics Functions
-	static std::unique_ptr<APE::Render::Shader> 
-	createShader(const APE::Render::ShaderDescription& shader_desc);
+	static std::unique_ptr<APE::Render::Shader> createShader(
+		const APE::Render::ShaderDescription& shader_desc);
 
 	static void useShader(std::shared_ptr<APE::Render::Shader> shader);
 
 	static APE::Render::Camera* getMainCamera();
+
+	static void drawMesh(
+		APE::Render::Mesh& mesh, 
+		SDL_GPURenderPass* render_pass);
 
 
 	// Utility Functions
