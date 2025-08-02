@@ -244,13 +244,9 @@ void Renderer::draw(Mesh* mesh)
 		);
 
 		// Give mesh gpu buffer wrapped with deleter
-		auto safe_vertex_buffer = SafeGPU::make_shared_gpu_buffer(
+		auto safe_vertex_buffer = SafeGPU::makeSharedGPUBuffer(
 			vertex_buffer,
-			[&](SDL_GPUBuffer* buf) {
-				if (m_context && m_context->device) {
-					SDL_ReleaseGPUBuffer(m_context->device, buf);
-				}
-			}
+			m_context->device
 		);
 		mesh->setVertexBuffer(safe_vertex_buffer);
 	}

@@ -9,25 +9,35 @@ namespace Render {
 
 namespace SafeGPU {
 
-struct SDL_GPUBuffer_Deleter {
-	SDL_GPUDevice *device;
-
-	void operator()(SDL_GPUBuffer* buf) const
-	{
+// Wrap SDL_GPUBuffer with deleter for memory safety
+//
+// Unique Pointer
+using UniqueGPUBuffer = std::unique_ptr<
+	SDL_GPUBuffer, 
+	std::function<void(SDL_GPUBuffer*)>>;
+inline UniqueGPUBuffer makeUniqueGPUBuffer(
+	SDL_GPUBuffer* gpu_buf,
+	SDL_GPUDevice* device)
+{
+	auto deleter = [device](SDL_GPUBuffer* buf) {
 		if (buf && device) {
 			SDL_ReleaseGPUBuffer(device, buf);
 		}
-	}
-};
+	};
+	return std::unique_ptr<SDL_GPUBuffer, decltype(deleter)>(gpu_buf, deleter);
+}
 
-// Wrap SDL_GPUBuffer with deleter for memory safety
-using UniqueGPUBuffer = std::unique_ptr<SDL_GPUBuffer, SDL_GPUBuffer_Deleter>;
+// Shared Pointer
 using SharedGPUBuffer = std::shared_ptr<SDL_GPUBuffer>;
-
-inline SharedGPUBuffer make_shared_gpu_buffer(
+inline SharedGPUBuffer makeSharedGPUBuffer(
 	SDL_GPUBuffer* gpu_buf,
-	std::function<void(SDL_GPUBuffer*)> deleter)
+	SDL_GPUDevice* device)
 {
+	auto deleter = [device](SDL_GPUBuffer* buf) {
+		if (buf && device) {
+			SDL_ReleaseGPUBuffer(device, buf);
+		}
+	};
 	return std::shared_ptr<SDL_GPUBuffer>(gpu_buf, deleter);
 }
 
