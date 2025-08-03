@@ -33,7 +33,10 @@ inline SharedGPUResource<SDL_T> makeShared(
 	return SharedGPUResource<SDL_T>(resource, deleter);
 }
 
+// Alias commonly-used templates
+using UniqueGPUBuffer = UniqueGPUResource<SDL_GPUBuffer>;
 using SharedGPUBuffer = SharedGPUResource<SDL_GPUBuffer>;
+using UniqueGPUGraphicsPipeline = UniqueGPUResource<SDL_GPUGraphicsPipeline>;
 
 };	// end of namespace SafeGPU
 

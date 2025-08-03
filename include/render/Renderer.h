@@ -2,6 +2,7 @@
 
 #include "render/Camera.h"
 #include "render/Context.h"
+#include "render/SafeGPU.h"
 #include "render/Shader.h"
 #include "render/Mesh.h"
 
@@ -27,8 +28,8 @@ private:
 	bool m_wireframe_mode;
 	SDL_FColor m_clear_color;
 
-	SDL_GPUGraphicsPipeline* m_fill_pipeline;
-	SDL_GPUGraphicsPipeline* m_line_pipeline;
+	SafeGPU::UniqueGPUGraphicsPipeline m_fill_pipeline;
+	SafeGPU::UniqueGPUGraphicsPipeline m_line_pipeline;
 
 	Camera* m_cam;
 	SDL_GPURenderPass* m_render_pass;
@@ -41,7 +42,7 @@ public:
 	//
 	Renderer(std::shared_ptr<Context> context, Camera *cam);
 	Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader);
-	~Renderer();
+	~Renderer() = default;
 	Renderer(const Renderer& other) = delete;
 	Renderer& operator=(const Renderer& other) = delete;
 
@@ -60,6 +61,9 @@ public:
 	void draw(Mesh* mesh);
 
 private:
+	SafeGPU::UniqueGPUGraphicsPipeline createPipeline(
+		const SDL_GPUGraphicsPipelineCreateInfo& create_info) const;
+
 	template <typename T>
 	SDL_GPUBuffer* uploadBuffer(const std::vector<T>& data, Uint32 usage)
 	{
@@ -109,18 +113,18 @@ private:
 			.transfer_buffer = transfer_buffer,
 			.offset = 0,
 		};
-
 		SDL_GPUBufferRegion dest = {
 			.buffer = buffer,
 			.offset = 0,
 			.size = buffer_size,
 		};
-
 		SDL_UploadToGPUBuffer(copy_pass, &src, &dest, false);
 
-		// Cleanup resources
+		// Execute copy pass
 		SDL_EndGPUCopyPass(copy_pass);
 		SDL_SubmitGPUCommandBuffer(cmd_buffer);
+
+		// Cleanup resources
 		SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buffer);
 
 		return buffer;

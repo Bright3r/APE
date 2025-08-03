@@ -1,5 +1,7 @@
 #include "render/Renderer.h"
+#include "render/SafeGPU.h"
 #include "util/Logger.h"
+#include <SDL3/SDL_gpu.h>
 
 namespace APE {
 namespace Render {
@@ -44,18 +46,33 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 	useShader(shader);
 }
 
-Renderer::~Renderer()
-{
-	if (m_fill_pipeline)
-		SDL_ReleaseGPUGraphicsPipeline(m_context->device, m_fill_pipeline);
-
-	if (m_line_pipeline)
-		SDL_ReleaseGPUGraphicsPipeline(m_context->device, m_line_pipeline);
-}
-
 std::unique_ptr<Shader> Renderer::createShader(ShaderDescription shader_desc) const
 {
 	return std::make_unique<Shader>(shader_desc, m_context->device);
+}
+
+SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
+	const SDL_GPUGraphicsPipelineCreateInfo& create_info) const
+{
+	// Create pipeline
+	SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(
+		m_context->device, 
+		&create_info
+	);
+
+	// Check that pipeline was created
+	APE_CHECK((pipeline != nullptr),
+		"SDL_CreateGPUGraphicsPipeline Failed - {}",
+		SDL_GetError()
+	);
+
+	// Return wrapped pipeline for memory safety
+	return SafeGPU::makeUnique<SDL_GPUGraphicsPipeline>(
+		pipeline,
+		[=](SDL_GPUGraphicsPipeline* pipeline) {
+			SDL_ReleaseGPUGraphicsPipeline(m_context->device, pipeline);
+		}
+	);
 }
 
 void Renderer::useShader(Shader* shader) {
@@ -65,13 +82,6 @@ void Renderer::useShader(Shader* shader) {
 		);
 		return;
 	}
-
-	// Destroy previous pipelines
-	if (m_fill_pipeline)
-		SDL_ReleaseGPUGraphicsPipeline(m_context->device, m_fill_pipeline);
-
-	if (m_line_pipeline)
-		SDL_ReleaseGPUGraphicsPipeline(m_context->device, m_line_pipeline);
 
 	// Setup new pipeline config
 	SDL_GPUVertexBufferDescription vertex_buffer_description[] = {{
@@ -121,19 +131,11 @@ void Renderer::useShader(Shader* shader) {
 
 	// Create fill pipeline
 	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
-	m_fill_pipeline = SDL_CreateGPUGraphicsPipeline(m_context->device, &pipelineCreateInfo);
-	APE_CHECK((m_fill_pipeline != nullptr),
-		"SDL_CreateGPUGraphicsPipeline Failed on fill_pipeline - {}",
-		SDL_GetError()
-	);
+	m_fill_pipeline = createPipeline(pipelineCreateInfo);
 
 	// Create wireframe pipeline
 	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_LINE;
-	m_line_pipeline = SDL_CreateGPUGraphicsPipeline(m_context->device, &pipelineCreateInfo);
-	APE_CHECK((m_line_pipeline != nullptr),
-		"SDL_CreateGPUGraphicsPipeline Failed on line_pipeline - {}",
-		SDL_GetError()
-	);
+	m_line_pipeline = createPipeline(pipelineCreateInfo);
 }
 
 float Renderer::getAspectRatio() const
@@ -186,8 +188,8 @@ void Renderer::beginDrawing()
 	m_render_pass = render_pass;
 
 	// Bind render pipeline
-	SDL_GPUGraphicsPipeline *render_pipeline = 
-		m_wireframe_mode ? m_line_pipeline : m_fill_pipeline;
+	SDL_GPUGraphicsPipeline* render_pipeline = 
+		m_wireframe_mode ? m_line_pipeline.get() : m_fill_pipeline.get();
 	APE_CHECK((render_pipeline != nullptr),
 		"Renderer::draw Failed: render_pipeline == nullptr"
 	);
@@ -247,10 +249,7 @@ void Renderer::draw(Mesh* mesh)
 		auto safe_vertex_buffer = SafeGPU::makeShared<SDL_GPUBuffer>(
 			vertex_buffer,
 			[=](SDL_GPUBuffer* buf) {
-				SDL_ReleaseGPUBuffer(
-					m_context->device, 
-					buf
-				);
+				SDL_ReleaseGPUBuffer(m_context->device, buf);
 			}
 		);
 		mesh->setVertexBuffer(safe_vertex_buffer);
