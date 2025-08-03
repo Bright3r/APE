@@ -194,24 +194,6 @@ void Renderer::beginDrawing()
 		"Renderer::draw Failed: render_pipeline == nullptr"
 	);
 	SDL_BindGPUGraphicsPipeline(render_pass, render_pipeline);
-
-	/* Push Uniform Buffers */
-	// Bind camera uniform
-	glm::mat4 model = glm::translate(
-		glm::mat4(1.0f), 
-		glm::vec3(0.f, 0.f, 0.0f)
-	);
-	ModelViewProjUniform mvp_uniform { 
-		glm::transpose(model),		
-		glm::transpose(m_cam->getViewMatrix()), 
-		glm::transpose(m_cam->getProjectionMatrix(getAspectRatio()))
-	};
-	SDL_PushGPUVertexUniformData(
-		cmd_buffer,
-		0,
-		&mvp_uniform,
-		sizeof(mvp_uniform)
-	);
 }
 
 void Renderer::endDrawing()
@@ -255,8 +237,22 @@ void Renderer::draw(Mesh* mesh)
 		mesh->setVertexBuffer(safe_vertex_buffer);
 	}
 
+	// Bind MVP matrix uniform
+	glm::mat4 model_mat = mesh->getModelMatrix();
+	ModelViewProjUniform mvp_uniform { 
+		glm::transpose(model_mat),
+		glm::transpose(m_cam->getViewMatrix()), 
+		glm::transpose(m_cam->getProjectionMatrix(getAspectRatio()))
+	};
+	SDL_PushGPUVertexUniformData(
+		m_cmd_buf,
+		0,
+		&mvp_uniform,
+		sizeof(mvp_uniform)
+	);
+
 	
-	// Bind vertex buffers
+	// Bind vertex buffer
 	SDL_GPUBufferBinding buffer_binding = {
 		.buffer = mesh->getVertexBuffer().get(),
 		.offset = 0,

@@ -47,5 +47,15 @@ void Mesh::setModelMatrix(glm::mat4 model_mat)
 	m_model_matrix = model_mat; 
 }
 
+Transform Mesh::getTransform() const
+{
+	return m_transform;
+}
+
+void Mesh::setTransform(const Transform& transform)
+{
+	m_transform = transform;
+}
+
 };	// end of namespace Render
 };	// end of namespace APE
