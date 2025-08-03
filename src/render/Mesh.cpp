@@ -47,7 +47,7 @@ void Mesh::setModelMatrix(glm::mat4 model_mat)
 	m_model_matrix = model_mat; 
 }
 
-Transform Mesh::getTransform() const
+Transform& Mesh::getTransform()
 {
 	return m_transform;
 }

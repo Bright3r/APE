@@ -20,6 +20,10 @@ void App::update() {
 }
 
 void App::draw() {
+	mesh.getTransform().position = glm::vec3(5, 0, 0);
+	AppRunner::draw(mesh);
+
+	mesh.getTransform().position = glm::vec3(-5, 0, 0);
 	AppRunner::draw(mesh);
 }
 

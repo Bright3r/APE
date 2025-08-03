@@ -219,7 +219,7 @@ void Renderer::draw(Mesh* mesh)
 		"Renderer::drawMesh(Mesh* mesh) Failed: beginDrawing() not called"
 	);
 
-	// Check if gpu buffer was already created
+	// Check if gpu vertex buffer was already created
 	if (!mesh->getVertexBuffer()) {
 		// Create GPU buffer with vertex data
 		SDL_GPUBuffer* vertex_buffer = uploadBuffer<PositionColorVertex>(
@@ -237,6 +237,18 @@ void Renderer::draw(Mesh* mesh)
 		mesh->setVertexBuffer(safe_vertex_buffer);
 	}
 
+	// Bind vertex buffer
+	SDL_GPUBufferBinding buffer_binding = {
+		.buffer = mesh->getVertexBuffer().get(),
+		.offset = 0,
+	};
+	SDL_BindGPUVertexBuffers(
+		m_render_pass,
+		0,
+		&buffer_binding,
+		1
+	);
+
 	// Bind MVP matrix uniform
 	glm::mat4 model_mat = mesh->getModelMatrix();
 	ModelViewProjUniform mvp_uniform { 
@@ -251,20 +263,7 @@ void Renderer::draw(Mesh* mesh)
 		sizeof(mvp_uniform)
 	);
 
-	
-	// Bind vertex buffer
-	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = mesh->getVertexBuffer().get(),
-		.offset = 0,
-	};
-	SDL_BindGPUVertexBuffers(
-		m_render_pass,
-		0,
-		&buffer_binding,
-		1
-	);
-
-	// Draw Scene
+	// Draw mesh
 	SDL_DrawGPUPrimitives(m_render_pass, mesh->getVertices().size(), 1, 0, 0);
 }
 

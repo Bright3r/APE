@@ -44,7 +44,7 @@ public:
 	glm::mat4 getModelMatrix() const;
 	void setModelMatrix(glm::mat4 model_mat);
 
-	Transform getTransform() const;
+	Transform& getTransform();
 	void setTransform(const Transform& transform);
 };
 

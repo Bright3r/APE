@@ -54,7 +54,7 @@ public:
 
 		// Clamp yaw
 		while (yaw > 360.f) {
-			yaw += 360.f;
+			yaw -= 360.f;
 		}
 		while (yaw < -360.f) {
 			yaw += 360.f;
