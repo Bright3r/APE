@@ -41,9 +41,6 @@ public:
 	std::vector<PositionColorVertex> getVertices() const;
 	void setVertices(const std::vector<PositionColorVertex>& vertices);
 
-	glm::mat4 getModelMatrix() const;
-	void setModelMatrix(glm::mat4 model_mat);
-
 	Transform& getTransform();
 	void setTransform(const Transform& transform);
 };

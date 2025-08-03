@@ -1,5 +1,6 @@
 #include "App.h"
 #include "AppRunner.h"
+#include "util/Logger.h"
 
 #include <glm/fwd.hpp>
 
@@ -16,14 +17,14 @@ void App::update() {
 	// 	<< std::endl;
 	
 	APE::Render::Camera* cam = AppRunner::getMainCamera();
-	cam->print();
+	// cam->print();
 }
 
 void App::draw() {
-	mesh.getTransform().position = glm::vec3(5, 0, 0);
+	mesh.getTransform().position.x *= -1;
 	AppRunner::draw(mesh);
 
-	mesh.getTransform().position = glm::vec3(-5, 0, 0);
+	mesh.getTransform().position.x *= -1;
 	AppRunner::draw(mesh);
 }
 
@@ -50,6 +51,10 @@ void App::onKeyDown(SDL_KeyboardEvent key) {
 			break;
 		case SDLK_SPACE:
 			cam->moveUp(speed, dt);
+			break;
+		case SDLK_M:
+			mesh.getTransform().position.x += 1;
+			APE_TRACE("Mesh.pos.x = {}", mesh.getTransform().position.x);
 			break;
 	}
 }

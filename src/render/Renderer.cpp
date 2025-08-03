@@ -118,7 +118,7 @@ void Renderer::useShader(Shader* shader) {
 		.blend_state = {},
 	}};
 
-	SDL_GPUGraphicsPipelineCreateInfo pipelineCreateInfo = {
+	SDL_GPUGraphicsPipelineCreateInfo pipeline_create_info = {
 		.vertex_shader = shader->getVertexShader(),
 		.fragment_shader = shader->getFragmentShader(),
 		.vertex_input_state = vertex_input_state,
@@ -128,14 +128,15 @@ void Renderer::useShader(Shader* shader) {
 			.num_color_targets = 1,
 		},
 	};
+	pipeline_create_info.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_BACK;
 
 	// Create fill pipeline
-	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
-	m_fill_pipeline = createPipeline(pipelineCreateInfo);
+	pipeline_create_info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+	m_fill_pipeline = createPipeline(pipeline_create_info);
 
 	// Create wireframe pipeline
-	pipelineCreateInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_LINE;
-	m_line_pipeline = createPipeline(pipelineCreateInfo);
+	pipeline_create_info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_LINE;
+	m_line_pipeline = createPipeline(pipeline_create_info);
 }
 
 float Renderer::getAspectRatio() const
@@ -250,9 +251,8 @@ void Renderer::draw(Mesh* mesh)
 	);
 
 	// Bind MVP matrix uniform
-	glm::mat4 model_mat = mesh->getModelMatrix();
 	ModelViewProjUniform mvp_uniform { 
-		glm::transpose(model_mat),
+		glm::transpose(mesh->getTransform().getModelMatrix()),
 		glm::transpose(m_cam->getViewMatrix()), 
 		glm::transpose(m_cam->getProjectionMatrix(getAspectRatio()))
 	};

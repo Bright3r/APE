@@ -14,7 +14,7 @@ struct Transform {
 
 	Transform(glm::vec3 position = { 0, 0, 0 },
 		glm::vec3 scale = { 1, 1, 1 },
-	   	glm::quat rotation = { glm::radians(45.f), glm::vec3(0, 1, 0) })
+	   	glm::quat rotation = { } )
 		: position(position)
 		, scale(scale)
 		, rotation(rotation)
@@ -25,7 +25,7 @@ struct Transform {
 	glm::mat4 getModelMatrix() const
 	{
 		glm::mat4 T { glm::translate(glm::mat4(1.f), position) };
-		glm::mat4 R { rotation };
+		glm::mat4 R = glm::mat4_cast(rotation);
 		glm::mat4 S { glm::scale(glm::mat4(1.f), scale) };
 
 		return T * R * S;

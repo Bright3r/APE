@@ -37,16 +37,6 @@ void Mesh::setVertices(const std::vector<PositionColorVertex>& vertices)
 	m_vertex_buffer.reset();
 }
 
-glm::mat4 Mesh::getModelMatrix() const 
-{ 
-	return m_model_matrix; 
-}
-
-void Mesh::setModelMatrix(glm::mat4 model_mat) 
-{ 
-	m_model_matrix = model_mat; 
-}
-
 Transform& Mesh::getTransform()
 {
 	return m_transform;
