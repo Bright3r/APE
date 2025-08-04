@@ -1,7 +1,9 @@
 #include "render/Renderer.h"
 #include "render/SafeGPU.h"
 #include "util/Logger.h"
+
 #include <SDL3/SDL_gpu.h>
+#include <utility>
 
 namespace APE {
 namespace Render {
@@ -229,26 +231,56 @@ void Renderer::draw(Mesh* mesh)
 		);
 
 		// Give mesh gpu buffer wrapped with deleter
-		auto safe_vertex_buffer = SafeGPU::makeShared<SDL_GPUBuffer>(
+		auto safe_vertex_buffer = SafeGPU::makeUnique<SDL_GPUBuffer>(
 			vertex_buffer,
 			[=](SDL_GPUBuffer* buf) {
 				SDL_ReleaseGPUBuffer(m_context->device, buf);
 			}
 		);
-		mesh->setVertexBuffer(safe_vertex_buffer);
+		mesh->setVertexBuffer(std::move(safe_vertex_buffer));
 	}
 
 	// Bind vertex buffer
-	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = mesh->getVertexBuffer().get(),
+	SDL_GPUBufferBinding vertex_buffer_binding = {
+		.buffer = mesh->getVertexBuffer(),
 		.offset = 0,
 	};
 	SDL_BindGPUVertexBuffers(
 		m_render_pass,
 		0,
-		&buffer_binding,
+		&vertex_buffer_binding,
 		1
 	);
+
+	// Check if gpu index buffer was already created
+	if (!mesh->getIndexBuffer()) {
+		// Create GPU buffer with index data
+		SDL_GPUBuffer* index_buffer = uploadBuffer<VertexIndex>(
+			mesh->getIndices(),
+			SDL_GPU_BUFFERUSAGE_INDEX
+		);
+
+		// Give mesh gpu buffer wrapped with deleter
+		auto safe_index_buffer = SafeGPU::makeUnique<SDL_GPUBuffer>(
+			index_buffer,
+			[=](SDL_GPUBuffer* buf) {
+				SDL_ReleaseGPUBuffer(m_context->device, buf);
+			}
+		);
+		mesh->setIndexBuffer(std::move(safe_index_buffer));
+	}
+
+	// Bind index buffer
+	SDL_GPUBufferBinding index_buffer_binding = {
+		.buffer = mesh->getIndexBuffer(),
+		.offset = 0,
+	};
+	SDL_BindGPUIndexBuffer(
+		m_render_pass,
+		&index_buffer_binding,
+		SDL_GPU_INDEXELEMENTSIZE_16BIT
+	);
+
 
 	// Bind MVP matrix uniform
 	ModelViewProjUniform mvp_uniform { 
@@ -264,7 +296,11 @@ void Renderer::draw(Mesh* mesh)
 	);
 
 	// Draw mesh
-	SDL_DrawGPUPrimitives(m_render_pass, mesh->getVertices().size(), 1, 0, 0);
+	SDL_DrawGPUIndexedPrimitives(
+		m_render_pass, 
+		mesh->getIndices().size(), 
+		1, 0, 0, 0
+	);
 }
 
 }; // end of namespace Render

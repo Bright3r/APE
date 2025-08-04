@@ -7,7 +7,7 @@
 void App::setup() {
 	mesh = APE::Render::Mesh(
 		vertex_data,
-		glm::mat4(1.f)
+		index_data
 	);
 }
 

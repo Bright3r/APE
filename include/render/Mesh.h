@@ -4,6 +4,7 @@
 #include "render/Transform.h"
 
 #include <SDL3/SDL_gpu.h>
+#include <SDL3/SDL_stdinc.h>
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>
 #include <vector>
@@ -16,32 +17,47 @@ struct PositionColorVertex {
 	Uint8 r, g, b, a;
 };
 
+using VertexIndex = Uint16;
+
 class Mesh {
 	friend class Renderer;
 private:
 	// Mesh data
 	std::vector<PositionColorVertex> m_vertices;
-	glm::mat4 m_model_matrix;
+	std::vector<VertexIndex> m_indices;
 	Transform m_transform;
 
 	// Rendering data
-	SafeGPU::SharedGPUBuffer m_vertex_buffer;
+	SafeGPU::UniqueGPUBuffer m_vertex_buffer;
+	SafeGPU::UniqueGPUBuffer m_index_buffer;
 
 
 	// Private methods
-	SafeGPU::SharedGPUBuffer getVertexBuffer() const;
+	SDL_GPUBuffer* getVertexBuffer() const;
 
-	void setVertexBuffer(SafeGPU::SharedGPUBuffer buf);
+	void setVertexBuffer(SafeGPU::UniqueGPUBuffer buf);
+
+	SDL_GPUBuffer* getIndexBuffer() const;
+
+	void setIndexBuffer(SafeGPU::UniqueGPUBuffer buf);
 
 public:
-	Mesh();
+	Mesh() = default;
 	Mesh(const std::vector<PositionColorVertex>& vertices, 
-      		const glm::mat4& model_matrix);
+      		const std::vector<VertexIndex>& indices,
+      		const Transform& transform = {});
 
 	std::vector<PositionColorVertex> getVertices() const;
-	void setVertices(const std::vector<PositionColorVertex>& vertices);
+
+	std::vector<VertexIndex> getIndices() const;
+
+	void changeTopology(const std::vector<VertexIndex> indices);
+
+	void changeMesh(const std::vector<PositionColorVertex>& vertices, 
+      		const std::vector<VertexIndex>& indices);
 
 	Transform& getTransform();
+
 	void setTransform(const Transform& transform);
 };
 
