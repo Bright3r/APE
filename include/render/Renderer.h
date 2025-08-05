@@ -5,6 +5,7 @@
 #include "render/SafeGPU.h"
 #include "render/Shader.h"
 #include "render/Mesh.h"
+#include "render/Model.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <cstring>
@@ -58,7 +59,9 @@ public:
 
 	void endDrawing();
 
-	void draw(Mesh* mesh);
+	void draw(Model& model);
+
+	void draw(Mesh& mesh, const glm::mat4& model_mat);
 
 private:
 	SafeGPU::UniqueGPUGraphicsPipeline createPipeline(

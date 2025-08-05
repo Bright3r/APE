@@ -1,15 +1,12 @@
 #include "render/Mesh.h"
-#include <utility>
 
 namespace APE {
 namespace Render {
 
 Mesh::Mesh(const std::vector<PositionColorVertex>& vertices, 
-	const std::vector<VertexIndex>& indices,
-	const Transform& transform)
+	const std::vector<VertexIndex>& indices)
 	: m_vertices(vertices)
 	, m_indices(indices)
-	, m_transform(transform)
 	, m_vertex_buffer(nullptr)
 	, m_index_buffer(nullptr)
 {
@@ -60,16 +57,6 @@ void Mesh::changeMesh(const std::vector<PositionColorVertex>& vertices,
 
 	m_vertex_buffer = nullptr;
 	m_index_buffer = nullptr;
-}
-
-Transform& Mesh::getTransform()
-{
-	return m_transform;
-}
-
-void Mesh::setTransform(const Transform& transform)
-{
-	m_transform = transform;
 }
 
 };	// end of namespace Render

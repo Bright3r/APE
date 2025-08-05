@@ -1,14 +1,20 @@
 {
-  "dependencies": [
-	{
-		"name": "sdl3",
-		"features": [ "vulkan", "wayland" ]
-	},
-	{
-		"name": "glm"
-	},
-	{
-		"name": "spdlog"
-	}
-  ]
+	"dependencies": [
+		{
+			"name": "sdl3",
+			"features": [
+				"vulkan",
+				"wayland"
+			]
+		},
+		{
+			"name": "glm"
+		},
+		{
+			"name": "spdlog"
+		},
+		{
+			"name": "assimp"
+		}
+	]
 }

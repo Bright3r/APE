@@ -138,9 +138,9 @@ APE::Render::Camera* AppRunner::getMainCamera()
 	return s_main_camera.get();
 }
 
-void AppRunner::draw(APE::Render::Mesh& mesh)
+void AppRunner::draw(APE::Render::Model& model)
 {
-	s_renderer->draw(&mesh);
+	s_renderer->draw(model);
 }
 
 bool AppRunner::getQuit() 

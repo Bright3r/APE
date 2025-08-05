@@ -215,18 +215,31 @@ void Renderer::endDrawing()
 	SDL_SubmitGPUCommandBuffer(m_cmd_buf);
 }
 
-void Renderer::draw(Mesh* mesh)
+void Renderer::draw(Model& model)
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
-		"Renderer::drawMesh(Mesh* mesh) Failed: beginDrawing() not called"
+		"Renderer::draw(Model& mesh) Failed: beginDrawing() not called"
+	);
+
+	glm::mat4 model_mat = model.getTransform().getModelMatrix();
+	for (Mesh& mesh : model.getMeshes()) {
+		draw(mesh, model_mat);
+	}
+}
+
+void Renderer::draw(Mesh& mesh, const glm::mat4& model_mat)
+{
+	// Check that we are already drawing
+	APE_CHECK(m_is_drawing,
+		"Renderer::draw(Mesh& mesh) Failed: beginDrawing() not called"
 	);
 
 	// Check if gpu vertex buffer was already created
-	if (!mesh->getVertexBuffer()) {
+	if (!mesh.getVertexBuffer()) {
 		// Create GPU buffer with vertex data
 		SDL_GPUBuffer* vertex_buffer = uploadBuffer<PositionColorVertex>(
-			mesh->getVertices(),
+			mesh.getVertices(),
 			SDL_GPU_BUFFERUSAGE_VERTEX
 		);
 
@@ -237,12 +250,12 @@ void Renderer::draw(Mesh* mesh)
 				SDL_ReleaseGPUBuffer(m_context->device, buf);
 			}
 		);
-		mesh->setVertexBuffer(std::move(safe_vertex_buffer));
+		mesh.setVertexBuffer(std::move(safe_vertex_buffer));
 	}
 
 	// Bind vertex buffer
 	SDL_GPUBufferBinding vertex_buffer_binding = {
-		.buffer = mesh->getVertexBuffer(),
+		.buffer = mesh.getVertexBuffer(),
 		.offset = 0,
 	};
 	SDL_BindGPUVertexBuffers(
@@ -253,10 +266,10 @@ void Renderer::draw(Mesh* mesh)
 	);
 
 	// Check if gpu index buffer was already created
-	if (!mesh->getIndexBuffer()) {
+	if (!mesh.getIndexBuffer()) {
 		// Create GPU buffer with index data
 		SDL_GPUBuffer* index_buffer = uploadBuffer<VertexIndex>(
-			mesh->getIndices(),
+			mesh.getIndices(),
 			SDL_GPU_BUFFERUSAGE_INDEX
 		);
 
@@ -267,12 +280,12 @@ void Renderer::draw(Mesh* mesh)
 				SDL_ReleaseGPUBuffer(m_context->device, buf);
 			}
 		);
-		mesh->setIndexBuffer(std::move(safe_index_buffer));
+		mesh.setIndexBuffer(std::move(safe_index_buffer));
 	}
 
 	// Bind index buffer
 	SDL_GPUBufferBinding index_buffer_binding = {
-		.buffer = mesh->getIndexBuffer(),
+		.buffer = mesh.getIndexBuffer(),
 		.offset = 0,
 	};
 	SDL_BindGPUIndexBuffer(
@@ -284,7 +297,7 @@ void Renderer::draw(Mesh* mesh)
 
 	// Bind MVP matrix uniform
 	ModelViewProjUniform mvp_uniform { 
-		glm::transpose(mesh->getTransform().getModelMatrix()),
+		glm::transpose(model_mat),
 		glm::transpose(m_cam->getViewMatrix()), 
 		glm::transpose(m_cam->getProjectionMatrix(getAspectRatio()))
 	};
@@ -298,7 +311,7 @@ void Renderer::draw(Mesh* mesh)
 	// Draw mesh
 	SDL_DrawGPUIndexedPrimitives(
 		m_render_pass, 
-		mesh->getIndices().size(), 
+		mesh.getIndices().size(), 
 		1, 0, 0, 0
 	);
 }

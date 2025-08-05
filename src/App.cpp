@@ -1,14 +1,12 @@
 #include "App.h"
 #include "AppRunner.h"
+#include "render/Model.h"
 #include "util/Logger.h"
 
 #include <glm/fwd.hpp>
 
 void App::setup() {
-	mesh = APE::Render::Mesh(
-		vertex_data,
-		index_data
-	);
+	model = APE::Render::Model("res/models/bunny.obj");
 }
 
 void App::update() {
@@ -21,11 +19,11 @@ void App::update() {
 }
 
 void App::draw() {
-	mesh.getTransform().position.x *= -1;
-	AppRunner::draw(mesh);
+	model.getTransform().position.x *= -1;
+	AppRunner::draw(model);
 
-	mesh.getTransform().position.x *= -1;
-	AppRunner::draw(mesh);
+	model.getTransform().position.x *= -1;
+	AppRunner::draw(model);
 }
 
 void App::onKeyDown(SDL_KeyboardEvent key) {
@@ -53,8 +51,8 @@ void App::onKeyDown(SDL_KeyboardEvent key) {
 			cam->moveUp(speed, dt);
 			break;
 		case SDLK_M:
-			mesh.getTransform().position.x += 1;
-			APE_TRACE("Mesh.pos.x = {}", mesh.getTransform().position.x);
+			model.getTransform().position.x += 1;
+			APE_TRACE("Mesh.pos.x = {}", model.getTransform().position.x);
 			break;
 	}
 }

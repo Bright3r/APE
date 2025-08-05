@@ -7,6 +7,7 @@ project(ape)
 find_package(SDL3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 
 add_executable(ape 
 	src/main.cpp
@@ -16,6 +17,7 @@ add_executable(ape
 	src/render/Context.cpp
 	src/render/Renderer.cpp
 	src/render/Mesh.cpp
+	src/render/Model.cpp
 )
 
 target_compile_options(ape PRIVATE
@@ -32,4 +34,5 @@ target_link_libraries(ape PRIVATE
 	SDL3::SDL3
 	glm::glm
 	spdlog::spdlog
+	assimp::assimp
 )

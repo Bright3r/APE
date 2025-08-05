@@ -5,7 +5,7 @@
 #include "render/Context.h"
 #include "render/Renderer.h"
 #include "render/Shader.h"
-#include "render/Mesh.h"
+#include "render/Model.h"
 #include "util/timing.h"
 
 #include <SDL3/SDL_gpu.h>
@@ -53,7 +53,7 @@ public:
 
 	static APE::Render::Camera* getMainCamera();
 
-	static void draw(APE::Render::Mesh& mesh);
+	static void draw(APE::Render::Model& mesh);
 
 
 	// Utility Functions

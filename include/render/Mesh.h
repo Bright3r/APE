@@ -7,6 +7,8 @@
 #include <SDL3/SDL_stdinc.h>
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>
+
+#include <filesystem>
 #include <vector>
 
 namespace APE {
@@ -25,7 +27,6 @@ private:
 	// Mesh data
 	std::vector<PositionColorVertex> m_vertices;
 	std::vector<VertexIndex> m_indices;
-	Transform m_transform;
 
 	// Rendering data
 	SafeGPU::UniqueGPUBuffer m_vertex_buffer;
@@ -43,9 +44,20 @@ private:
 
 public:
 	Mesh() = default;
+
 	Mesh(const std::vector<PositionColorVertex>& vertices, 
-      		const std::vector<VertexIndex>& indices,
-      		const Transform& transform = {});
+      		const std::vector<VertexIndex>& indices);
+
+	~Mesh() = default;
+
+	// not copyable because of unique_ptr
+	Mesh(const Mesh&) = delete;
+	Mesh& operator=(const Mesh&) = delete;
+
+	// moveable
+	Mesh(Mesh&&) noexcept = default;
+	Mesh& operator=(Mesh&&) noexcept = default;
+
 
 	std::vector<PositionColorVertex> getVertices() const;
 
@@ -55,10 +67,6 @@ public:
 
 	void changeMesh(const std::vector<PositionColorVertex>& vertices, 
       		const std::vector<VertexIndex>& indices);
-
-	Transform& getTransform();
-
-	void setTransform(const Transform& transform);
 };
 
 };	// end of namespace Render
