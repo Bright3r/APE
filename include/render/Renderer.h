@@ -6,6 +6,7 @@
 #include "render/Shader.h"
 #include "render/Mesh.h"
 #include "render/Model.h"
+#include "render/Vertex.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <cstring>

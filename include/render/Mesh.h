@@ -1,23 +1,17 @@
 #pragma once
 
 #include "render/SafeGPU.h"
-#include "render/Transform.h"
+#include "render/Vertex.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>
 
-#include <filesystem>
 #include <vector>
 
 namespace APE {
 namespace Render {
-
-struct PositionColorVertex {
-	float x, y, z;
-	Uint8 r, g, b, a;
-};
 
 using VertexIndex = Uint16;
 

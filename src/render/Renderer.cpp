@@ -1,5 +1,6 @@
 #include "render/Renderer.h"
 #include "render/SafeGPU.h"
+#include "render/Vertex.h"
 #include "util/Logger.h"
 
 #include <SDL3/SDL_gpu.h>
@@ -85,33 +86,7 @@ void Renderer::useShader(Shader* shader) {
 		return;
 	}
 
-	// Setup new pipeline config
-	SDL_GPUVertexBufferDescription vertex_buffer_description[] = {{
-			.slot = 0,
-			.pitch = sizeof(PositionColorVertex),
-			.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX,
-			.instance_step_rate = 0,
-	}};
-
-	SDL_GPUVertexAttribute vertex_attributes[] = {{
-		.location = 0,
-		.buffer_slot = 0,
-		.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
-		.offset = 0,
-	}, {
-		.location = 1,
-		.buffer_slot = 0,
-		.format = SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4_NORM,
-		.offset = sizeof(glm::vec3),
-	}};
-
-	SDL_GPUVertexInputState vertex_input_state = {
-		.vertex_buffer_descriptions = vertex_buffer_description,
-		.num_vertex_buffers = 1,
-		.vertex_attributes = vertex_attributes,
-		.num_vertex_attributes = 2,
-	};
-
+	// Color Target
 	SDL_GPUColorTargetDescription color_target_description[] = {{
 		.format = SDL_GetGPUSwapchainTextureFormat(
 			m_context->device, 
@@ -120,6 +95,11 @@ void Renderer::useShader(Shader* shader) {
 		.blend_state = {},
 	}};
 
+	// Vertex layout
+	VertexFormat vertex_format = shader->getVertexFormat();
+	SDL_GPUVertexInputState vertex_input_state = vertex_format.getInputState();
+
+	// Setup new pipeline config
 	SDL_GPUGraphicsPipelineCreateInfo pipeline_create_info = {
 		.vertex_shader = shader->getVertexShader(),
 		.fragment_shader = shader->getFragmentShader(),
@@ -130,6 +110,7 @@ void Renderer::useShader(Shader* shader) {
 			.num_color_targets = 1,
 		},
 	};
+	// Enable backface culling
 	pipeline_create_info.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_BACK;
 
 	// Create fill pipeline

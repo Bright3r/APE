@@ -12,6 +12,7 @@ Shader::Shader(SDL_GPUDevice* device)
 	: m_vert_shader(nullptr)
 	, m_frag_shader(nullptr)
 	, m_device(device)
+	, m_shader_desc(default_shader_desc)
 {
 	m_vert_shader = loadShader(default_shader_desc, SDL_GPU_SHADERSTAGE_VERTEX); 
 	m_frag_shader = loadShader(default_shader_desc, SDL_GPU_SHADERSTAGE_FRAGMENT);
@@ -21,6 +22,7 @@ Shader::Shader(const ShaderDescription& shader_desc, SDL_GPUDevice* device)
 	: m_vert_shader(nullptr)
 	, m_frag_shader(nullptr)
 	, m_device(device)
+	, m_shader_desc(shader_desc)
 {
 	m_vert_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_VERTEX); 
 	m_frag_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_FRAGMENT);
@@ -36,6 +38,7 @@ Shader::Shader(Shader&& other)
 	: m_vert_shader(other.m_vert_shader)
 	, m_frag_shader(other.m_frag_shader)
 	, m_device(other.m_device)
+	, m_shader_desc(other.m_shader_desc)
 {
 	other.m_device = nullptr;
 	other.m_vert_shader = nullptr;
@@ -53,10 +56,13 @@ Shader& Shader::operator=(Shader&& other)
 			SDL_ReleaseGPUShader(m_device, m_frag_shader);
 
 		// Move other's pointers into ours
+		m_device = other.m_device;
 		m_vert_shader = other.m_vert_shader;
 		m_frag_shader = other.m_frag_shader;
+		m_shader_desc = other.m_shader_desc;
 
 		// Clear other
+		other.m_device = nullptr;
 		other.m_vert_shader = nullptr;
 		other.m_frag_shader = nullptr;
 	}
@@ -145,6 +151,16 @@ SDL_GPUShader* Shader::getFragmentShader() const
 SDL_GPUDevice* Shader::getDevice() const
 {
 	return m_device;
+}
+
+VertexFormat Shader::getVertexFormat() const
+{
+	return m_shader_desc.vertex_format;
+}
+
+ShaderDescription Shader::getShaderDescription() const
+{
+	return m_shader_desc;
 }
 
 };	// end of namespace Render
