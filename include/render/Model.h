@@ -14,12 +14,15 @@
 namespace APE {
 namespace Render {
 
-using VertexType = PositionColorVertex;
-using IndexType = Uint16;
-using MeshType = Mesh<VertexType, IndexType>;
-
 class Model {
+public:
+	// Type aliases
+	using VertexType = PositionColorVertex;
+	using IndexType = Uint16;
+	using MeshType = Mesh<VertexType, IndexType>;
+
 private:
+	// Data members
 	std::vector<MeshType> m_meshes;
 	Transform m_transform;
 

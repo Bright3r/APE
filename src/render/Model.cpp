@@ -57,7 +57,7 @@ void Model::processNode(const aiNode* node, const aiScene* scene)
 	}
 }
 
-MeshType Model::processAiMesh(const aiMesh* ai_mesh) const
+Model::MeshType Model::processAiMesh(const aiMesh* ai_mesh) const
 {
 	// Get vertices
 	std::vector<VertexType> vertices;
@@ -97,7 +97,7 @@ MeshType Model::processAiMesh(const aiMesh* ai_mesh) const
 	return Mesh(vertices, indices);
 }
 
-std::vector<MeshType>& Model::getMeshes()
+std::vector<Model::MeshType>& Model::getMeshes()
 {
 	return m_meshes;
 }

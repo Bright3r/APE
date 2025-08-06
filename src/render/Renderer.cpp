@@ -207,12 +207,12 @@ void Renderer::draw(Model& model)
 	);
 
 	glm::mat4 model_mat = model.getTransform().getModelMatrix();
-	for (MeshType& mesh : model.getMeshes()) {
+	for (Model::MeshType& mesh : model.getMeshes()) {
 		draw(mesh, model_mat);
 	}
 }
 
-void Renderer::draw(MeshType& mesh, const glm::mat4& model_mat)
+void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,

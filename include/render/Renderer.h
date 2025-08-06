@@ -28,7 +28,7 @@ static const ShaderDescription default_shader_desc {
 	.num_uniform_buffers = 1, 
 	.num_storage_buffers = 0, 
 	.num_storage_textures = 0,
-	.vertex_format = VertexType::getLayout(),
+	.vertex_format = Model::VertexType::getLayout(),
 };
 
 
@@ -70,7 +70,7 @@ public:
 
 	void draw(Model& model);
 
-	void draw(MeshType& mesh, const glm::mat4& model_mat);
+	void draw(Model::MeshType& mesh, const glm::mat4& model_mat);
 
 private:
 	SafeGPU::UniqueGPUGraphicsPipeline createPipeline(
