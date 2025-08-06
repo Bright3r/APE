@@ -8,16 +8,6 @@
 namespace APE {
 namespace Render {
 
-Shader::Shader(SDL_GPUDevice* device)
-	: m_vert_shader(nullptr)
-	, m_frag_shader(nullptr)
-	, m_device(device)
-	, m_shader_desc(default_shader_desc)
-{
-	m_vert_shader = loadShader(default_shader_desc, SDL_GPU_SHADERSTAGE_VERTEX); 
-	m_frag_shader = loadShader(default_shader_desc, SDL_GPU_SHADERSTAGE_FRAGMENT);
-}
-
 Shader::Shader(const ShaderDescription& shader_desc, SDL_GPUDevice* device)
 	: m_vert_shader(nullptr)
 	, m_frag_shader(nullptr)

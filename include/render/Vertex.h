@@ -43,13 +43,8 @@ struct VertexFormat {
 	SDL_GPUVertexInputState getInputState() const && = delete;
 };
 
-struct RawVertexData {
-	std::vector<Uint8> vertex_bytes;
-	VertexFormat layout;
-};
-
 struct PositionColorVertex {
-	float x, y, z;
+	glm::vec3 pos;
 	Uint8 r, g, b, a;
 
 	static VertexFormat getLayout()

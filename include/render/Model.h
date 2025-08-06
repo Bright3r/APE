@@ -2,6 +2,7 @@
 
 #include "render/Mesh.h"
 #include "render/Transform.h"
+#include "render/Vertex.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -13,9 +14,13 @@
 namespace APE {
 namespace Render {
 
+using VertexType = PositionColorVertex;
+using IndexType = Uint16;
+using MeshType = Mesh<VertexType, IndexType>;
+
 class Model {
 private:
-	std::vector<Mesh> m_meshes;
+	std::vector<MeshType> m_meshes;
 	Transform m_transform;
 
 public:
@@ -25,7 +30,7 @@ public:
 
 	void loadModel(std::filesystem::path model_path);
 
-	std::vector<Mesh>& getMeshes();
+	std::vector<MeshType>& getMeshes();
 
 	Transform& getTransform();
 
@@ -34,7 +39,7 @@ public:
 private:
 	void processNode(const aiNode* node, const aiScene* scene);
 
-	Mesh processAiMesh(const aiMesh* ai_mesh) const;
+	MeshType processAiMesh(const aiMesh* ai_mesh) const;
 };
 
 };	// end of namespace Render

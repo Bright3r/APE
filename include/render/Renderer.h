@@ -21,6 +21,16 @@ struct ModelViewProjUniform {
 	glm::mat4 proj;
 };
 
+static const ShaderDescription default_shader_desc {
+	.vert_shader_filepath = "res/shaders/PositionColorUniform.vert.spv",
+	.frag_shader_filepath = "res/shaders/SolidColor.frag.spv",
+	.num_samplers = 0, 
+	.num_uniform_buffers = 1, 
+	.num_storage_buffers = 0, 
+	.num_storage_textures = 0,
+	.vertex_format = VertexType::getLayout(),
+};
+
 
 class Renderer {
 private:
@@ -60,7 +70,7 @@ public:
 
 	void draw(Model& model);
 
-	void draw(Mesh& mesh, const glm::mat4& model_mat);
+	void draw(MeshType& mesh, const glm::mat4& model_mat);
 
 private:
 	SafeGPU::UniqueGPUGraphicsPipeline createPipeline(

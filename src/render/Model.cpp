@@ -57,10 +57,10 @@ void Model::processNode(const aiNode* node, const aiScene* scene)
 	}
 }
 
-Mesh Model::processAiMesh(const aiMesh* ai_mesh) const
+MeshType Model::processAiMesh(const aiMesh* ai_mesh) const
 {
 	// Get vertices
-	std::vector<PositionColorVertex> vertices;
+	std::vector<VertexType> vertices;
 	for (size_t i = 0; i < ai_mesh->mNumVertices; ++i) {
 		// Get vertex pos
 		aiVector3D ai_vertex = ai_mesh->mVertices[i];
@@ -79,15 +79,13 @@ Mesh Model::processAiMesh(const aiMesh* ai_mesh) const
 		Uint8 b = rand() % 255;
 		Uint8 a = 255;
 		vertices.push_back({
-			ai_vertex.x,
-			ai_vertex.y,
-			ai_vertex.z,
+			glm::vec3(ai_vertex.x, ai_vertex.y, ai_vertex.z),
 			r, g, b, a
 		});
 	}
 
 	// Get indices for each face
-	std::vector<VertexIndex> indices;
+	std::vector<IndexType> indices;
 	for (size_t i = 0; i < ai_mesh->mNumFaces; ++i) {
 		// Process face's indices
 		aiFace face = ai_mesh->mFaces[i];
@@ -99,7 +97,7 @@ Mesh Model::processAiMesh(const aiMesh* ai_mesh) const
 	return Mesh(vertices, indices);
 }
 
-std::vector<Mesh>& Model::getMeshes()
+std::vector<MeshType>& Model::getMeshes()
 {
 	return m_meshes;
 }

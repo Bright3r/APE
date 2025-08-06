@@ -21,16 +21,6 @@ struct ShaderDescription {
 	VertexFormat vertex_format;
 };
 
-static const ShaderDescription default_shader_desc {
-	.vert_shader_filepath = "res/shaders/PositionColorUniform.vert.spv",
-	.frag_shader_filepath = "res/shaders/SolidColor.frag.spv",
-	.num_samplers = 0, 
-	.num_uniform_buffers = 1, 
-	.num_storage_buffers = 0, 
-	.num_storage_textures = 0,
-	.vertex_format = PositionColorVertex::getLayout(),
-};
-
 class Shader {
 private:
 	SDL_GPUShader* m_vert_shader;
@@ -39,8 +29,6 @@ private:
 	ShaderDescription m_shader_desc;
 
 public:
-	Shader(SDL_GPUDevice* device);
-
 	Shader(const ShaderDescription& shader_desc, SDL_GPUDevice *device);
 
 	~Shader();

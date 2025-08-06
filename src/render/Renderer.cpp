@@ -26,7 +26,10 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	);
 
 	// Construct default shader
-	std::unique_ptr<Shader> shader = std::make_unique<Shader>(context->device);
+	std::unique_ptr<Shader> shader = std::make_unique<Shader>(
+		default_shader_desc,
+		context->device
+	);
 	useShader(shader.get());
 }
 
@@ -204,12 +207,12 @@ void Renderer::draw(Model& model)
 	);
 
 	glm::mat4 model_mat = model.getTransform().getModelMatrix();
-	for (Mesh& mesh : model.getMeshes()) {
+	for (MeshType& mesh : model.getMeshes()) {
 		draw(mesh, model_mat);
 	}
 }
 
-void Renderer::draw(Mesh& mesh, const glm::mat4& model_mat)
+void Renderer::draw(MeshType& mesh, const glm::mat4& model_mat)
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,

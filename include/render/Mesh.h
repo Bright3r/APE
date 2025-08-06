@@ -13,14 +13,13 @@
 namespace APE {
 namespace Render {
 
-using VertexIndex = Uint16;
-
+template <typename VertexType, typename IndexType>
 class Mesh {
 	friend class Renderer;
 private:
 	// Mesh data
-	std::vector<PositionColorVertex> m_vertices;
-	std::vector<VertexIndex> m_indices;
+	std::vector<VertexType> m_vertices;
+	std::vector<IndexType> m_indices;
 
 	// Rendering data
 	SafeGPU::UniqueGPUBuffer m_vertex_buffer;
@@ -28,19 +27,38 @@ private:
 
 
 	// Private methods
-	SDL_GPUBuffer* getVertexBuffer() const;
+	SDL_GPUBuffer* getVertexBuffer() const
+	{
+		return m_vertex_buffer.get();
+	}
 
-	void setVertexBuffer(SafeGPU::UniqueGPUBuffer buf);
+	void setVertexBuffer(SafeGPU::UniqueGPUBuffer buf)
+	{
+		m_vertex_buffer = std::move(buf);
+	}
 
-	SDL_GPUBuffer* getIndexBuffer() const;
+	SDL_GPUBuffer* getIndexBuffer() const
+	{
+		return m_index_buffer.get();
+	}
 
-	void setIndexBuffer(SafeGPU::UniqueGPUBuffer buf);
+	void setIndexBuffer(SafeGPU::UniqueGPUBuffer buf)
+	{
+		m_index_buffer = std::move(buf);
+	}
 
 public:
 	Mesh() = default;
 
-	Mesh(const std::vector<PositionColorVertex>& vertices, 
-      		const std::vector<VertexIndex>& indices);
+	Mesh(const std::vector<VertexType>& vertices, 
+		const std::vector<IndexType>& indices)
+		: m_vertices(vertices)
+		, m_indices(indices)
+		, m_vertex_buffer(nullptr)
+		, m_index_buffer(nullptr)
+	{
+
+	}
 
 	~Mesh() = default;
 
@@ -53,14 +71,32 @@ public:
 	Mesh& operator=(Mesh&&) noexcept = default;
 
 
-	std::vector<PositionColorVertex> getVertices() const;
+	std::vector<VertexType> getVertices() const
+	{
+		return m_vertices;
+	}
 
-	std::vector<VertexIndex> getIndices() const;
+	std::vector<IndexType> getIndices() const
+	{
+		return m_indices;
+	}
 
-	void changeTopology(const std::vector<VertexIndex> indices);
+	void changeTopology(const std::vector<IndexType> indices)
+	{
+		m_indices = indices;
+		m_index_buffer = nullptr;
+	}
 
-	void changeMesh(const std::vector<PositionColorVertex>& vertices, 
-      		const std::vector<VertexIndex>& indices);
+	void changeMesh(const std::vector<VertexType>& vertices, 
+      		const std::vector<IndexType>& indices)
+	{
+		m_vertices = vertices;
+		m_indices = indices;
+
+		m_vertex_buffer = nullptr;
+		m_index_buffer = nullptr;
+	}
+
 };
 
 };	// end of namespace Render

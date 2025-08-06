@@ -16,7 +16,6 @@ add_executable(ape
 	src/render/Shader.cpp
 	src/render/Context.cpp
 	src/render/Renderer.cpp
-	src/render/Mesh.cpp
 	src/render/Model.cpp
 )
 
