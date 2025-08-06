@@ -219,8 +219,8 @@ void Renderer::draw(Mesh& mesh, const glm::mat4& model_mat)
 	// Check if gpu vertex buffer was already created
 	if (!mesh.getVertexBuffer()) {
 		// Create GPU buffer with vertex data
-		SDL_GPUBuffer* vertex_buffer = uploadBuffer<PositionColorVertex>(
-			mesh.getVertices(),
+		SDL_GPUBuffer* vertex_buffer = uploadBuffer(
+			vectorToRawBytes(mesh.getVertices()),
 			SDL_GPU_BUFFERUSAGE_VERTEX
 		);
 
@@ -249,8 +249,8 @@ void Renderer::draw(Mesh& mesh, const glm::mat4& model_mat)
 	// Check if gpu index buffer was already created
 	if (!mesh.getIndexBuffer()) {
 		// Create GPU buffer with index data
-		SDL_GPUBuffer* index_buffer = uploadBuffer<VertexIndex>(
-			mesh.getIndices(),
+		SDL_GPUBuffer* index_buffer = uploadBuffer(
+			vectorToRawBytes(mesh.getIndices()),
 			SDL_GPU_BUFFERUSAGE_INDEX
 		);
 
@@ -295,6 +295,71 @@ void Renderer::draw(Mesh& mesh, const glm::mat4& model_mat)
 		mesh.getIndices().size(), 
 		1, 0, 0, 0
 	);
+}
+
+SDL_GPUBuffer* Renderer::uploadBuffer(const std::vector<Uint8>& data, Uint32 usage)
+{
+	// Create GPU buffer
+	Uint32 buffer_size = data.size();
+	SDL_GPUBufferCreateInfo buffer_info = {
+		.usage = usage,
+		.size = buffer_size,
+	};
+
+	SDL_GPUBuffer *buffer = SDL_CreateGPUBuffer(
+		m_context->device,
+		&buffer_info
+	);
+
+	// Create transfer buffer
+	SDL_GPUTransferBufferCreateInfo transfer_info = {
+		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+		.size = buffer_size,
+	};
+
+	SDL_GPUTransferBuffer *transfer_buffer = SDL_CreateGPUTransferBuffer(
+		m_context->device, 
+		&transfer_info
+	);
+
+	// Write data to transfer buffer
+	Uint8* mapped = static_cast<Uint8*>(
+		SDL_MapGPUTransferBuffer(
+			m_context->device, 
+			transfer_buffer, 
+			false
+		)
+	);
+
+	std::memcpy(mapped, data.data(), buffer_size);
+
+	SDL_UnmapGPUTransferBuffer(m_context->device, transfer_buffer);
+
+	// Upload transfer buffer to GPU read-only memory
+	SDL_GPUCommandBuffer *cmd_buffer = SDL_AcquireGPUCommandBuffer(
+		m_context->device
+	);
+	SDL_GPUCopyPass *copy_pass = SDL_BeginGPUCopyPass(cmd_buffer);
+
+	SDL_GPUTransferBufferLocation src = {
+		.transfer_buffer = transfer_buffer,
+		.offset = 0,
+	};
+	SDL_GPUBufferRegion dest = {
+		.buffer = buffer,
+		.offset = 0,
+		.size = buffer_size,
+	};
+	SDL_UploadToGPUBuffer(copy_pass, &src, &dest, false);
+
+	// Execute copy pass
+	SDL_EndGPUCopyPass(copy_pass);
+	SDL_SubmitGPUCommandBuffer(cmd_buffer);
+
+	// Cleanup resources
+	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buffer);
+
+	return buffer;
 }
 
 }; // end of namespace Render
