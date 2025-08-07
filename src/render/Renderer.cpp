@@ -31,6 +31,9 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 		context->device
 	);
 	useShader(shader.get());
+
+	m_image = std::make_unique<Image>("res/textures/ravioli.bmp", 4);
+	m_texture = createTexture(m_image.get());
 }
 
 Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader)
@@ -50,6 +53,9 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 	);
 
 	useShader(shader);
+
+	m_image = std::make_unique<Image>("res/textures/ravioli.bmp", 4);
+	m_texture = createTexture(m_image.get());
 }
 
 std::unique_ptr<Shader> Renderer::createShader(ShaderDescription shader_desc) const
@@ -219,6 +225,8 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 		"Renderer::draw(Mesh& mesh) Failed: beginDrawing() not called"
 	);
 
+
+
 	// Check if gpu vertex buffer was already created
 	if (!mesh.getVertexBuffer()) {
 		// Create GPU buffer with vertex data
@@ -364,6 +372,74 @@ SDL_GPUBuffer* Renderer::uploadBuffer(const std::vector<Uint8>& data, Uint32 usa
 
 	return buffer;
 }
+
+SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
+{
+	// Create texture
+	SDL_GPUTextureCreateInfo tex_desc = {
+		.type = SDL_GPU_TEXTURETYPE_2D,
+		.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
+		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER,
+		.width = image->getWidth(),
+		.height = image->getHeight(),
+		.layer_count_or_depth = 1,
+		.num_levels = 1,
+	};
+	SDL_GPUTexture* texture = SDL_CreateGPUTexture(m_context->device, &tex_desc);
+
+	// Make safe wrapper around texture
+	SafeGPU::UniqueGPUTexture safe_tex = SafeGPU::makeUnique<SDL_GPUTexture>(
+		texture,
+		[=](SDL_GPUTexture* tex) {
+			SDL_ReleaseGPUTexture(m_context->device, tex);
+		}
+	);
+
+	// Create transfer buffer
+	SDL_GPUTransferBufferCreateInfo transfer_desc = {
+		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+		.size = image->getSize(),
+	};
+	SDL_GPUTransferBuffer* transfer_buf = SDL_CreateGPUTransferBuffer(
+		m_context->device,
+		&transfer_desc
+	);
+
+	// Write data to transfer buffer
+	Uint8* mapped = static_cast<Uint8*>(SDL_MapGPUTransferBuffer(
+		m_context->device, 
+		transfer_buf, 
+		false
+	));
+	SDL_memcpy(mapped, image->getPixels(), image->getSize());
+	SDL_UnmapGPUTransferBuffer(m_context->device, transfer_buf);
+
+	// Upload transfer buffer to gpu
+	SDL_GPUCommandBuffer* cmd_buf = SDL_AcquireGPUCommandBuffer(
+		m_context->device
+	);
+	SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd_buf);
+
+	SDL_GPUTextureTransferInfo src = {
+		.transfer_buffer = transfer_buf,
+		.offset = 0,
+	};
+	SDL_GPUTextureRegion dest = {
+		.texture = texture,
+		.w = image->getWidth(),
+		.h = image->getHeight(),
+		.d = 1,
+	};
+	SDL_UploadToGPUTexture(copy_pass, &src, &dest, false);
+
+	// Cleanup resources
+	SDL_EndGPUCopyPass(copy_pass);
+	SDL_SubmitGPUCommandBuffer(cmd_buf);
+	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buf);
+
+	return safe_tex;
+}
+
 
 }; // end of namespace Render
 }; // end of namespace APE

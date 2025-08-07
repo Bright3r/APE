@@ -37,6 +37,7 @@ inline SharedGPUResource<SDL_T> makeShared(
 using UniqueGPUBuffer = UniqueGPUResource<SDL_GPUBuffer>;
 using SharedGPUBuffer = SharedGPUResource<SDL_GPUBuffer>;
 using UniqueGPUGraphicsPipeline = UniqueGPUResource<SDL_GPUGraphicsPipeline>;
+using UniqueGPUTexture = UniqueGPUResource<SDL_GPUTexture>;
 
 };	// end of namespace SafeGPU
 

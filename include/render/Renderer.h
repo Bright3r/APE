@@ -6,6 +6,7 @@
 #include "render/Shader.h"
 #include "render/Mesh.h"
 #include "render/Model.h"
+#include "render/Image.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <glm/fwd.hpp>
@@ -46,6 +47,9 @@ private:
 	SDL_GPUCommandBuffer* m_cmd_buf;
 	bool m_is_drawing;
 
+	std::unique_ptr<Image> m_image;
+	SafeGPU::UniqueGPUTexture m_texture;
+
 
 public:
 	// Special Member Functions
@@ -77,6 +81,8 @@ private:
 		const SDL_GPUGraphicsPipelineCreateInfo& create_info) const;
 
 	SDL_GPUBuffer* uploadBuffer(const std::vector<Uint8>& data, Uint32 usage);
+
+	SafeGPU::UniqueGPUTexture createTexture(Image* image);
 
 	template <typename T>
 	static std::vector<Uint8> vectorToRawBytes(const std::vector<T>& data)
