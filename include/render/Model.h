@@ -17,7 +17,7 @@ namespace Render {
 class Model {
 public:
 	// Type aliases
-	using VertexType = PositionColorVertex;
+	using VertexType = TextureVertex;
 	using IndexType = Uint16;
 	using MeshType = Mesh<VertexType, IndexType>;
 

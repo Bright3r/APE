@@ -6,7 +6,7 @@
 #include <glm/fwd.hpp>
 
 void App::setup() {
-	model = APE::Render::Model("res/models/bunny.obj");
+	model = APE::Render::Model("res/models/ship/source/full_scene.fbx");
 }
 
 void App::update() {

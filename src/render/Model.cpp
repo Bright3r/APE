@@ -61,26 +61,39 @@ Model::MeshType Model::processAiMesh(const aiMesh* ai_mesh) const
 {
 	// Get vertices
 	std::vector<VertexType> vertices;
+	vertices.reserve(ai_mesh->mNumVertices);
 	for (size_t i = 0; i < ai_mesh->mNumVertices; ++i) {
-		// Get vertex pos
 		aiVector3D ai_vertex = ai_mesh->mVertices[i];
 
+		// Get vertex pos
+		glm::vec3 pos { 
+			ai_vertex.x, 
+			ai_vertex.y, 
+			ai_vertex.z 
+		};
+
 		// Get texture coords
-		float u {};
-		float v {};
-		if (ai_mesh->mTextureCoords[0]) {
-			u = ai_mesh->mTextureCoords[0][i].x;
-			v = ai_mesh->mTextureCoords[0][i].y;
+		glm::vec2 uv = { 0, 0 };
+		if (ai_mesh->HasTextureCoords(0)) {
+			APE_TRACE("HAS TEXTURE COORDS");
+			uv[0] = ai_mesh->mTextureCoords[0][i].x;
+			uv[1] = ai_mesh->mTextureCoords[0][i].y;
+		}
+		else APE_TRACE("NO TEXTURE COORDS");
+
+		// Get vertex normal
+		glm::vec3 normal = { 0, 0, 0 };
+		if (ai_mesh->HasNormals()) {
+			normal.x = ai_mesh->mNormals[i].x;
+			normal.y = ai_mesh->mNormals[i].y;
+			normal.z = ai_mesh->mNormals[i].z;
 		}
 
 		// Add vertex
-		Uint8 r = rand() % 255;
-		Uint8 g = rand() % 255;
-		Uint8 b = rand() % 255;
-		Uint8 a = 255;
 		vertices.push_back({
-			glm::vec3(ai_vertex.x, ai_vertex.y, ai_vertex.z),
-			r, g, b, a
+			.pos = pos,
+			.normal = normal,
+			.uv = uv,
 		});
 	}
 
@@ -94,7 +107,7 @@ Model::MeshType Model::processAiMesh(const aiMesh* ai_mesh) const
 		}
 	}
 
-	return Mesh(vertices, indices);
+	return MeshType(vertices, indices);
 }
 
 std::vector<Model::MeshType>& Model::getMeshes()

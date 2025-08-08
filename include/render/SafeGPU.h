@@ -38,6 +38,7 @@ using UniqueGPUBuffer = UniqueGPUResource<SDL_GPUBuffer>;
 using SharedGPUBuffer = SharedGPUResource<SDL_GPUBuffer>;
 using UniqueGPUGraphicsPipeline = UniqueGPUResource<SDL_GPUGraphicsPipeline>;
 using UniqueGPUTexture = UniqueGPUResource<SDL_GPUTexture>;
+using UniqueGPUSampler = UniqueGPUResource<SDL_GPUSampler>;
 
 };	// end of namespace SafeGPU
 

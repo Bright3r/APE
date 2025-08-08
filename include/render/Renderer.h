@@ -23,7 +23,7 @@ struct ModelViewProjUniform {
 };
 
 static const ShaderDescription default_shader_desc {
-	.vert_shader_filepath = "res/shaders/PositionColorUniform.vert.spv",
+	.vert_shader_filepath = "res/shaders/Default.vert.spv",
 	.frag_shader_filepath = "res/shaders/SolidColor.frag.spv",
 	.num_samplers = 0, 
 	.num_uniform_buffers = 1, 
@@ -49,6 +49,7 @@ private:
 
 	std::unique_ptr<Image> m_image;
 	SafeGPU::UniqueGPUTexture m_texture;
+	SafeGPU::UniqueGPUSampler m_sampler;
 
 
 public:
@@ -83,6 +84,8 @@ private:
 	SDL_GPUBuffer* uploadBuffer(const std::vector<Uint8>& data, Uint32 usage);
 
 	SafeGPU::UniqueGPUTexture createTexture(Image* image);
+
+	SafeGPU::UniqueGPUSampler createSampler();
 
 	template <typename T>
 	static std::vector<Uint8> vectorToRawBytes(const std::vector<T>& data)

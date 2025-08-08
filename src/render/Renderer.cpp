@@ -34,6 +34,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 
 	m_image = std::make_unique<Image>("res/textures/ravioli.bmp", 4);
 	m_texture = createTexture(m_image.get());
+	m_sampler = createSampler();
 }
 
 Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader)
@@ -56,6 +57,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 
 	m_image = std::make_unique<Image>("res/textures/ravioli.bmp", 4);
 	m_texture = createTexture(m_image.get());
+	m_sampler = createSampler();
 }
 
 std::unique_ptr<Shader> Renderer::createShader(ShaderDescription shader_desc) const
@@ -225,8 +227,6 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 		"Renderer::draw(Mesh& mesh) Failed: beginDrawing() not called"
 	);
 
-
-
 	// Check if gpu vertex buffer was already created
 	if (!mesh.getVertexBuffer()) {
 		// Create GPU buffer with vertex data
@@ -256,6 +256,7 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 		&vertex_buffer_binding,
 		1
 	);
+
 
 	// Check if gpu index buffer was already created
 	if (!mesh.getIndexBuffer()) {
@@ -298,6 +299,19 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 		0,
 		&mvp_uniform,
 		sizeof(mvp_uniform)
+	);
+
+
+	// Bind texture sampler
+	SDL_GPUTextureSamplerBinding sampler_binding = {
+		.texture = m_texture.get(),
+		.sampler = m_sampler.get(),
+	};
+	SDL_BindGPUFragmentSamplers(
+		m_render_pass,
+		0,
+		&sampler_binding,
+		1
 	);
 
 	// Draw mesh
@@ -440,6 +454,29 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 	return safe_tex;
 }
 
+SafeGPU::UniqueGPUSampler Renderer::createSampler()
+{
+	SDL_GPUSamplerCreateInfo sampler_desc = {
+		.min_filter = SDL_GPU_FILTER_NEAREST,
+		.mag_filter = SDL_GPU_FILTER_NEAREST,
+		.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
+		.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+		.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+	};
+	SDL_GPUSampler* sampler = SDL_CreateGPUSampler(
+		m_context->device,
+		&sampler_desc
+	);
+
+	SafeGPU::UniqueGPUSampler safe_sampler = SafeGPU::makeUnique<SDL_GPUSampler>(
+		sampler,
+		[=](SDL_GPUSampler* sam) {
+			SDL_ReleaseGPUSampler(m_context->device, sam);
+		}
+	);
+	return safe_sampler;
+}
 
 }; // end of namespace Render
 }; // end of namespace APE

@@ -74,7 +74,37 @@ struct PositionColorVertex {
 
 struct TextureVertex {
 	glm::vec3 pos;
+	glm::vec3 normal;
 	glm::vec2 uv;
+
+	static VertexFormat getLayout()
+	{
+		std::vector<SDL_GPUVertexBufferDescription> buffer_desc = {{
+			.slot = 0,
+			.pitch = sizeof(TextureVertex),
+			.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX,
+			.instance_step_rate = 0,
+		}};
+
+		std::vector<SDL_GPUVertexAttribute> attributes = {{
+			.location = 0,
+			.buffer_slot = 0,
+			.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+			.offset = 0,
+		}, {
+			.location = 1,
+			.buffer_slot = 0,
+			.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+			.offset = sizeof(glm::vec3),
+		}, {
+			.location = 2,
+			.buffer_slot = 0,
+			.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
+			.offset = sizeof(glm::vec3) * 2,
+		}};
+
+		return VertexFormat(attributes, buffer_desc);
+	}
 };
 
 };	// end of namespace Render
