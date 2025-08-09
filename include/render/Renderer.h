@@ -24,7 +24,7 @@ struct ModelViewProjUniform {
 
 static const ShaderDescription default_shader_desc {
 	.vert_shader_filepath = "res/shaders/Default.vert.spv",
-	.frag_shader_filepath = "res/shaders/SolidColor.frag.spv",
+	.frag_shader_filepath = "res/shaders/Default.frag.spv",
 	.num_samplers = 0, 
 	.num_uniform_buffers = 1, 
 	.num_storage_buffers = 0, 
@@ -47,8 +47,6 @@ private:
 	SDL_GPUCommandBuffer* m_cmd_buf;
 	bool m_is_drawing;
 
-	std::unique_ptr<Image> m_image;
-	SafeGPU::UniqueGPUTexture m_texture;
 	SafeGPU::UniqueGPUSampler m_sampler;
 
 

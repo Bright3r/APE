@@ -40,9 +40,21 @@ public:
 	void setTransform(const Transform& transform);
 
 private:
-	void processNode(const aiNode* node, const aiScene* scene);
+	static Transform convertAiTransform(const aiMatrix4x4 ai_transform);
 
-	MeshType processAiMesh(const aiMesh* ai_mesh) const;
+	static std::shared_ptr<Image> convertAiMaterial(
+		const aiMaterial* ai_mat,
+		const aiScene* scene);
+
+	void processNode(
+		const aiNode* node,
+		const aiScene* scene,
+		const Transform& parent_transform);
+
+	Model::MeshType processAiMesh(
+		const aiMesh* ai_mesh,
+		std::shared_ptr<Image> texture,
+		const Transform& transform) const;
 };
 
 };	// end of namespace Render

@@ -32,8 +32,6 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	);
 	useShader(shader.get());
 
-	m_image = std::make_unique<Image>("res/textures/ravioli.bmp", 4);
-	m_texture = createTexture(m_image.get());
 	m_sampler = createSampler();
 }
 
@@ -55,8 +53,6 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 
 	useShader(shader);
 
-	m_image = std::make_unique<Image>("res/textures/ravioli.bmp", 4);
-	m_texture = createTexture(m_image.get());
 	m_sampler = createSampler();
 }
 
@@ -288,6 +284,29 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 	);
 
 
+	// Check if mesh texture was uploaded yet
+	if (!mesh.getTextureBuffer()) {
+		// Create GPU Texture
+		SafeGPU::UniqueGPUTexture gpu_tex = createTexture(
+			mesh.getTexture().get()
+		);
+		mesh.setTextureBuffer(std::move(gpu_tex));
+	}
+
+	// Bind texture sampler
+	mesh.getTexture()->trace();
+	SDL_GPUTextureSamplerBinding sampler_binding = {
+		.texture = mesh.getTextureBuffer(),
+		.sampler = m_sampler.get(),
+	};
+	SDL_BindGPUFragmentSamplers(
+		m_render_pass,
+		0,
+		&sampler_binding,
+		1
+	);
+
+
 	// Bind MVP matrix uniform
 	ModelViewProjUniform mvp_uniform { 
 		glm::transpose(model_mat),
@@ -301,18 +320,6 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 		sizeof(mvp_uniform)
 	);
 
-
-	// Bind texture sampler
-	SDL_GPUTextureSamplerBinding sampler_binding = {
-		.texture = m_texture.get(),
-		.sampler = m_sampler.get(),
-	};
-	SDL_BindGPUFragmentSamplers(
-		m_render_pass,
-		0,
-		&sampler_binding,
-		1
-	);
 
 	// Draw mesh
 	SDL_DrawGPUIndexedPrimitives(
@@ -400,6 +407,7 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 		.num_levels = 1,
 	};
 	SDL_GPUTexture* texture = SDL_CreateGPUTexture(m_context->device, &tex_desc);
+	SDL_SetGPUTextureName(m_context->device, texture, "Ravioli");
 
 	// Make safe wrapper around texture
 	SafeGPU::UniqueGPUTexture safe_tex = SafeGPU::makeUnique<SDL_GPUTexture>(

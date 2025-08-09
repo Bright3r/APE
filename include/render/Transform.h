@@ -30,6 +30,14 @@ struct Transform {
 
 		return T * R * S;
 	}
+
+	Transform operator*(const Transform& other) const
+	{
+		glm::vec3 pos = this->position * other.position;
+		glm::vec3 scale = this->scale * other.scale;
+		glm::quat rot = this->rotation * other.rotation;
+		return Transform(pos, scale, rot);
+	}
 };
 
 };	// end of namespace Render

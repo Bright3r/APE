@@ -6,7 +6,8 @@
 #include <glm/fwd.hpp>
 
 void App::setup() {
-	model = APE::Render::Model("res/models/ship/source/full_scene.fbx");
+	model = APE::Render::Model("res/models/textured-cube.obj");
+	// model = APE::Render::Model("res/models/che/scene.gltf");
 }
 
 void App::update() {

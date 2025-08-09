@@ -1,6 +1,7 @@
 #include "render/Model.h"
 #include "util/Logger.h"
 #include <SDL3/SDL_stdinc.h>
+#include <assimp/material.h>
 #include <cstdlib>
 #include <vector>
 
@@ -36,28 +37,104 @@ void Model::loadModel(std::filesystem::path model_path)
 		return;
 	}
 
-	processNode(scene->mRootNode, scene);
+	processNode(scene->mRootNode, scene, m_transform);
 }
 
-void Model::processNode(const aiNode* node, const aiScene* scene)
+Transform Model::convertAiTransform(const aiMatrix4x4 ai_transform)
 {
+	aiVector3f ai_pos;
+	aiVector3f ai_scale;
+	aiQuaternion ai_rot;
+	ai_transform.Decompose(ai_scale, ai_rot, ai_pos);
+
+	return Transform(
+		glm::vec3(ai_pos.x, ai_pos.y, ai_pos.z),
+		glm::vec3(ai_scale.x, ai_scale.y, ai_scale.z),
+		glm::quat(ai_rot.w, ai_rot.x, ai_rot.y, ai_rot.z)
+	);
+}
+
+std::shared_ptr<Image> Model::convertAiMaterial(
+	const aiMaterial* ai_mat,
+	const aiScene* scene)
+{
+	//
+	// Bypass texture loading for now
+	//
+	return std::make_shared<Image>();
+
+	// Check for diffuse texture
+	if (ai_mat->GetTextureCount(aiTextureType_DIFFUSE) <=  0) {
+		APE_ERROR(
+			"Model::convertAiMaterial Failed - diffuse texture not found."
+		);
+		return std::make_shared<Image>();
+	}
+
+	// Get diffuse texture path
+	aiString path;
+	if (ai_mat->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+		// Check if texture is embedded in model file
+		if (path.length > 0 && path.data[0] == '*') {
+			int tex_idx = std::atoi(path.C_Str() + 1);
+			aiTexture* ai_tex = scene->mTextures[tex_idx];
+
+			return std::make_shared<Image>(
+				ai_tex->mWidth,
+				ai_tex->mHeight,
+				ai_tex->pcData
+			);
+		}
+		// otherwise create texture from file
+		else {
+			return std::make_shared<Image>(path.C_Str(), 1);
+		}
+	}
+
+	// Return random texture on failure
+	APE_ERROR(
+		"Model::convertAiMaterial Failed - could not load diffuse texture."
+	);
+	return std::make_shared<Image>();
+}
+
+void Model::processNode(
+	const aiNode* node,
+	const aiScene* scene,
+	const Transform& parent_transform)
+{
+	// Get world transformation of current node
+	Transform curr_transform = 
+		parent_transform * convertAiTransform(node->mTransformation);
+
 	// Convert nodes aiMeshes into our own Meshes
 	for (size_t i = 0; i < node->mNumMeshes; ++i) {
 		// Get aiMesh
 		unsigned int mesh_idx = node->mMeshes[i];
 		aiMesh* ai_mesh = scene->mMeshes[mesh_idx];
 
+		// Get texture for current mesh
+		aiMaterial* ai_mat = scene->mMaterials[ai_mesh->mMaterialIndex];
+		std::shared_ptr<Image> texture = convertAiMaterial(ai_mat, scene);
+
 		// Add Mesh to model
-		m_meshes.emplace_back(processAiMesh(ai_mesh));
+		m_meshes.emplace_back(processAiMesh(
+			ai_mesh,
+			texture,
+			curr_transform
+		));
 	}
 
 	// Process child nodes
 	for (size_t i = 0; i < node->mNumChildren; ++i) {
-		processNode(node->mChildren[i], scene);
+		processNode(node->mChildren[i], scene, curr_transform);
 	}
 }
 
-Model::MeshType Model::processAiMesh(const aiMesh* ai_mesh) const
+Model::MeshType Model::processAiMesh(
+	const aiMesh* ai_mesh,
+	std::shared_ptr<Image> texture,
+	const Transform& transform) const
 {
 	// Get vertices
 	std::vector<VertexType> vertices;
@@ -75,11 +152,9 @@ Model::MeshType Model::processAiMesh(const aiMesh* ai_mesh) const
 		// Get texture coords
 		glm::vec2 uv = { 0, 0 };
 		if (ai_mesh->HasTextureCoords(0)) {
-			APE_TRACE("HAS TEXTURE COORDS");
 			uv[0] = ai_mesh->mTextureCoords[0][i].x;
 			uv[1] = ai_mesh->mTextureCoords[0][i].y;
 		}
-		else APE_TRACE("NO TEXTURE COORDS");
 
 		// Get vertex normal
 		glm::vec3 normal = { 0, 0, 0 };
@@ -107,7 +182,7 @@ Model::MeshType Model::processAiMesh(const aiMesh* ai_mesh) const
 		}
 	}
 
-	return MeshType(vertices, indices);
+	return MeshType(vertices, indices, texture, transform);
 }
 
 std::vector<Model::MeshType>& Model::getMeshes()

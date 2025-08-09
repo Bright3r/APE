@@ -2,21 +2,45 @@
 
 #include "util/Logger.h"
 #include <SDL3/SDL_surface.h>
+#include <algorithm>
 #include <filesystem>
 
 #include <SDL3/SDL_gpu.h>
+#include <vector>
 
 namespace APE {
 namespace Render {
+
+struct Pixel {
+	Uint8 a, b, g, r;
+};
 
 class Image {
 private:
 	SDL_Surface* m_data;
 
+	inline static Pixel s_default_tex = {
+		255, 255, 255, 255
+	};
+
 public:
+	Image()
+	{
+		// m_data = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ABGR8888);
+		// m_data->pixels = &s_default_tex;
+		m_data = loadImage("res/textures/ravioli.bmp", 4);
+		APE_TRACE("DEFAULT_TEX USED");
+	}
+
 	Image(std::filesystem::path path, int num_channels)
 	{
 		m_data = loadImage(path, num_channels);
+	}
+
+	Image(int width, int height, void* data)
+	{
+		m_data = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ABGR8888);
+		m_data->pixels = data;
 	}
 
 	~Image()
@@ -71,6 +95,29 @@ public:
 	void* getPixels() const
 	{
 		return m_data->pixels;
+	}
+
+	void trace() const
+	{
+		unsigned char* pixel = static_cast<unsigned char*>(m_data->pixels);
+		std::vector<int> nums;
+		for (int x = 0; x < getWidth(); ++x) {
+			for (int y = 0; y < getHeight(); ++y) {
+				int num = static_cast<int>(pixel[x + x*y]);
+				nums.push_back(num);
+			}
+		}
+
+		std::string str;
+		for (int num : nums) {
+			str += std::to_string(num) + " ";
+		}
+		APE_TRACE(
+			"width = {} \n height = {} \n Pixels = {}",
+			getWidth(),
+			getHeight(),
+			str
+		);
 	}
 };
 
