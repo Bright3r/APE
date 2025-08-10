@@ -82,7 +82,7 @@ private:
 	SafeGPU::UniqueGPUGraphicsPipeline createPipeline(
 		const SDL_GPUGraphicsPipelineCreateInfo& create_info) const;
 
-	SDL_GPUBuffer* uploadBuffer(const std::vector<Uint8>& data, Uint32 usage);
+	SafeGPU::UniqueGPUBuffer uploadBuffer(const std::vector<Uint8>& data, Uint32 usage);
 
 	SafeGPU::UniqueGPUTexture createTexture(Image* image);
 

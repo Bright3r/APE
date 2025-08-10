@@ -228,19 +228,12 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 	// Check if gpu vertex buffer was already created
 	if (!mesh.getVertexBuffer()) {
 		// Create GPU buffer with vertex data
-		SDL_GPUBuffer* vertex_buffer = uploadBuffer(
+		SafeGPU::UniqueGPUBuffer vertex_buffer = uploadBuffer(
 			vectorToRawBytes(mesh.getVertices()),
 			SDL_GPU_BUFFERUSAGE_VERTEX
 		);
 
-		// Give mesh gpu buffer wrapped with deleter
-		auto safe_vertex_buffer = SafeGPU::makeUnique<SDL_GPUBuffer>(
-			vertex_buffer,
-			[=](SDL_GPUBuffer* buf) {
-				SDL_ReleaseGPUBuffer(m_context->device, buf);
-			}
-		);
-		mesh.setVertexBuffer(std::move(safe_vertex_buffer));
+		mesh.setVertexBuffer(std::move(vertex_buffer));
 	}
 
 	// Bind vertex buffer
@@ -259,19 +252,12 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 	// Check if gpu index buffer was already created
 	if (!mesh.getIndexBuffer()) {
 		// Create GPU buffer with index data
-		SDL_GPUBuffer* index_buffer = uploadBuffer(
+		SafeGPU::UniqueGPUBuffer index_buffer = uploadBuffer(
 			vectorToRawBytes(mesh.getIndices()),
 			SDL_GPU_BUFFERUSAGE_INDEX
 		);
 
-		// Give mesh gpu buffer wrapped with deleter
-		auto safe_index_buffer = SafeGPU::makeUnique<SDL_GPUBuffer>(
-			index_buffer,
-			[=](SDL_GPUBuffer* buf) {
-				SDL_ReleaseGPUBuffer(m_context->device, buf);
-			}
-		);
-		mesh.setIndexBuffer(std::move(safe_index_buffer));
+		mesh.setIndexBuffer(std::move(index_buffer));
 	}
 
 	// Bind index buffer
@@ -331,7 +317,7 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 	);
 }
 
-SDL_GPUBuffer* Renderer::uploadBuffer(const std::vector<Uint8>& data, Uint32 usage)
+SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(const std::vector<Uint8>& data, Uint32 usage)
 {
 	// Create GPU buffer
 	Uint32 buffer_size = data.size();
@@ -343,6 +329,12 @@ SDL_GPUBuffer* Renderer::uploadBuffer(const std::vector<Uint8>& data, Uint32 usa
 	SDL_GPUBuffer *buffer = SDL_CreateGPUBuffer(
 		m_context->device,
 		&buffer_info
+	);
+	auto safe_buffer = SafeGPU::makeUnique<SDL_GPUBuffer>(
+		buffer,
+		[=](SDL_GPUBuffer* buf) {
+			SDL_ReleaseGPUBuffer(m_context->device, buf);
+		}
 	);
 
 	// Create transfer buffer
@@ -393,7 +385,7 @@ SDL_GPUBuffer* Renderer::uploadBuffer(const std::vector<Uint8>& data, Uint32 usa
 	// Cleanup resources
 	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buffer);
 
-	return buffer;
+	return safe_buffer;
 }
 
 SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
@@ -435,7 +427,9 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 		transfer_buf, 
 		false
 	));
-	SDL_memcpy(mapped, image->getPixels(), image->getSize());
+
+	std::memcpy(mapped, image->getPixels(), image->getSize());
+
 	SDL_UnmapGPUTransferBuffer(m_context->device, transfer_buf);
 
 	// Upload transfer buffer to gpu
