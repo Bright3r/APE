@@ -12,8 +12,7 @@ namespace APE {
 namespace Render {
 
 struct ShaderDescription {
-	std::filesystem::path vert_shader_filepath;
-	std::filesystem::path frag_shader_filepath;
+	std::filesystem::path filepath;
 	Uint32 num_samplers;
 	Uint32 num_uniform_buffers;
 	Uint32 num_storage_buffers;
@@ -26,10 +25,14 @@ private:
 	SDL_GPUShader* m_vert_shader;
 	SDL_GPUShader* m_frag_shader;
 	SDL_GPUDevice* m_device;
-	ShaderDescription m_shader_desc;
+	ShaderDescription m_vert_desc;
+	ShaderDescription m_frag_desc;
 
 public:
-	Shader(const ShaderDescription& shader_desc, SDL_GPUDevice *device);
+	Shader(
+		const ShaderDescription& vert_shader_desc, 
+		const ShaderDescription& frag_shader_desc,
+		SDL_GPUDevice *device);
 
 	~Shader();
 	Shader(const Shader& other) = delete;
@@ -48,8 +51,6 @@ public:
 	SDL_GPUDevice* getDevice() const;
 
 	VertexFormat getVertexFormat() const;
-
-	ShaderDescription getShaderDescription() const;
 };
 
 };	// end of namespace Render

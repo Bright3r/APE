@@ -22,10 +22,18 @@ struct ModelViewProjUniform {
 	glm::mat4 proj;
 };
 
-static const ShaderDescription default_shader_desc {
-	.vert_shader_filepath = "res/shaders/Default.vert.spv",
-	.frag_shader_filepath = "res/shaders/Default.frag.spv",
+static const ShaderDescription default_vert_shader_desc {
+	.filepath = "res/shaders/Default.vert.spv",
 	.num_samplers = 0, 
+	.num_uniform_buffers = 1, 
+	.num_storage_buffers = 0, 
+	.num_storage_textures = 0,
+	.vertex_format = Model::VertexType::getLayout(),
+};
+
+static const ShaderDescription default_frag_shader_desc {
+	.filepath = "res/shaders/Default.frag.spv",
+	.num_samplers = 1, 
 	.num_uniform_buffers = 1, 
 	.num_storage_buffers = 0, 
 	.num_storage_textures = 0,
@@ -56,15 +64,17 @@ public:
 	//
 	Renderer(std::shared_ptr<Context> context, Camera *cam);
 	Renderer(std::shared_ptr<Context> context, 
-	  Camera *cam, 
-	  std::shared_ptr<Shader> shader);
+		Camera *cam, 
+		std::shared_ptr<Shader> shader);
 	~Renderer() = default;
 	Renderer(const Renderer& other) = delete;
 	Renderer& operator=(const Renderer& other) = delete;
 
 	// API Functions
 	//
-	std::unique_ptr<Shader> createShader(ShaderDescription shader_desc) const;
+	std::unique_ptr<Shader> createShader(
+		const ShaderDescription& vert_shader_desc,
+		const ShaderDescription& frag_shader_desc) const;
 
 	void useShader(Shader* shader);
 

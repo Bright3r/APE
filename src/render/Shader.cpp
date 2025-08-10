@@ -8,14 +8,17 @@
 namespace APE {
 namespace Render {
 
-Shader::Shader(const ShaderDescription& shader_desc, SDL_GPUDevice* device)
+Shader::Shader(const ShaderDescription& vert_desc, 
+	       const ShaderDescription& frag_desc,
+	       SDL_GPUDevice* device)
 	: m_vert_shader(nullptr)
 	, m_frag_shader(nullptr)
 	, m_device(device)
-	, m_shader_desc(shader_desc)
+	, m_vert_desc(vert_desc)
+	, m_frag_desc(frag_desc)
 {
-	m_vert_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_VERTEX); 
-	m_frag_shader = loadShader(shader_desc, SDL_GPU_SHADERSTAGE_FRAGMENT);
+	m_vert_shader = loadShader(vert_desc, SDL_GPU_SHADERSTAGE_VERTEX); 
+	m_frag_shader = loadShader(frag_desc, SDL_GPU_SHADERSTAGE_FRAGMENT);
 }
 
 Shader::~Shader()
@@ -28,7 +31,8 @@ Shader::Shader(Shader&& other)
 	: m_vert_shader(other.m_vert_shader)
 	, m_frag_shader(other.m_frag_shader)
 	, m_device(other.m_device)
-	, m_shader_desc(other.m_shader_desc)
+	, m_vert_desc(other.m_vert_desc)
+	, m_frag_desc(other.m_frag_desc)
 {
 	other.m_device = nullptr;
 	other.m_vert_shader = nullptr;
@@ -49,7 +53,8 @@ Shader& Shader::operator=(Shader&& other)
 		m_device = other.m_device;
 		m_vert_shader = other.m_vert_shader;
 		m_frag_shader = other.m_frag_shader;
-		m_shader_desc = other.m_shader_desc;
+		m_vert_desc = other.m_vert_desc;
+		m_frag_desc = other.m_frag_desc;
 
 		// Clear other
 		other.m_device = nullptr;
@@ -60,19 +65,16 @@ Shader& Shader::operator=(Shader&& other)
 	return *this;
 }
 
-SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc, 
-				  SDL_GPUShaderStage stage)
+SDL_GPUShader* Shader::loadShader(
+	const ShaderDescription& shader_desc, 
+	SDL_GPUShaderStage stage)
 {
 	// Read shader code into buffer
 	size_t code_size;
-	std::string filepath = 
-		(stage == SDL_GPU_SHADERSTAGE_VERTEX) ?
-		shader_desc.vert_shader_filepath : 
-		shader_desc.frag_shader_filepath;
-	void *code = SDL_LoadFile(filepath.c_str(), &code_size);
+	void *code = SDL_LoadFile(shader_desc.filepath.c_str(), &code_size);
 	if (!code) {
 		APE_ERROR("Failed to load shader code from {} - {}", 
-	    		filepath, 
+	    		shader_desc.filepath.c_str(), 
 	    		SDL_GetError()
 	   	);
 		return nullptr;
@@ -98,7 +100,7 @@ SDL_GPUShader* Shader::loadShader(const ShaderDescription& shader_desc,
 	else {
 		APE_ERROR(
 			"Failed to detect shader format from {} - {}",
-			filepath,
+			shader_desc.filepath.c_str(),
 			SDL_GetError()
 		);
 
@@ -145,12 +147,7 @@ SDL_GPUDevice* Shader::getDevice() const
 
 VertexFormat Shader::getVertexFormat() const
 {
-	return m_shader_desc.vertex_format;
-}
-
-ShaderDescription Shader::getShaderDescription() const
-{
-	return m_shader_desc;
+	return m_vert_desc.vertex_format;
 }
 
 };	// end of namespace Render

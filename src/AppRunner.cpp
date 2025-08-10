@@ -122,9 +122,10 @@ void AppRunner::run()
 }
 
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
-	const APE::Render::ShaderDescription& shader_desc) 
+	const APE::Render::ShaderDescription& vert_shader_desc, 
+	const APE::Render::ShaderDescription& frag_shader_desc) 
 {
-	return s_renderer->createShader(shader_desc);
+	return s_renderer->createShader(vert_shader_desc, frag_shader_desc);
 }
 
 void AppRunner::useShader(std::shared_ptr<APE::Render::Shader> shader)

@@ -24,9 +24,9 @@ private:
 public:
 	Image()
 	{
-		m_data = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ABGR8888);
-		m_data->pixels = &s_default_tex;
-		// m_data = loadImage("res/textures/ravioli.bmp", 4);
+		// m_data = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ABGR8888);
+		// m_data->pixels = &s_default_tex;
+		m_data = loadImage("res/textures/ravioli.bmp", 4);
 		APE_TRACE("DEFAULT_TEX USED");
 	}
 

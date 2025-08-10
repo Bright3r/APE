@@ -47,7 +47,8 @@ public:
 
 	// Graphics Functions
 	static std::unique_ptr<APE::Render::Shader> createShader(
-		const APE::Render::ShaderDescription& shader_desc);
+		const APE::Render::ShaderDescription& vert_shader_desc, 
+		const APE::Render::ShaderDescription& frag_shader_desc);
 
 	static void useShader(std::shared_ptr<APE::Render::Shader> shader);
 

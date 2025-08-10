@@ -28,7 +28,8 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 
 	// Construct default shader
 	m_shader = std::make_shared<Shader>(
-		default_shader_desc,
+		default_vert_shader_desc,
+		default_frag_shader_desc,
 		context->device
 	);
 	useShader(m_shader.get());
@@ -58,9 +59,15 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, std::shared_pt
 	m_sampler = createSampler();
 }
 
-std::unique_ptr<Shader> Renderer::createShader(ShaderDescription shader_desc) const
+std::unique_ptr<Shader> Renderer::createShader(
+	const ShaderDescription& vert_shader_desc,
+	const ShaderDescription& frag_shader_desc) const
 {
-	return std::make_unique<Shader>(shader_desc, m_context->device);
+	return std::make_unique<Shader>(
+		vert_shader_desc,
+		frag_shader_desc,
+		m_context->device
+	);
 }
 
 SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
