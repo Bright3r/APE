@@ -20,10 +20,10 @@ add_executable(ape
 )
 
 target_compile_options(ape PRIVATE
-    -fsanitize=address
     -fno-omit-frame-pointer
+    # -fsanitize=address
 )
-target_link_options(ape PRIVATE -fsanitize=address)
+# target_link_options(ape PRIVATE -fsanitize=address)
 
 
 

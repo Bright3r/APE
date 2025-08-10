@@ -13,6 +13,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	: m_context(context)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
+	, m_shader(nullptr)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
 	, m_cam(cam)
@@ -26,19 +27,20 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	);
 
 	// Construct default shader
-	std::unique_ptr<Shader> shader = std::make_unique<Shader>(
+	m_shader = std::make_shared<Shader>(
 		default_shader_desc,
 		context->device
 	);
-	useShader(shader.get());
+	useShader(m_shader.get());
 
 	m_sampler = createSampler();
 }
 
-Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader)
+Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, std::shared_ptr<Shader> shader)
 	: m_context(context)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
+	, m_shader(shader)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
 	, m_cam(cam)
@@ -51,7 +53,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader
 		Camera *cam, Shader* shader) Failed: cam == nullptr"
 	);
 
-	useShader(shader);
+	useShader(m_shader.get());
 
 	m_sampler = createSampler();
 }

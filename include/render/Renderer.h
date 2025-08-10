@@ -39,6 +39,7 @@ private:
 	bool m_wireframe_mode;
 	SDL_FColor m_clear_color;
 
+	std::shared_ptr<Shader> m_shader;
 	SafeGPU::UniqueGPUGraphicsPipeline m_fill_pipeline;
 	SafeGPU::UniqueGPUGraphicsPipeline m_line_pipeline;
 
@@ -54,7 +55,9 @@ public:
 	// Special Member Functions
 	//
 	Renderer(std::shared_ptr<Context> context, Camera *cam);
-	Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader);
+	Renderer(std::shared_ptr<Context> context, 
+	  Camera *cam, 
+	  std::shared_ptr<Shader> shader);
 	~Renderer() = default;
 	Renderer(const Renderer& other) = delete;
 	Renderer& operator=(const Renderer& other) = delete;

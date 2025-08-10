@@ -12,5 +12,5 @@ float4 main(Input input) : SV_Target0
 {
 	//return uTexture.Sample(uSampler, input.UV);
 	return uTexture.Sample(uSampler, float2(0.5, 0.5));
-	// return float4(input.UV, 0, 255);
+	//return float4(input.UV, 0, 255);
 }
