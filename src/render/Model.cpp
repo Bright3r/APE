@@ -62,6 +62,9 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 	// Bypass texture loading for now
 	//
 	return std::make_shared<Image>();
+	//
+	//
+	//
 
 	// Check for diffuse texture
 	if (ai_mat->GetTextureCount(aiTextureType_DIFFUSE) <=  0) {

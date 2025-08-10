@@ -10,22 +10,25 @@ namespace APE {
 namespace Render {
 
 struct Pixel {
-	Uint8 a, b, g, r;
+	Uint8 r, g, b, a;
 };
 
 class Image {
 private:
 	SDL_Surface* m_data;
 
-	inline static Pixel s_default_tex = {
-		255, 255, 255, 255
+	inline static Pixel s_default_tex[] = {
+		{ 255, 255, 255, 255 },
+		{ 255, 0, 255, 255 },
+		{ 255, 255, 0, 255 },
+		{ 255, 255, 255, 255 },
 	};
 
 public:
 	Image()
 	{
-		// m_data = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ABGR8888);
-		// m_data->pixels = &s_default_tex;
+		// m_data = SDL_CreateSurface(2, 2, SDL_PIXELFORMAT_RGBA8888);
+		// std::memcpy(m_data->pixels, &s_default_tex, sizeof(s_default_tex));
 		m_data = loadImage("res/textures/ravioli.bmp", 4);
 		APE_TRACE("DEFAULT_TEX USED");
 	}
@@ -37,8 +40,8 @@ public:
 
 	Image(int width, int height, void* data)
 	{
-		m_data = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ABGR8888);
-		m_data->pixels = data;
+		m_data = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA8888);
+		std::memcpy(m_data->pixels, data, width * height * 4);
 	}
 
 	~Image()
@@ -101,7 +104,9 @@ public:
 		std::string str;
 		for (int x = 0; x < getWidth(); ++x) {
 			for (int y = 0; y < getHeight(); ++y) {
-				int num = static_cast<int>(pixel[x + x*y]);
+				int num = static_cast<int>(
+					pixel[(y * getWidth() + x) * 4]
+				);
 				str += std::to_string(num) + " ";
 			}
 		}

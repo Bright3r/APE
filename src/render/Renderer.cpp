@@ -37,7 +37,9 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	m_sampler = createSampler();
 }
 
-Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, std::shared_ptr<Shader> shader)
+Renderer::Renderer(std::shared_ptr<Context> context,
+		   Camera *cam,
+		   std::shared_ptr<Shader> shader)
 	: m_context(context)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
@@ -289,7 +291,7 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 	}
 
 	// Bind texture sampler
-	mesh.getTexture()->trace();
+	// mesh.getTexture()->trace();
 	SDL_GPUTextureSamplerBinding sampler_binding = {
 		.texture = mesh.getTextureBuffer(),
 		.sampler = m_sampler.get(),
