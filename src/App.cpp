@@ -52,10 +52,18 @@ void App::onKeyDown(SDL_KeyboardEvent key) {
 		case SDLK_SPACE:
 			cam->moveUp(speed, dt);
 			break;
+		case SDLK_LCTRL:
+			cam->moveUp(-speed, dt);
+			break;
 		case SDLK_M:
 			model.getTransform().position.x += 1;
 			APE_TRACE("Mesh.pos.x = {}", model.getTransform().position.x);
 			break;
+		case SDLK_N:
+			model.getTransform().position.x -= 1;
+			APE_TRACE("Mesh.pos.x = {}", model.getTransform().position.x);
+			break;
+
 	}
 }
 

@@ -12,10 +12,10 @@ Context::Context(std::string_view title,
 		 int window_width,
 		 int window_height,
 		 int window_flags)
-	: title(title),
-	window_width(window_width),
-	window_height(window_height),
-	window_flags(window_flags)
+	: title(title)
+	, window_width(window_width)
+	, window_height(window_height)
+	, window_flags(window_flags)
 {
 	bool succ_init = SDL_Init(SDL_INIT_VIDEO);
 	APE_CHECK(succ_init,
@@ -24,9 +24,9 @@ Context::Context(std::string_view title,
 	);
 
 	device = SDL_CreateGPUDevice(
-		SDL_GPU_SHADERFORMAT_SPIRV
-		| SDL_GPU_SHADERFORMAT_DXIL
-		| SDL_GPU_SHADERFORMAT_MSL,
+		SDL_GPU_SHADERFORMAT_SPIRV|
+		SDL_GPU_SHADERFORMAT_DXIL |
+		SDL_GPU_SHADERFORMAT_MSL,
 		true,
 		NULL
 	);
@@ -35,12 +35,17 @@ Context::Context(std::string_view title,
 		SDL_GetError()
 	);
 
-	window = SDL_CreateWindow(this->title.c_str(), window_width, window_height, 
-			   window_flags);
+	window = SDL_CreateWindow(
+		this->title.c_str(),
+		window_width,
+		window_height, 
+		window_flags
+	);
 	APE_CHECK((window != nullptr),
 		"SDL_CreateWindow Failed - {}",
 		SDL_GetError()
 	);
+	SDL_SetWindowRelativeMouseMode(window, true);
 
 	bool succ_claim_window = SDL_ClaimWindowForGPUDevice(device, window);
 	APE_CHECK(succ_claim_window,

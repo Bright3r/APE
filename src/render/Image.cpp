@@ -25,7 +25,6 @@ Image::Image(int width, int height, const std::byte* data)
 	// Assume data is RGBA8 format
 	int num_channels = 4;
 	if (height > 0) {
-		// Set size parameters of image
 		m_width = width;
 		m_height = height;
 		m_num_channels = num_channels;
@@ -54,7 +53,6 @@ Image::Image(int width, int height, const std::byte* data)
 		loadCheckerboard();
 	}
 
-	// Set size parameters of image
 	m_width = width;
 	m_height = height;
 	m_num_channels = num_channels;
@@ -87,7 +85,6 @@ void Image::loadImage(std::filesystem::path path)
 		return;
 	}
 
-	// Set size parameters of image
 	m_width = width;
 	m_height = height;
 	m_num_channels = num_channels;

@@ -59,14 +59,6 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 	const aiScene* scene,
 	std::filesystem::path model_path)
 {
-	//
-	// Bypass texture loading for now
-	//
-	// return std::make_shared<Image>();
-	//
-	//
-	//
-
 	// Check for diffuse texture
 	if (ai_mat->GetTextureCount(aiTextureType_DIFFUSE) <=  0) {
 		// Return default texture on failure
@@ -90,7 +82,7 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 				reinterpret_cast<std::byte*>(ai_tex->pcData)
 			);
 		}
-		// otherwise create texture from file
+		// Otherwise create texture from file
 		else {
 			std::string tex_path { 
 				model_path.parent_path().append(path.C_Str())
@@ -111,7 +103,6 @@ void Model::processNode(
 	const aiScene* scene,
 	std::filesystem::path model_path)
 {
-	// Get world transformation of current node
 	Transform local_transform = convertAiTransform(node->mTransformation);
 
 	// Convert nodes aiMeshes into our own Meshes
@@ -125,7 +116,6 @@ void Model::processNode(
 		std::shared_ptr<Image> texture = 
 			convertAiMaterial(ai_mat, scene, model_path);
 
-		// Add Mesh to model
 		m_meshes.emplace_back(processAiMesh(
 			ai_mesh,
 			texture,
@@ -139,12 +129,11 @@ void Model::processNode(
 	}
 }
 
-Model::MeshType Model::processAiMesh(
+Model::ModelMesh Model::processAiMesh(
 	const aiMesh* ai_mesh,
 	std::shared_ptr<Image> texture,
 	const Transform& transform) const
 {
-	// Get vertices
 	std::vector<VertexType> vertices;
 	vertices.reserve(ai_mesh->mNumVertices);
 	for (size_t i = 0; i < ai_mesh->mNumVertices; ++i) {
@@ -172,7 +161,6 @@ Model::MeshType Model::processAiMesh(
 			normal.z = ai_mesh->mNormals[i].z;
 		}
 
-		// Add vertex
 		vertices.push_back({
 			.pos = pos,
 			.normal = normal,
@@ -190,10 +178,10 @@ Model::MeshType Model::processAiMesh(
 		}
 	}
 
-	return MeshType(vertices, indices, texture, transform);
+	return ModelMesh(vertices, indices, texture, transform);
 }
 
-std::vector<Model::MeshType>& Model::getMeshes()
+std::vector<Model::ModelMesh>& Model::getMeshes()
 {
 	return m_meshes;
 }

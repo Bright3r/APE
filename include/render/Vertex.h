@@ -28,11 +28,13 @@ struct VertexFormat {
 		SDL_GPUVertexInputState input_state = {
 			.vertex_buffer_descriptions =
 				buffer_descs.data(),
+
 			.num_vertex_buffers =
 				static_cast<Uint32>(buffer_descs.size()),
 
 			.vertex_attributes =
 				attributes.data(),
+
 			.num_vertex_attributes =
 				static_cast<Uint32>(attributes.size()),
 		};

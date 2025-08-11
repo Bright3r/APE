@@ -13,7 +13,9 @@ using millis = std::chrono::duration<double, std::milli>;
 
 // Utility Functions
 template <typename F, typename Rep, typename Period>
-decltype(auto) timeFunctionCall(F&& f, std::chrono::duration<Rep, Period>& execution_time)
+decltype(auto) timeFunctionCall(
+	F&& f,
+	std::chrono::duration<Rep, Period>& execution_time)
 {
 	// Time function execution time
 	auto start_time = std::chrono::high_resolution_clock::now();
@@ -67,6 +69,5 @@ void waitFor(const std::chrono::duration<Rep, Period>& wait_time)
 	spinWait(duration_remaining);
 }
 
-};
-
-};
+};	// end of namespace Timing
+};	// end of namespace APE

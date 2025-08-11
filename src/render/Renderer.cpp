@@ -75,19 +75,15 @@ std::unique_ptr<Shader> Renderer::createShader(
 SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
 	const SDL_GPUGraphicsPipelineCreateInfo& create_info) const
 {
-	// Create pipeline
 	SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(
 		m_context->device, 
 		&create_info
 	);
-
-	// Check that pipeline was created
 	APE_CHECK((pipeline != nullptr),
 		"SDL_CreateGPUGraphicsPipeline Failed - {}",
 		SDL_GetError()
 	);
 
-	// Return wrapped pipeline for memory safety
 	return SafeGPU::makeUnique<SDL_GPUGraphicsPipeline>(
 		pipeline,
 		[=, this](SDL_GPUGraphicsPipeline* pipeline) {
@@ -104,7 +100,6 @@ void Renderer::useShader(Shader* shader) {
 		return;
 	}
 
-	// Color Target
 	std::vector<SDL_GPUColorTargetDescription> color_target_descriptions = {{
 		.format = SDL_GetGPUSwapchainTextureFormat(
 			m_context->device, 
@@ -113,13 +108,11 @@ void Renderer::useShader(Shader* shader) {
 		.blend_state = {},
 	}};
 
-	// Rasterizer State
 	SDL_GPURasterizerState rasterizer_state = {
 		.cull_mode = SDL_GPU_CULLMODE_BACK,
 		.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE,
 	};
 
-	// Depth Stencil
 	SDL_GPUDepthStencilState depth_stencil_state = {
 		.compare_op = SDL_GPU_COMPAREOP_LESS,
 		.write_mask = 0xff,
@@ -128,7 +121,6 @@ void Renderer::useShader(Shader* shader) {
 		.enable_stencil_test = false,
 	};
 	
-	// Target Info
 	SDL_GPUGraphicsPipelineTargetInfo target_info = {
 		.color_target_descriptions = color_target_descriptions.data(),
 		.num_color_targets =
@@ -141,7 +133,6 @@ void Renderer::useShader(Shader* shader) {
 	VertexFormat vertex_format = shader->getVertexFormat();
 	SDL_GPUVertexInputState vertex_input_state = vertex_format.getInputState();
 
-	// Setup new pipeline config
 	SDL_GPUGraphicsPipelineCreateInfo pipeline_create_info = {
 		.vertex_shader = shader->getVertexShader(),
 		.fragment_shader = shader->getFragmentShader(),
@@ -248,6 +239,7 @@ void Renderer::beginDrawing()
 	// Bind render pipeline
 	SDL_GPUGraphicsPipeline* render_pipeline = 
 		m_wireframe_mode ? m_line_pipeline.get() : m_fill_pipeline.get();
+
 	APE_CHECK((render_pipeline != nullptr),
 		"Renderer::draw Failed: render_pipeline == nullptr"
 	);
@@ -261,7 +253,7 @@ void Renderer::draw(Model& model)
 		"Renderer::draw(Model& mesh) Failed: beginDrawing() not called"
 	);
 
-	for (Model::MeshType& mesh : model.getMeshes()) {
+	for (Model::ModelMesh& mesh : model.getMeshes()) {
 		glm::mat4 model_mat =
 			model.getTransform().getModelMatrix() *
 			mesh.getTransform().getModelMatrix();
@@ -270,7 +262,7 @@ void Renderer::draw(Model& model)
 	}
 }
 
-void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
+void Renderer::draw(Model::ModelMesh& mesh, const glm::mat4& model_mat)
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
@@ -387,7 +379,9 @@ void Renderer::endDrawing()
 
 
 
-SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(const std::vector<std::byte>& data, Uint32 usage)
+SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
+	const std::vector<std::byte>& data,
+	Uint32 usage)
 {
 	// Create GPU buffer
 	Uint32 buffer_size = data.size();

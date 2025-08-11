@@ -19,11 +19,11 @@ public:
 	// Type aliases
 	using VertexType = TextureVertex;
 	using IndexType = Uint32;
-	using MeshType = Mesh<VertexType, IndexType>;
+	using ModelMesh = Mesh<VertexType, IndexType>;
 
 private:
 	// Data members
-	std::vector<MeshType> m_meshes;
+	std::vector<ModelMesh> m_meshes;
 	Transform m_transform;
 
 public:
@@ -33,7 +33,7 @@ public:
 
 	void loadModel(std::filesystem::path model_path);
 
-	std::vector<MeshType>& getMeshes();
+	std::vector<ModelMesh>& getMeshes();
 
 	Transform& getTransform();
 
@@ -52,7 +52,7 @@ private:
 		const aiScene* scene,
 		std::filesystem::path model_path);
 
-	Model::MeshType processAiMesh(
+	Model::ModelMesh processAiMesh(
 		const aiMesh* ai_mesh,
 		std::shared_ptr<Image> texture,
 		const Transform& transform) const;

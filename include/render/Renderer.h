@@ -86,7 +86,7 @@ public:
 
 	void draw(Model& model);
 
-	void draw(Model::MeshType& mesh, const glm::mat4& model_mat);
+	void draw(Model::ModelMesh& mesh, const glm::mat4& model_mat);
 
 	void endDrawing();
 
