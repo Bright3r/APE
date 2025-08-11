@@ -50,7 +50,6 @@ private:
 	void processNode(
 		const aiNode* node,
 		const aiScene* scene,
-		const Transform& parent_transform,
 		std::filesystem::path model_path);
 
 	Model::MeshType processAiMesh(

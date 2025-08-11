@@ -33,9 +33,11 @@ struct Transform {
 
 	Transform operator*(const Transform& other) const
 	{
-		glm::vec3 pos = this->position * other.position;
 		glm::vec3 scale = this->scale * other.scale;
 		glm::quat rot = this->rotation * other.rotation;
+		glm::vec3 pos = this->position + 
+			(this->rotation * this->scale * other.position);
+
 		return Transform(pos, scale, rot);
 	}
 };

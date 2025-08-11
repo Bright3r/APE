@@ -22,8 +22,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	, m_is_drawing(false)
 {
 	APE_CHECK((cam != nullptr),
-		"Renderer::Renderer(std::shared_ptr<Context> context, \
-		Camera *cam) Failed: cam == nullptr"
+		"Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam) Failed: cam == nullptr"
 	);
 
 	// Construct default shader
@@ -52,8 +51,7 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	, m_is_drawing(false)
 {
 	APE_CHECK((cam != nullptr),
-		"Renderer::Renderer(std::shared_ptr<Context> context, \
-		Camera *cam, Shader* shader) Failed: cam == nullptr"
+		"Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader) Failed: cam == nullptr"
 	);
 
 	useShader(m_shader.get());
@@ -113,6 +111,14 @@ void Renderer::useShader(Shader* shader) {
 		.blend_state = {},
 	}};
 
+	// Depth Stencil
+	SDL_GPUDepthStencilState depth_stencil_state = {
+		.compare_op = SDL_GPU_COMPAREOP_LESS,
+		.enable_depth_test = true,
+		.enable_depth_write = true,
+		.enable_stencil_test = false,
+	};
+
 	// Vertex layout
 	VertexFormat vertex_format = shader->getVertexFormat();
 	SDL_GPUVertexInputState vertex_input_state = vertex_format.getInputState();
@@ -123,6 +129,7 @@ void Renderer::useShader(Shader* shader) {
 		.fragment_shader = shader->getFragmentShader(),
 		.vertex_input_state = vertex_input_state,
 		.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
+		.depth_stencil_state = depth_stencil_state,
 		.target_info = {
 			.color_target_descriptions = color_target_description,
 			.num_color_targets = 1,
@@ -149,8 +156,7 @@ void Renderer::beginDrawing()
 {
 	// Check that we are not already drawing
 	APE_CHECK(!m_is_drawing,
-	   "Renderer::beginDrawing() Failed: endDrawing() not called from \
-	   previous beginDrawing() call"
+	   "Renderer::beginDrawing() Failed: endDrawing() not called from previous beginDrawing() call"
 	);
 	m_is_drawing = true;
 
@@ -221,8 +227,11 @@ void Renderer::draw(Model& model)
 		"Renderer::draw(Model& mesh) Failed: beginDrawing() not called"
 	);
 
-	glm::mat4 model_mat = model.getTransform().getModelMatrix();
 	for (Model::MeshType& mesh : model.getMeshes()) {
+		glm::mat4 model_mat =
+			model.getTransform().getModelMatrix() *
+			mesh.getTransform().getModelMatrix();
+
 		draw(mesh, model_mat);
 	}
 }

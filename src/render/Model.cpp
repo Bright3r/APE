@@ -31,14 +31,13 @@ void Model::loadModel(std::filesystem::path model_path)
 		|| !scene->mRootNode);
 	if (!succ_load_model) {
 		APE_ERROR(
-			"Model::Model(const std::filesystem::path& model_path) \
-			Failed - {}",
+			"Model::Model(const std::filesystem::path& model_path) Failed - {}",
 			importer.GetErrorString()
 		);
 		return;
 	}
 
-	processNode(scene->mRootNode, scene, m_transform, model_path);
+	processNode(scene->mRootNode, scene, model_path);
 }
 
 Transform Model::convertAiTransform(const aiMatrix4x4 ai_transform)
@@ -110,12 +109,10 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 void Model::processNode(
 	const aiNode* node,
 	const aiScene* scene,
-	const Transform& parent_transform,
 	std::filesystem::path model_path)
 {
 	// Get world transformation of current node
-	Transform curr_transform = 
-		parent_transform * convertAiTransform(node->mTransformation);
+	Transform local_transform = convertAiTransform(node->mTransformation);
 
 	// Convert nodes aiMeshes into our own Meshes
 	for (size_t i = 0; i < node->mNumMeshes; ++i) {
@@ -132,13 +129,13 @@ void Model::processNode(
 		m_meshes.emplace_back(processAiMesh(
 			ai_mesh,
 			texture,
-			curr_transform
+			local_transform
 		));
 	}
 
 	// Process child nodes
 	for (size_t i = 0; i < node->mNumChildren; ++i) {
-		processNode(node->mChildren[i], scene, curr_transform, model_path);
+		processNode(node->mChildren[i], scene, model_path);
 	}
 }
 
