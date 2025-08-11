@@ -1,4 +1,4 @@
-#include "AppRunner.h"
+#include "core/AppRunner.h"
 #include "util/Logger.h"
 
 int main() 

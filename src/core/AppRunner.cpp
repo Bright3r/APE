@@ -1,4 +1,4 @@
-#include "AppRunner.h"
+#include "core/AppRunner.h"
 #include "render/Shader.h"
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_video.h>

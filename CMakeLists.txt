@@ -14,7 +14,7 @@ find_package(Stb REQUIRED)
 add_executable(ape 
 	src/main.cpp
 	src/App.cpp
-	src/AppRunner.cpp
+	src/core/AppRunner.cpp
 	src/render/Shader.cpp
 	src/render/Context.cpp
 	src/render/Renderer.cpp
@@ -30,7 +30,7 @@ target_link_options(ape PRIVATE -fsanitize=address)
 
 
 
-target_include_directories(ape PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(ape PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_include_directories(ape PRIVATE ${Stb_INCLUDE_DIR})
 
 target_link_libraries(ape PRIVATE 
