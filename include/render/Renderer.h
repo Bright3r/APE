@@ -58,6 +58,7 @@ private:
 	bool m_is_drawing;
 
 	SafeGPU::UniqueGPUSampler m_sampler;
+	SafeGPU::UniqueGPUTexture m_depth_texture;
 
 
 public:
@@ -83,13 +84,17 @@ public:
 
 	void beginDrawing();
 
-	void endDrawing();
-
 	void draw(Model& model);
 
 	void draw(Model::MeshType& mesh, const glm::mat4& model_mat);
 
+	void endDrawing();
+
 private:
+	void createDepthTexture();
+
+	void createSampler();
+
 	SafeGPU::UniqueGPUGraphicsPipeline createPipeline(
 		const SDL_GPUGraphicsPipelineCreateInfo& create_info) const;
 
@@ -100,8 +105,6 @@ private:
 	static SDL_GPUTextureFormat getTextureFormat(Image* image);
 
 	SafeGPU::UniqueGPUTexture createTexture(Image* image);
-
-	SafeGPU::UniqueGPUSampler createSampler();
 
 	template <typename T>
 	static std::vector<std::byte> vectorToRawBytes(const std::vector<T>& data)

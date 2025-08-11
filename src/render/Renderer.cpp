@@ -33,7 +33,8 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	);
 	useShader(m_shader.get());
 
-	m_sampler = createSampler();
+	createSampler();
+	createDepthTexture();
 }
 
 Renderer::Renderer(std::shared_ptr<Context> context,
@@ -56,7 +57,8 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 
 	useShader(m_shader.get());
 
-	m_sampler = createSampler();
+	createSampler();
+	createDepthTexture();
 }
 
 std::unique_ptr<Shader> Renderer::createShader(
@@ -103,7 +105,7 @@ void Renderer::useShader(Shader* shader) {
 	}
 
 	// Color Target
-	SDL_GPUColorTargetDescription color_target_description[] = {{
+	std::vector<SDL_GPUColorTargetDescription> color_target_descriptions = {{
 		.format = SDL_GetGPUSwapchainTextureFormat(
 			m_context->device, 
 			m_context->window
@@ -111,12 +113,28 @@ void Renderer::useShader(Shader* shader) {
 		.blend_state = {},
 	}};
 
+	// Rasterizer State
+	SDL_GPURasterizerState rasterizer_state = {
+		.cull_mode = SDL_GPU_CULLMODE_BACK,
+		.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE,
+	};
+
 	// Depth Stencil
 	SDL_GPUDepthStencilState depth_stencil_state = {
 		.compare_op = SDL_GPU_COMPAREOP_LESS,
+		.write_mask = 0xff,
 		.enable_depth_test = true,
 		.enable_depth_write = true,
 		.enable_stencil_test = false,
+	};
+	
+	// Target Info
+	SDL_GPUGraphicsPipelineTargetInfo target_info = {
+		.color_target_descriptions = color_target_descriptions.data(),
+		.num_color_targets =
+			static_cast<Uint32>(color_target_descriptions.size()),
+		.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
+		.has_depth_stencil_target = true,
 	};
 
 	// Vertex layout
@@ -129,14 +147,10 @@ void Renderer::useShader(Shader* shader) {
 		.fragment_shader = shader->getFragmentShader(),
 		.vertex_input_state = vertex_input_state,
 		.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
+		.rasterizer_state = rasterizer_state,
 		.depth_stencil_state = depth_stencil_state,
-		.target_info = {
-			.color_target_descriptions = color_target_description,
-			.num_color_targets = 1,
-		},
+		.target_info = target_info
 	};
-	// Enable backface culling
-	pipeline_create_info.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_BACK;
 
 	// Create fill pipeline
 	pipeline_create_info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
@@ -145,6 +159,32 @@ void Renderer::useShader(Shader* shader) {
 	// Create wireframe pipeline
 	pipeline_create_info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_LINE;
 	m_line_pipeline = createPipeline(pipeline_create_info);
+}
+
+void Renderer::createDepthTexture()
+{
+	SDL_GPUTextureCreateInfo tex_desc = {
+		.type = SDL_GPU_TEXTURETYPE_2D,
+		.format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
+		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | 
+			SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
+		.width = static_cast<Uint32>(m_context->window_width),
+		.height = static_cast<Uint32>(m_context->window_height),
+		.layer_count_or_depth = 1,
+		.num_levels = 1,
+		.sample_count = SDL_GPU_SAMPLECOUNT_1,
+	};
+
+	SDL_GPUTexture* depth_tex = SDL_CreateGPUTexture(
+		m_context->device, 
+		&tex_desc
+	);
+	m_depth_texture = SafeGPU::makeUnique<SDL_GPUTexture>(
+		depth_tex,
+		[=, this](SDL_GPUTexture* tex) {
+			SDL_ReleaseGPUTexture(m_context->device, tex);
+		}
+	);
 }
 
 float Renderer::getAspectRatio() const
@@ -187,11 +227,21 @@ void Renderer::beginDrawing()
 		.load_op = SDL_GPU_LOADOP_CLEAR,
 		.store_op = SDL_GPU_STOREOP_STORE,
 	};
+	SDL_GPUDepthStencilTargetInfo depth_target_info = {
+		.texture = m_depth_texture.get(),
+		.clear_depth = 1,
+		.load_op = SDL_GPU_LOADOP_CLEAR,
+		.store_op = SDL_GPU_STOREOP_STORE,
+		.stencil_load_op = SDL_GPU_LOADOP_CLEAR,
+		.stencil_store_op = SDL_GPU_STOREOP_STORE,
+		.cycle = true,
+		.clear_stencil = 0,
+	};
 	SDL_GPURenderPass *render_pass = SDL_BeginGPURenderPass(
 		cmd_buffer, 
 		&color_target_info, 
 		1, 
-		NULL
+		&depth_target_info
 	);
 	m_render_pass = render_pass;
 
@@ -202,22 +252,6 @@ void Renderer::beginDrawing()
 		"Renderer::draw Failed: render_pipeline == nullptr"
 	);
 	SDL_BindGPUGraphicsPipeline(render_pass, render_pipeline);
-}
-
-void Renderer::endDrawing()
-{
-	// Check that we are already drawing
-	APE_CHECK(m_is_drawing,
-	   "Renderer::endDrawing() Failed: beginDrawing() not yet called"
-	);
-	m_is_drawing = false;
-
-	// Cleanup render pass
-	SDL_EndGPURenderPass(m_render_pass);
-	m_render_pass = nullptr;
-
-	// Draw scene
-	SDL_SubmitGPUCommandBuffer(m_cmd_buf);
 }
 
 void Renderer::draw(Model& model)
@@ -301,15 +335,15 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 
 	// Bind texture sampler
 	// mesh.getTexture()->trace();
-	SDL_GPUTextureSamplerBinding sampler_binding = {
+	std::vector<SDL_GPUTextureSamplerBinding> sampler_bindings = {{
 		.texture = mesh.getTextureBuffer(),
 		.sampler = m_sampler.get(),
-	};
+	}};
 	SDL_BindGPUFragmentSamplers(
 		m_render_pass,
 		0,
-		&sampler_binding,
-		1
+		sampler_bindings.data(),
+		sampler_bindings.size()
 	);
 
 
@@ -334,6 +368,24 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 		1, 0, 0, 0
 	);
 }
+
+void Renderer::endDrawing()
+{
+	// Check that we are already drawing
+	APE_CHECK(m_is_drawing,
+	   "Renderer::endDrawing() Failed: beginDrawing() not yet called"
+	);
+	m_is_drawing = false;
+
+	// Cleanup render pass
+	SDL_EndGPURenderPass(m_render_pass);
+	m_render_pass = nullptr;
+
+	// Draw scene
+	SDL_SubmitGPUCommandBuffer(m_cmd_buf);
+}
+
+
 
 SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(const std::vector<std::byte>& data, Uint32 usage)
 {
@@ -497,7 +549,7 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 	return safe_tex;
 }
 
-SafeGPU::UniqueGPUSampler Renderer::createSampler()
+void Renderer::createSampler()
 {
 	SDL_GPUSamplerCreateInfo sampler_desc = {
 		.min_filter = SDL_GPU_FILTER_NEAREST,
@@ -512,13 +564,12 @@ SafeGPU::UniqueGPUSampler Renderer::createSampler()
 		&sampler_desc
 	);
 
-	SafeGPU::UniqueGPUSampler safe_sampler = SafeGPU::makeUnique<SDL_GPUSampler>(
+	m_sampler = SafeGPU::makeUnique<SDL_GPUSampler>(
 		sampler,
 		[=, this](SDL_GPUSampler* sam) {
 			SDL_ReleaseGPUSampler(m_context->device, sam);
 		}
 	);
-	return safe_sampler;
 }
 
 }; // end of namespace Render
