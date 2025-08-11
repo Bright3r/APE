@@ -18,7 +18,7 @@ class Model {
 public:
 	// Type aliases
 	using VertexType = TextureVertex;
-	using IndexType = Uint16;
+	using IndexType = Uint32;
 	using MeshType = Mesh<VertexType, IndexType>;
 
 private:

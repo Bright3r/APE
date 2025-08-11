@@ -277,7 +277,7 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 	SDL_BindGPUIndexBuffer(
 		m_render_pass,
 		&index_buffer_binding,
-		SDL_GPU_INDEXELEMENTSIZE_16BIT
+		SDL_GPU_INDEXELEMENTSIZE_32BIT
 	);
 
 
