@@ -15,6 +15,9 @@
 		},
 		{
 			"name": "assimp"
+		},
+		{
+			"name": "stb"
 		}
 	]
 }

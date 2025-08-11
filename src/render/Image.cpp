@@ -1,0 +1,161 @@
+#include "render/Image.h"
+#include "util/Logger.h"
+#include <cstring>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+
+namespace APE {
+namespace Render {
+
+Image::Image()
+{
+	loadCheckerboard();
+}
+
+Image::Image(std::filesystem::path path)
+{
+	loadImage(path);
+}
+
+Image::Image(int width, int height, const std::byte* data)
+{
+	// Assume data is RGBA8 format
+	int num_channels = 4;
+	if (height > 0) {
+		// Set size parameters of image
+		m_width = width;
+		m_height = height;
+		m_num_channels = num_channels;
+
+		// Copy stb image data to a new vector
+		m_pixels.resize(getSizeBytes());
+		std::memcpy(m_pixels.data(), data, getSizeBytes());
+
+		return;
+	}
+
+	// if height is 0, image is compressed
+	unsigned char* decompressed_data = 
+		stbi_load_from_memory(
+			reinterpret_cast<const unsigned char*>(data),
+			width,
+			&width,
+			&height,
+			&num_channels,
+			0
+		);
+
+	if (decompressed_data == nullptr) {
+		// Fallback to default texture
+		APE_ERROR("Failed to load embedded texture.");
+		loadCheckerboard();
+	}
+
+	// Set size parameters of image
+	m_width = width;
+	m_height = height;
+	m_num_channels = num_channels;
+
+	// Copy stb image data to a new vector
+	m_pixels.resize(getSizeBytes());
+	std::memcpy(m_pixels.data(), decompressed_data, getSizeBytes());
+
+	// Cleanup image data
+	stbi_image_free(decompressed_data);
+}
+
+void Image::loadImage(std::filesystem::path path)
+{
+	int width, height, num_channels;
+	std::byte* data = reinterpret_cast<std::byte*>(stbi_load(
+		path.c_str(),
+		&width,
+		&height,
+		&num_channels,
+		0
+	));
+
+	// Fallback to default texture if stbi_load fails
+	if (data == nullptr) {
+		APE_ERROR("Failed to load image: {}", path.c_str());
+
+		loadCheckerboard();
+		return;
+	}
+
+	// Set size parameters of image
+	m_width = width;
+	m_height = height;
+	m_num_channels = num_channels;
+
+	// Copy stb image data to a new vector
+	m_pixels.resize(getSizeBytes());
+	std::memcpy(m_pixels.data(), data, getSizeBytes());
+
+	// Cleanup image data
+	stbi_image_free(data);
+}
+
+
+void Image::loadCheckerboard()
+{
+	m_width = 2;
+	m_height = 2;
+	m_num_channels = 4;
+
+	static constexpr std::byte on { 0xff };
+	static constexpr std::byte off { 0x00 };
+	m_pixels = { 
+		 on, off,  on,  on,
+		off, off, off,  on,
+		 on, off,  on,  on,
+		off, off, off,  on,
+	};
+}
+
+Uint32 Image::getSizeBytes() const
+{
+	return m_width * m_height * m_num_channels;
+}
+
+Uint32 Image::getWidth() const
+{
+	return m_width;
+}
+
+Uint32 Image::getHeight() const
+{
+	return m_height;
+}
+
+Uint32 Image::getNumChannels() const
+{
+	return m_num_channels;
+}
+
+std::vector<std::byte>& Image::getPixels()
+{
+	return m_pixels;
+}
+
+void Image::trace() const
+{
+	std::string pixel_str(
+		reinterpret_cast<const char*>(m_pixels.data()),
+		m_pixels.size()
+	);
+
+	APE_TRACE(
+		"width = {}, height = {}, num_channels = {} \n Pixels = {}",
+		getWidth(),
+		getHeight(),
+		getNumChannels(),
+		pixel_str
+	);
+}
+
+};	// end of namespace Render
+};	// end of namespace APE
+

@@ -2,6 +2,7 @@
 #include "util/Logger.h"
 #include <SDL3/SDL_stdinc.h>
 #include <assimp/material.h>
+#include <cstddef>
 #include <cstdlib>
 #include <vector>
 
@@ -68,6 +69,7 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 
 	// Check for diffuse texture
 	if (ai_mat->GetTextureCount(aiTextureType_DIFFUSE) <=  0) {
+		// Return default texture on failure
 		APE_ERROR(
 			"Model::convertAiMaterial Failed - diffuse texture not found."
 		);
@@ -85,16 +87,16 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 			return std::make_shared<Image>(
 				ai_tex->mWidth,
 				ai_tex->mHeight,
-				ai_tex->pcData
+				reinterpret_cast<std::byte*>(ai_tex->pcData)
 			);
 		}
 		// otherwise create texture from file
 		else {
-			return std::make_shared<Image>(path.C_Str(), 1);
+			return std::make_shared<Image>(path.C_Str());
 		}
 	}
 
-	// Return random texture on failure
+	// Return default texture on failure
 	APE_ERROR(
 		"Model::convertAiMaterial Failed - could not load diffuse texture."
 	);

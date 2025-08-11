@@ -90,7 +90,7 @@ SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
 	// Return wrapped pipeline for memory safety
 	return SafeGPU::makeUnique<SDL_GPUGraphicsPipeline>(
 		pipeline,
-		[=](SDL_GPUGraphicsPipeline* pipeline) {
+		[=, this](SDL_GPUGraphicsPipeline* pipeline) {
 			SDL_ReleaseGPUGraphicsPipeline(m_context->device, pipeline);
 		}
 	);
@@ -291,7 +291,7 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 	}
 
 	// Bind texture sampler
-	// mesh.getTexture()->trace();
+	mesh.getTexture()->trace();
 	SDL_GPUTextureSamplerBinding sampler_binding = {
 		.texture = mesh.getTextureBuffer(),
 		.sampler = m_sampler.get(),
@@ -341,7 +341,7 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(const std::vector<Uint8>& data, 
 	);
 	auto safe_buffer = SafeGPU::makeUnique<SDL_GPUBuffer>(
 		buffer,
-		[=](SDL_GPUBuffer* buf) {
+		[=, this](SDL_GPUBuffer* buf) {
 			SDL_ReleaseGPUBuffer(m_context->device, buf);
 		}
 	);
@@ -415,7 +415,7 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 	// Make safe wrapper around texture
 	SafeGPU::UniqueGPUTexture safe_tex = SafeGPU::makeUnique<SDL_GPUTexture>(
 		texture,
-		[=](SDL_GPUTexture* tex) {
+		[=, this](SDL_GPUTexture* tex) {
 			SDL_ReleaseGPUTexture(m_context->device, tex);
 		}
 	);
@@ -423,7 +423,7 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 	// Create transfer buffer
 	SDL_GPUTransferBufferCreateInfo transfer_desc = {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-		.size = image->getSize(),
+		.size = image->getSizeBytes(),
 	};
 	SDL_GPUTransferBuffer* transfer_buf = SDL_CreateGPUTransferBuffer(
 		m_context->device,
@@ -437,7 +437,11 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 		false
 	));
 
-	std::memcpy(mapped, image->getPixels(), image->getSize());
+	std::memcpy(
+		mapped,
+		static_cast<void*>(&image->getPixels()),
+		image->getSizeBytes()
+	);
 
 	SDL_UnmapGPUTransferBuffer(m_context->device, transfer_buf);
 
@@ -484,7 +488,7 @@ SafeGPU::UniqueGPUSampler Renderer::createSampler()
 
 	SafeGPU::UniqueGPUSampler safe_sampler = SafeGPU::makeUnique<SDL_GPUSampler>(
 		sampler,
-		[=](SDL_GPUSampler* sam) {
+		[=, this](SDL_GPUSampler* sam) {
 			SDL_ReleaseGPUSampler(m_context->device, sam);
 		}
 	);

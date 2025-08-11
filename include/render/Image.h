@@ -1,124 +1,44 @@
 #pragma once
 
-#include "util/Logger.h"
-#include <SDL3/SDL_surface.h>
+#include <SDL3/SDL_stdinc.h>
+#include <cstddef>
 #include <filesystem>
-
-#include <SDL3/SDL_gpu.h>
+#include <vector>
 
 namespace APE {
 namespace Render {
 
-struct Pixel {
-	Uint8 r, g, b, a;
-};
-
 class Image {
 private:
-	SDL_Surface* m_data;
-
-	inline static Pixel s_default_tex[] = {
-		{ 255, 255, 255, 255 },
-		{ 255, 0, 255, 255 },
-		{ 255, 255, 0, 255 },
-		{ 255, 255, 255, 255 },
-	};
+	int m_width;
+	int m_height;
+	int m_num_channels;
+	std::vector<std::byte> m_pixels;
 
 public:
-	Image()
-	{
-		// m_data = SDL_CreateSurface(2, 2, SDL_PIXELFORMAT_RGBA8888);
-		// std::memcpy(m_data->pixels, &s_default_tex, sizeof(s_default_tex));
-		m_data = loadImage("res/textures/ravioli.bmp", 4);
-		APE_TRACE("DEFAULT_TEX USED");
-	}
+	Image();
 
-	Image(std::filesystem::path path, int num_channels)
-	{
-		m_data = loadImage(path, num_channels);
-	}
+	Image(std::filesystem::path path);
 
-	Image(int width, int height, void* data)
-	{
-		m_data = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA8888);
-		std::memcpy(m_data->pixels, data, width * height * 4);
-	}
+	Image(int width, int height, const std::byte* data);
 
-	~Image()
-	{
-		SDL_DestroySurface(m_data);
-	}
+	void loadImage(std::filesystem::path path);
 
-	// Delete copy
-	Image(const Image&) = delete;
-	Image& operator=(const Image&) = delete;
+	void loadCheckerboard();
 
-	static SDL_Surface* loadImage(std::filesystem::path path, int channels) 
-	{
-		std::string abs_path = std::filesystem::absolute(path);
-		SDL_Surface* surface = SDL_LoadBMP(abs_path.c_str());
-		if (!surface) {
-			APE_ERROR("Failed to load image: - {}", abs_path);
-			return nullptr;
-		}
+	Uint32 getSizeBytes() const;
 
-		if (channels != 4) {
-			APE_ERROR("Failed to load image: invalid channel count");
-			SDL_DestroySurface(surface);
-			return nullptr;
-		}
+	Uint32 getWidth() const;
 
-		SDL_PixelFormat format = SDL_PIXELFORMAT_ABGR8888;
-		if (surface->format != format) {
-			SDL_Surface* conv = SDL_ConvertSurface(surface, format);
-			SDL_DestroySurface(surface);
-			surface = conv;
-		}
+	Uint32 getHeight() const;
 
-		return surface;
-	}
+	Uint32 getNumChannels() const;
 
-	Uint32 getSize() const
-	{
-		return getWidth() * getHeight() * 4;
-	}
+	std::vector<std::byte>& getPixels();
 
-	Uint32 getWidth() const
-	{
-		return m_data->w;
-	}
-
-	Uint32 getHeight() const
-	{
-		return m_data->h;
-	}
-
-	void* getPixels() const
-	{
-		return m_data->pixels;
-	}
-
-	void trace() const
-	{
-		unsigned char* pixel = static_cast<unsigned char*>(m_data->pixels);
-		std::string str;
-		for (int x = 0; x < getWidth(); ++x) {
-			for (int y = 0; y < getHeight(); ++y) {
-				int num = static_cast<int>(
-					pixel[(y * getWidth() + x) * 4]
-				);
-				str += std::to_string(num) + " ";
-			}
-		}
-
-		APE_TRACE(
-			"width = {} \n height = {} \n Pixels = {}",
-			getWidth(),
-			getHeight(),
-			str
-		);
-	}
+	void trace() const;
 };
 
 };	// end of namespace Render
 };	// end of namespace APE
+
