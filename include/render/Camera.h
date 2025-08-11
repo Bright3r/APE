@@ -64,7 +64,7 @@ public:
 	glm::mat4 getViewMatrix() const 
 	{
 		glm::vec3 front = getForwardVector();
-		return glm::lookAt(position, position + front, glm::vec3(0, 1, 0));
+		return glm::lookAt(position, position + front, getUpVector());
 	}
 
 	glm::mat4 getProjectionMatrix(float aspect_ratio) const 
@@ -91,26 +91,25 @@ public:
 	glm::vec3 getRightVector() const 
 	{
 		return glm::normalize(
-			glm::cross(getForwardVector(), glm::vec3(0, 1, 0))
+			glm::cross(getForwardVector(), getUpVector())
 		);
 	}
 
 	glm::vec3 getRightVector(const glm::vec3 forward_vec) const 
 	{
 		return glm::normalize(
-			glm::cross(forward_vec, glm::vec3(0, 1, 0))
+			glm::cross(forward_vec, getUpVector())
 		);
 	}
 
-	glm::vec3 getUpVector() const 
+	constexpr glm::vec3 getUpVector() const 
 	{
-		return glm::normalize(
-			glm::cross(getRightVector(), getForwardVector())
-		);
+		return glm::vec3(0, 1, 0);
 	}
 
 	glm::vec3 getUpVector(
-		const glm::vec3 forward_vec, const glm::vec3 right_vec) const 
+		const glm::vec3 forward_vec,
+		const glm::vec3 right_vec) const 
 	{
 		return glm::normalize(
 			glm::cross(right_vec, forward_vec)

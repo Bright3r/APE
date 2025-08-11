@@ -18,6 +18,38 @@ void App::update() {
 	
 	APE::Render::Camera* cam = AppRunner::getMainCamera();
 	// cam->print();
+	float speed = 5.f;
+	float dt = AppRunner::getLastFrameTimeSec().count();
+	
+	if (b_quit) {
+		AppRunner::setQuit(true);
+	}
+	if (b_move_forward) {
+		cam->moveForward(speed, dt);
+	}
+	if (b_move_backward) {
+		cam->moveForward(-speed, dt);
+	}
+	if (b_move_left) {
+		cam->moveRight(-speed, dt);
+	}
+	if (b_move_right) {
+		cam->moveRight(speed, dt);
+	}
+	if (b_move_up) {
+		cam->moveUp(speed, dt);
+	}
+	if (b_move_down) {
+		cam->moveUp(-speed, dt);
+	}
+	if (b_displace_right) {
+		model.getTransform().position.x += 1;
+		APE_TRACE("Mesh.pos.x = {}", model.getTransform().position.x);
+	}
+	if (b_displace_left) {
+		model.getTransform().position.x -= 1;
+		APE_TRACE("Mesh.pos.x = {}", model.getTransform().position.x);
+	}
 }
 
 void App::draw() {
@@ -29,46 +61,67 @@ void App::draw() {
 }
 
 void App::onKeyDown(SDL_KeyboardEvent key) {
-	APE::Render::Camera* cam = AppRunner::getMainCamera();
-	float speed = 5.f;
-	float dt = AppRunner::getLastFrameTimeSec().count();
-
 	switch (key.key) {
 		case SDLK_Q:
-			AppRunner::setQuit(true);
+			b_quit = true;
 			break;
 		case SDLK_W:
-			cam->moveForward(speed, dt);
+			b_move_forward = true;
 			break;
 		case SDLK_S:
-			cam->moveForward(-speed, dt);
+			b_move_backward = true;
 			break;
 		case SDLK_A:
-			cam->moveRight(-speed, dt);
+			b_move_left = true;
 			break;
 		case SDLK_D:
-			cam->moveRight(speed, dt);
+			b_move_right = true;
 			break;
 		case SDLK_SPACE:
-			cam->moveUp(speed, dt);
+			b_move_up = true;
 			break;
 		case SDLK_LCTRL:
-			cam->moveUp(-speed, dt);
+			b_move_down = true;
 			break;
 		case SDLK_M:
-			model.getTransform().position.x += 1;
-			APE_TRACE("Mesh.pos.x = {}", model.getTransform().position.x);
+			b_displace_right = true;
 			break;
 		case SDLK_N:
-			model.getTransform().position.x -= 1;
-			APE_TRACE("Mesh.pos.x = {}", model.getTransform().position.x);
+			b_displace_left = true;
 			break;
-
 	}
 }
 
 void App::onKeyUp(SDL_KeyboardEvent key) {
-
+	switch (key.key) {
+		case SDLK_Q:
+			b_quit = false;
+			break;
+		case SDLK_W:
+			b_move_forward = false;
+			break;
+		case SDLK_S:
+			b_move_backward = false;
+			break;
+		case SDLK_A:
+			b_move_left = false;
+			break;
+		case SDLK_D:
+			b_move_right = false;
+			break;
+		case SDLK_SPACE:
+			b_move_up = false;
+			break;
+		case SDLK_LCTRL:
+			b_move_down = false;
+			break;
+		case SDLK_M:
+			b_displace_right = false;
+			break;
+		case SDLK_N:
+			b_displace_left = false;
+			break;
+	}
 }
 
 void App::onMouseDown(SDL_MouseButtonEvent mButton) {
