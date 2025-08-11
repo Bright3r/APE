@@ -44,12 +44,14 @@ private:
 
 	static std::shared_ptr<Image> convertAiMaterial(
 		const aiMaterial* ai_mat,
-		const aiScene* scene);
+		const aiScene* scene,
+		std::filesystem::path model_path);
 
 	void processNode(
 		const aiNode* node,
 		const aiScene* scene,
-		const Transform& parent_transform);
+		const Transform& parent_transform,
+		std::filesystem::path model_path);
 
 	Model::MeshType processAiMesh(
 		const aiMesh* ai_mesh,

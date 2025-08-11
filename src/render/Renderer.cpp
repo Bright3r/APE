@@ -291,7 +291,7 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 	}
 
 	// Bind texture sampler
-	mesh.getTexture()->trace();
+	// mesh.getTexture()->trace();
 	SDL_GPUTextureSamplerBinding sampler_binding = {
 		.texture = mesh.getTextureBuffer(),
 		.sampler = m_sampler.get(),
@@ -326,7 +326,7 @@ void Renderer::draw(Model::MeshType& mesh, const glm::mat4& model_mat)
 	);
 }
 
-SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(const std::vector<Uint8>& data, Uint32 usage)
+SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(const std::vector<std::byte>& data, Uint32 usage)
 {
 	// Create GPU buffer
 	Uint32 buffer_size = data.size();
@@ -358,7 +358,7 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(const std::vector<Uint8>& data, 
 	);
 
 	// Write data to transfer buffer
-	Uint8* mapped = static_cast<Uint8*>(
+	std::byte* mapped = static_cast<std::byte*>(
 		SDL_MapGPUTransferBuffer(
 			m_context->device, 
 			transfer_buffer, 
@@ -397,12 +397,30 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(const std::vector<Uint8>& data, 
 	return safe_buffer;
 }
 
+SDL_GPUTextureFormat Renderer::getTextureFormat(Image* image)
+{
+	switch (image->getNumChannels()) {
+	case 1:
+		return SDL_GPU_TEXTUREFORMAT_R8_UNORM;
+	case 2:
+		return SDL_GPU_TEXTUREFORMAT_R8G8_UNORM;
+	case 4:
+		return SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+	default:
+		APE_ERROR(
+			"Unsupported texture channel count: {}",
+	    		image->getNumChannels()
+		);
+		return SDL_GPU_TEXTUREFORMAT_R8G8_UNORM;
+	}
+}
+
 SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 {
 	// Create texture
 	SDL_GPUTextureCreateInfo tex_desc = {
 		.type = SDL_GPU_TEXTURETYPE_2D,
-		.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
+		.format = getTextureFormat(image),
 		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER,
 		.width = image->getWidth(),
 		.height = image->getHeight(),
@@ -410,7 +428,6 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 		.num_levels = 1,
 	};
 	SDL_GPUTexture* texture = SDL_CreateGPUTexture(m_context->device, &tex_desc);
-	SDL_SetGPUTextureName(m_context->device, texture, "Ravioli");
 
 	// Make safe wrapper around texture
 	SafeGPU::UniqueGPUTexture safe_tex = SafeGPU::makeUnique<SDL_GPUTexture>(
@@ -431,7 +448,7 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 	);
 
 	// Write data to transfer buffer
-	Uint8* mapped = static_cast<Uint8*>(SDL_MapGPUTransferBuffer(
+	std::byte* mapped = static_cast<std::byte*>(SDL_MapGPUTransferBuffer(
 		m_context->device, 
 		transfer_buf, 
 		false
@@ -439,7 +456,7 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 
 	std::memcpy(
 		mapped,
-		static_cast<void*>(&image->getPixels()),
+		static_cast<void*>(image->getPixels()),
 		image->getSizeBytes()
 	);
 

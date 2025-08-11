@@ -34,7 +34,7 @@ public:
 
 	Uint32 getNumChannels() const;
 
-	std::vector<std::byte>& getPixels();
+	std::byte* getPixels();
 
 	void trace() const;
 };

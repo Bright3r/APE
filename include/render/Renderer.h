@@ -9,6 +9,7 @@
 #include "render/Image.h"
 
 #include <SDL3/SDL_gpu.h>
+#include <cstddef>
 #include <glm/fwd.hpp>
 #include <memory>
 #include <vector>
@@ -92,20 +93,24 @@ private:
 	SafeGPU::UniqueGPUGraphicsPipeline createPipeline(
 		const SDL_GPUGraphicsPipelineCreateInfo& create_info) const;
 
-	SafeGPU::UniqueGPUBuffer uploadBuffer(const std::vector<Uint8>& data, Uint32 usage);
+	SafeGPU::UniqueGPUBuffer uploadBuffer(
+		const std::vector<std::byte>& data,
+		Uint32 usage);
+
+	static SDL_GPUTextureFormat getTextureFormat(Image* image);
 
 	SafeGPU::UniqueGPUTexture createTexture(Image* image);
 
 	SafeGPU::UniqueGPUSampler createSampler();
 
 	template <typename T>
-	static std::vector<Uint8> vectorToRawBytes(const std::vector<T>& data)
+	static std::vector<std::byte> vectorToRawBytes(const std::vector<T>& data)
 	{
 		// Copy vertex data as a vector of bytes
-		const Uint8* raw_data = reinterpret_cast<const Uint8*>(data.data());
+		const std::byte* raw_data = reinterpret_cast<const std::byte*>(data.data());
 		size_t num_bytes = sizeof(T) * data.size();
 
-		return std::vector<Uint8>(raw_data, raw_data + num_bytes);
+		return std::vector<std::byte>(raw_data, raw_data + num_bytes);
 	}
 };
 

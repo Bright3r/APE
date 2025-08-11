@@ -38,7 +38,7 @@ void Model::loadModel(std::filesystem::path model_path)
 		return;
 	}
 
-	processNode(scene->mRootNode, scene, m_transform);
+	processNode(scene->mRootNode, scene, m_transform, model_path);
 }
 
 Transform Model::convertAiTransform(const aiMatrix4x4 ai_transform)
@@ -57,12 +57,13 @@ Transform Model::convertAiTransform(const aiMatrix4x4 ai_transform)
 
 std::shared_ptr<Image> Model::convertAiMaterial(
 	const aiMaterial* ai_mat,
-	const aiScene* scene)
+	const aiScene* scene,
+	std::filesystem::path model_path)
 {
 	//
 	// Bypass texture loading for now
 	//
-	return std::make_shared<Image>();
+	// return std::make_shared<Image>();
 	//
 	//
 	//
@@ -92,7 +93,10 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 		}
 		// otherwise create texture from file
 		else {
-			return std::make_shared<Image>(path.C_Str());
+			std::string tex_path { 
+				model_path.parent_path().append(path.C_Str())
+			};
+			return std::make_shared<Image>(tex_path);
 		}
 	}
 
@@ -106,7 +110,8 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 void Model::processNode(
 	const aiNode* node,
 	const aiScene* scene,
-	const Transform& parent_transform)
+	const Transform& parent_transform,
+	std::filesystem::path model_path)
 {
 	// Get world transformation of current node
 	Transform curr_transform = 
@@ -120,7 +125,8 @@ void Model::processNode(
 
 		// Get texture for current mesh
 		aiMaterial* ai_mat = scene->mMaterials[ai_mesh->mMaterialIndex];
-		std::shared_ptr<Image> texture = convertAiMaterial(ai_mat, scene);
+		std::shared_ptr<Image> texture = 
+			convertAiMaterial(ai_mat, scene, model_path);
 
 		// Add Mesh to model
 		m_meshes.emplace_back(processAiMesh(
@@ -132,7 +138,7 @@ void Model::processNode(
 
 	// Process child nodes
 	for (size_t i = 0; i < node->mNumChildren; ++i) {
-		processNode(node->mChildren[i], scene, curr_transform);
+		processNode(node->mChildren[i], scene, curr_transform, model_path);
 	}
 }
 
