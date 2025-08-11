@@ -466,7 +466,7 @@ SDL_GPUTextureFormat Renderer::getTextureFormat(Image* image)
 			"Unsupported texture channel count: {}",
 	    		image->getNumChannels()
 		);
-		return SDL_GPU_TEXTUREFORMAT_R8G8_UNORM;
+		return SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
 	}
 }
 

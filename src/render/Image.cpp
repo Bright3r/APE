@@ -22,7 +22,7 @@ Image::Image(std::filesystem::path path)
 
 Image::Image(int width, int height, const std::byte* data)
 {
-	// Assume data is RGBA8 format
+	// Assume data is R8G8BA8 format
 	int num_channels = 4;
 	if (height > 0) {
 		m_width = width;
@@ -44,7 +44,7 @@ Image::Image(int width, int height, const std::byte* data)
 			&width,
 			&height,
 			&num_channels,
-			0
+			4	// force R8G8B8A8
 		);
 
 	if (decompressed_data == nullptr) {
@@ -55,7 +55,7 @@ Image::Image(int width, int height, const std::byte* data)
 
 	m_width = width;
 	m_height = height;
-	m_num_channels = num_channels;
+	m_num_channels = 4;
 
 	// Copy stb image data to a new vector
 	m_pixels.resize(getSizeBytes());
@@ -74,7 +74,7 @@ void Image::loadImage(std::filesystem::path path)
 		&width,
 		&height,
 		&num_channels,
-		0
+		4	// force R8G8B8A8
 	));
 
 	// Fallback to default texture if stbi_load fails
@@ -87,7 +87,7 @@ void Image::loadImage(std::filesystem::path path)
 
 	m_width = width;
 	m_height = height;
-	m_num_channels = num_channels;
+	m_num_channels = 4;
 
 	// Copy stb image data to a new vector
 	m_pixels.resize(getSizeBytes());
