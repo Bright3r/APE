@@ -54,7 +54,7 @@ public:
 
 	static APE::Render::Camera* getMainCamera();
 
-	static void draw(APE::Render::Model& mesh);
+	static void draw(APE::Render::Model* mesh);
 
 
 	// Utility Functions

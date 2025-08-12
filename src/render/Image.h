@@ -10,6 +10,8 @@ namespace Render {
 
 class Image {
 private:
+	static constexpr int DEFAULT_IMG_CHANNELS = 4;
+
 	int m_width;
 	int m_height;
 	int m_num_channels;

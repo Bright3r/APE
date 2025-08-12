@@ -23,7 +23,7 @@ public:
 private:
 	// App Data
 	std::unique_ptr<APE::Render::Shader> shader;
-	APE::Render::Model model;
+	std::unique_ptr<APE::Render::Model> model;
 
 	bool b_quit = false;
 	bool b_move_left = false;

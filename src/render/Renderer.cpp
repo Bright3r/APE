@@ -246,16 +246,15 @@ void Renderer::beginDrawing()
 	SDL_BindGPUGraphicsPipeline(render_pass, render_pipeline);
 }
 
-void Renderer::draw(Model& model)
+void Renderer::draw(Model* model)
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
 		"Renderer::draw(Model& mesh) Failed: beginDrawing() not called"
 	);
 
-	for (Model::ModelMesh& mesh : model.getMeshes()) {
-		glm::mat4 model_mat =
-			model.getTransform().getModelMatrix() *
+	for (Model::ModelMesh& mesh : model->getMeshes()) {
+		glm::mat4 model_mat = model->getTransform().getModelMatrix() *
 			mesh.getTransform().getModelMatrix();
 
 		draw(mesh, model_mat);

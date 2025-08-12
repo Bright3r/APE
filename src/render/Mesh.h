@@ -10,6 +10,7 @@
 #include <glm/fwd.hpp>
 
 #include <vector>
+#include <memory>
 
 namespace APE {
 namespace Render {

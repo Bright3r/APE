@@ -1,14 +1,19 @@
 #include "App.h"
 #include "core/AppRunner.h"
+#include "render/Cube.h"
 #include "render/Model.h"
 #include "util/Logger.h"
 
 #include <glm/fwd.hpp>
 
 void App::setup() {
-	// model = APE::Render::Model("res/models/textured-cube.obj");
-	model = APE::Render::Model("res/models/che/scene.gltf");
-	// model = APE::Render::Model("res/models/ship/source/full_scene.fbx");
+	model = std::make_unique<APE::Render::Cube>();
+
+	// model = std::make_unique<APE::Render::Model>("res/models/che/scene.gltf");
+
+	// model = std::make_unique<APE::Render::Model>(
+	// 	"res/models/ship/source/full_scene.fbx"
+	// );
 }
 
 void App::update() {
@@ -43,21 +48,21 @@ void App::update() {
 		cam->moveUp(-speed, dt);
 	}
 	if (b_displace_right) {
-		model.getTransform().position.x += 1;
-		APE_TRACE("Mesh.pos.x = {}", model.getTransform().position.x);
+		model->getTransform().position.x += 1;
+		APE_TRACE("Mesh.pos.x = {}", model->getTransform().position.x);
 	}
 	if (b_displace_left) {
-		model.getTransform().position.x -= 1;
-		APE_TRACE("Mesh.pos.x = {}", model.getTransform().position.x);
+		model->getTransform().position.x -= 1;
+		APE_TRACE("Mesh.pos.x = {}", model->getTransform().position.x);
 	}
 }
 
 void App::draw() {
-	model.getTransform().position.x *= -1;
-	AppRunner::draw(model);
+	model->getTransform().position.x *= -1;
+	AppRunner::draw(model.get());
 
-	model.getTransform().position.x *= -1;
-	AppRunner::draw(model);
+	model->getTransform().position.x *= -1;
+	AppRunner::draw(model.get());
 }
 
 void App::onKeyDown(SDL_KeyboardEvent key) {

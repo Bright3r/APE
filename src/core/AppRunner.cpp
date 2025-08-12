@@ -139,7 +139,7 @@ APE::Render::Camera* AppRunner::getMainCamera()
 	return s_main_camera.get();
 }
 
-void AppRunner::draw(APE::Render::Model& model)
+void AppRunner::draw(APE::Render::Model* model)
 {
 	s_renderer->draw(model);
 }

@@ -21,7 +21,7 @@ public:
 	using IndexType = Uint32;
 	using ModelMesh = Mesh<VertexType, IndexType>;
 
-private:
+protected:
 	// Data members
 	std::vector<ModelMesh> m_meshes;
 	Transform m_transform;
@@ -30,6 +30,8 @@ public:
 	Model() = default;
 
 	Model(std::filesystem::path model_path, const Transform& transform = {});
+
+	virtual ~Model() { }
 
 	void loadModel(std::filesystem::path model_path);
 
