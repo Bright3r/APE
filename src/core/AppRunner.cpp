@@ -9,6 +9,7 @@
 // Application State
 //
 std::unique_ptr<App> AppRunner::s_app {};
+std::unordered_map<SDL_Keycode, bool> AppRunner::s_key_state {};
 
 // Rendering
 //
@@ -35,7 +36,7 @@ void AppRunner::init(
 	s_framerate = 60.f;
 	s_last_frame_time = std::chrono::milliseconds(0);
 
-	// Create user-defined app
+	// Create app state
 	s_app = std::make_unique<App>();
 
 	// Initialize renderer w/ default shader
@@ -62,9 +63,11 @@ void AppRunner::pollEvents()
 				setQuit(true);
 				break;
 			case SDL_EVENT_KEY_DOWN:
+				s_key_state[event.key.key] = true;
 				s_app->onKeyDown(event.key);
 				break;
 			case SDL_EVENT_KEY_UP:
+				s_key_state[event.key.key] = false;
 				s_app->onKeyUp(event.key);
 				break;
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -119,6 +122,15 @@ void AppRunner::run()
 	}
 
 	std::terminate();
+}
+
+bool AppRunner::keyDown(SDL_Keycode key)
+{
+	if (s_key_state.find(key) != s_key_state.end()) {
+		return s_key_state.at(key);
+	}
+
+	return false;
 }
 
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(

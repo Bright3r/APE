@@ -24,15 +24,5 @@ private:
 	// App Data
 	std::unique_ptr<APE::Render::Shader> shader;
 	std::unique_ptr<APE::Render::Model> model;
-
-	bool b_quit = false;
-	bool b_move_left = false;
-	bool b_move_right = false;
-	bool b_move_forward = false;
-	bool b_move_backward = false;
-	bool b_move_up = false;
-	bool b_move_down = false;
-	bool b_displace_right = false;
-	bool b_displace_left = false;
 };
 

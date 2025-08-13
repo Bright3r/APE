@@ -18,6 +18,7 @@ private:
 	// Application State
 	//
 	static std::unique_ptr<App> s_app;
+	static std::unordered_map<SDL_Keycode, bool> s_key_state;
 
 	// Rendering
 	//
@@ -35,14 +36,18 @@ private:
 public:
 	// Main Functions
 	//
-	static void 
-	init(std::string_view window_title, int window_width, int window_height);
+	static void init(
+		std::string_view window_title,
+		int window_width,
+		int window_height);
 
 	static void pollEvents();
 
 	static void stepGameloop();
 
 	static void run();
+
+	static bool keyDown(SDL_Keycode key);
 
 
 	// Graphics Functions
