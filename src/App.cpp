@@ -2,12 +2,15 @@
 #include "core/AppRunner.h"
 #include "render/Cube.h"
 #include "render/Model.h"
+#include "render/Sphere.h"
 #include "util/Logger.h"
 
 #include <glm/fwd.hpp>
 
 void App::setup() {
-	model = std::make_unique<APE::Render::Cube>();
+	model = std::make_unique<APE::Render::Sphere>();
+
+	// model = std::make_unique<APE::Render::Cube>();
 
 	// model = std::make_unique<APE::Render::Model>("res/models/che/scene.gltf");
 
