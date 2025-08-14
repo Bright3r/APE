@@ -2,6 +2,7 @@
 #include "util/Logger.h"
 #include <SDL3/SDL_stdinc.h>
 #include <assimp/material.h>
+#include <assimp/postprocess.h>
 #include <cstddef>
 #include <cstdlib>
 #include <vector>
@@ -23,12 +24,15 @@ void Model::loadModel(std::filesystem::path model_path)
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
 		model_path,
-		aiProcess_Triangulate | aiProcess_FlipUVs
+		aiProcess_Triangulate | 
+		aiProcess_FlipUVs | 
+		aiProcess_FixInfacingNormals
 	);
 
 	bool succ_load_model = !(!scene 
 		|| scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE 
-		|| !scene->mRootNode);
+		|| !scene->mRootNode
+	);
 	if (!succ_load_model) {
 		APE_ERROR(
 			"Model::Model(const std::filesystem::path& model_path) Failed - {}",
