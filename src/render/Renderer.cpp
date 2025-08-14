@@ -192,19 +192,18 @@ void Renderer::beginDrawing()
 	m_is_drawing = true;
 
 	// Acquire cmd buffer
-	SDL_GPUCommandBuffer *cmd_buffer = SDL_AcquireGPUCommandBuffer(
+	m_cmd_buf = SDL_AcquireGPUCommandBuffer(
 		m_context->device
 	);
-	APE_CHECK((cmd_buffer != nullptr),
+	APE_CHECK((m_cmd_buf != nullptr),
 		"SDL_AcquiredGPUCommandBuffer Failed - {}",
 		SDL_GetError()
 	);
-	m_cmd_buf = cmd_buffer;
 
 	// Acquire swapchain texture
 	SDL_GPUTexture *swapchain_texture;
 	bool succ_acquire_swapchain = SDL_WaitAndAcquireGPUSwapchainTexture(
-		cmd_buffer, m_context->window, &swapchain_texture, NULL, NULL
+		m_cmd_buf, m_context->window, &swapchain_texture, NULL, NULL
 	);
 	APE_CHECK(succ_acquire_swapchain,
 		"SDL_WaitAndAcquireGPUSwapchainTexture Failed - {}",
@@ -229,7 +228,7 @@ void Renderer::beginDrawing()
 		.clear_stencil = 0,
 	};
 	SDL_GPURenderPass *render_pass = SDL_BeginGPURenderPass(
-		cmd_buffer, 
+		m_cmd_buf, 
 		&color_target_info, 
 		1, 
 		&depth_target_info
