@@ -1,15 +1,18 @@
 #include "App.h"
 #include "core/AppRunner.h"
+#include "render/Model.h"
 #include "render/Shapes/Cube.h"
 #include "render/Shapes/Sphere.h"
 #include "render/Shapes/Cone.h"
-#include "render/Model.h"
+#include "render/Shapes/Cylinder.h"
 #include "util/Logger.h"
 
 #include <glm/fwd.hpp>
 
 void App::setup() {
-	model = std::make_unique<APE::Render::Cone>();
+	model = std::make_unique<APE::Render::Cylinder>();
+
+	// model = std::make_unique<APE::Render::Cone>();
 
 	// model = std::make_unique<APE::Render::Sphere>();
 

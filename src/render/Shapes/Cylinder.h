@@ -9,16 +9,14 @@
 namespace APE {
 namespace Render {
 
-class Cone : public Model {
-private:
-	static constexpr std::string_view CONE_PATH =
-		"res/models/textured-cone.obj";
-
+class Cylinder : public Model {
+	static constexpr std::string_view CYLINDER_PATH =
+		"res/models/textured-cylinder.obj";
 public:
-	Cone(float radius = 0.5f, float height = 1.f)
-		: Model(CONE_PATH)
+	Cylinder(float radius = 1.f, float height = 1.f)
+		: Model(CYLINDER_PATH)
 	{
-		m_transform.scale = { 2*radius, height, 2*radius };
+		m_transform.scale = { radius, height, radius };
 	}
 
 	float getRadius() const
@@ -28,8 +26,8 @@ public:
 
 	void setRadius(float radius)
 	{
-		m_transform.scale.x = 2*radius;
-		m_transform.scale.z = 2*radius;
+		m_transform.scale.x = radius;
+		m_transform.scale.z = radius;
 	}
 
 	float getHeight() const
