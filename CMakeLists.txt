@@ -10,6 +10,7 @@ find_package(glm CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(Stb REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 
 add_executable(ape 
 	src/main.cpp
@@ -38,4 +39,5 @@ target_link_libraries(ape PRIVATE
 	glm::glm
 	spdlog::spdlog
 	assimp::assimp
+	imgui::imgui
 )
