@@ -50,6 +50,8 @@ public:
 
 	static bool keyDown(SDL_Keycode key);
 
+	static void setTabIn(bool is_tabbed_in);
+
 
 
 	// Graphics Functions

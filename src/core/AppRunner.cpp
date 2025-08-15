@@ -56,6 +56,8 @@ void AppRunner::init(
 		s_context, 
 		s_main_camera.get()
 	);
+
+	setTabIn(true);
 }
 
 void AppRunner::pollEvents()
@@ -137,6 +139,11 @@ bool AppRunner::keyDown(SDL_Keycode key)
 	}
 
 	return false;
+}
+
+void AppRunner::setTabIn(bool is_tabbed_in)
+{
+	SDL_SetWindowRelativeMouseMode(s_context->window, is_tabbed_in);
 }
 
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(

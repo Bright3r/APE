@@ -43,7 +43,9 @@ void App::update()
 	}
 
 	if (AppRunner::keyDown(SDLK_TAB)) {
-		cam->setLocked(!cam->getLocked());
+		bool is_locked = cam->getLocked();
+		cam->setLocked(!is_locked);
+		AppRunner::setTabIn(is_locked);
 	}
 
 	if (AppRunner::keyDown(SDLK_SPACE)) {

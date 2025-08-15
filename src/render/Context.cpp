@@ -51,8 +51,6 @@ Context::Context(std::string_view title,
 		"SDL_ClaimWindowForGPUDevice Failed - {}",
 		SDL_GetError()
 	);
-
-	SDL_SetWindowRelativeMouseMode(window, true);
 }
 
 Context::~Context()
