@@ -65,6 +65,10 @@ public:
 
 	static void draw(APE::Render::Model* mesh);
 
+	static void resizeWindow(const SDL_Event& event);
+
+	static void setWindowTitle(std::string_view window_title);
+
 
 	// Utility Functions
 	//

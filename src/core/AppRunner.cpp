@@ -1,11 +1,13 @@
 #include "core/AppRunner.h"
 #include "render/Shader.h"
+
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_video.h>
-#include <chrono>
-#include <exception>
 #include <imgui_impl_sdl3.h>
 
+#include <chrono>
+#include <exception>
 
 // Application State
 //
@@ -66,6 +68,9 @@ void AppRunner::pollEvents()
 	while (SDL_PollEvent(&event) != 0) {
 		ImGui_ImplSDL3_ProcessEvent(&event);
 		switch (event.type) {
+			case SDL_EVENT_WINDOW_RESIZED:
+				resizeWindow(event);
+				break;
 			case SDL_EVENT_QUIT:
 				setQuit(true);
 				break;
@@ -167,6 +172,19 @@ APE::Render::Camera* AppRunner::getMainCamera()
 void AppRunner::draw(APE::Render::Model* model)
 {
 	s_renderer->draw(model);
+}
+
+void AppRunner::resizeWindow(const SDL_Event& event)
+{
+	s_context->window_width = event.window.data1;
+	s_context->window_height = event.window.data2;
+	s_renderer->reset();
+}
+
+void AppRunner::setWindowTitle(std::string_view window_title)
+{
+	s_context->title = window_title;
+	SDL_SetWindowTitle(s_context->window, std::string(window_title).c_str());
 }
 
 bool AppRunner::getQuit() 

@@ -12,13 +12,15 @@
 
 void App::setup() 
 {
-	model = std::make_unique<APE::Render::Cylinder>();
+	AppRunner::setWindowTitle("APE Engine");;
+
+	// model = std::make_unique<APE::Render::Cylinder>();
 
 	// model = std::make_unique<APE::Render::Cone>();
 
 	// model = std::make_unique<APE::Render::Sphere>();
 
-	// model = std::make_unique<APE::Render::Cube>();
+	model = std::make_unique<APE::Render::Cube>();
 
 	// model = std::make_unique<APE::Render::Model>("res/models/che/scene.gltf");
 

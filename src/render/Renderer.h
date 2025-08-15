@@ -2,6 +2,7 @@
 
 #include "render/Camera.h"
 #include "render/Context.h"
+#include "render/ImGuiSession.h"
 #include "render/SafeGPU.h"
 #include "render/Shader.h"
 #include "render/Mesh.h"
@@ -63,6 +64,7 @@ private:
 	SafeGPU::UniqueGPUSampler m_sampler;
 	SafeGPU::UniqueGPUTexture m_depth_texture;
 
+	std::unique_ptr<ImGuiSession> m_imgui_session;
 
 public:
 	// Special Member Functions
@@ -77,6 +79,8 @@ public:
 
 	// API Functions
 	//
+	void reset();
+
 	std::unique_ptr<Shader> createShader(
 		const ShaderDescription& vert_shader_desc,
 		const ShaderDescription& frag_shader_desc) const;
@@ -96,8 +100,6 @@ public:
 	void endDrawing();
 
 private:
-	void initImGUI();
-
 	void createDepthTexture();
 
 	void createSampler();

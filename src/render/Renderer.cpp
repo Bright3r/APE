@@ -14,9 +14,9 @@ namespace Render {
 
 Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	: m_context(context)
+	, m_cam(cam)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
-	, m_cam(cam)
 	, m_shader(nullptr)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
@@ -24,6 +24,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	, m_render_pass(nullptr)
 	, m_cmd_buf(nullptr)
 	, m_is_drawing(false)
+	, m_imgui_session(nullptr)
 {
 	APE_CHECK((cam != nullptr),
 		"Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam) Failed: cam == nullptr"
@@ -35,20 +36,17 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 		default_frag_shader_desc,
 		context->device
 	);
-	useShader(m_shader.get());
 
-	createSampler();
-	createDepthTexture();
-	initImGUI();
+	reset();
 }
 
 Renderer::Renderer(std::shared_ptr<Context> context,
 		   Camera *cam,
 		   std::shared_ptr<Shader> shader)
 	: m_context(context)
+	, m_cam(cam)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
-	, m_cam(cam)
 	, m_shader(shader)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
@@ -56,42 +54,24 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	, m_render_pass(nullptr)
 	, m_cmd_buf(nullptr)
 	, m_is_drawing(false)
+	, m_imgui_session(nullptr)
 {
 	APE_CHECK((cam != nullptr),
 		"Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader) Failed: cam == nullptr"
 	);
 
-	useShader(m_shader.get());
-
-	createSampler();
-	createDepthTexture();
-	initImGUI();
+	reset();
 }
 
-void Renderer::initImGUI()
+void Renderer::reset()
 {
-	// Setup context
-	ImGui::CreateContext();
-	ImGuiIO io = ImGui::GetIO(); 
-	(void) io;
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+	useShader(m_shader.get());
+	createSampler();
+	createDepthTexture();
 
-	// Configure styles
-	ImGui::StyleColorsDark();
-
-	// Setup backend
-	ImGui_ImplSDL3_InitForSDLGPU(m_context->window);
-	ImGui_ImplSDLGPU3_InitInfo init_info = {
-		.Device = m_context->device,
-		.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(
-			m_context->device,
-			m_context->window
-		),
-		.MSAASamples = SDL_GPU_SAMPLECOUNT_1,
-	};
-	ImGui_ImplSDLGPU3_Init(&init_info);
+	// Ensure previous imgui session is destroyed before creating a new one
+	m_imgui_session = nullptr;
+	m_imgui_session = std::make_unique<ImGuiSession>(m_context.get());
 }
 
 std::unique_ptr<Shader> Renderer::createShader(
