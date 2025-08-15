@@ -4,6 +4,7 @@
 #include <SDL3/SDL_video.h>
 #include <chrono>
 #include <exception>
+#include <imgui_impl_sdl3.h>
 
 
 // Application State
@@ -41,7 +42,10 @@ void AppRunner::init(
 
 	// Initialize renderer w/ default shader
 	s_context = std::make_shared<APE::Render::Context>(
-		window_title, window_width, window_height, SDL_WINDOW_RESIZABLE
+		window_title,
+		window_width,
+		window_height,
+		SDL_WINDOW_RESIZABLE
 	);
 
 	// Initialize main cam
@@ -58,6 +62,7 @@ void AppRunner::pollEvents()
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event) != 0) {
+		ImGui_ImplSDL3_ProcessEvent(&event);
 		switch (event.type) {
 			case SDL_EVENT_QUIT:
 				setQuit(true);
@@ -94,6 +99,7 @@ void AppRunner::stepGameloop()
 	// Draw To Screen
 	s_renderer->beginDrawing();
 	s_app->draw();
+	s_app->drawGUI();
 	s_renderer->endDrawing();
 }
 

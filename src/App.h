@@ -14,6 +14,7 @@ public:
 	void setup();
 	void update();
 	void draw();
+	void drawGUI();
 	void onKeyDown(SDL_KeyboardEvent key);
 	void onKeyUp(SDL_KeyboardEvent key);
 	void onMouseDown(SDL_MouseButtonEvent mButton);
@@ -24,5 +25,7 @@ private:
 	// App Data
 	std::unique_ptr<APE::Render::Shader> shader;
 	std::unique_ptr<APE::Render::Model> model;
+
+	bool b_show_demo = false;
 };
 

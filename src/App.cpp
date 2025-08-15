@@ -8,8 +8,10 @@
 #include "util/Logger.h"
 
 #include <glm/fwd.hpp>
+#include <imgui.h>
 
-void App::setup() {
+void App::setup() 
+{
 	model = std::make_unique<APE::Render::Cylinder>();
 
 	// model = std::make_unique<APE::Render::Cone>();
@@ -25,7 +27,8 @@ void App::setup() {
 	// );
 }
 
-void App::update() {
+void App::update() 
+{
 	// std::cout << "Last Frame Time: " 
 	// 	<< AppRunner::lastFrameTimeMS().count() 
 	// 	<< std::endl;
@@ -80,7 +83,8 @@ void App::update() {
 	}
 }
 
-void App::draw() {
+void App::draw() 
+{
 	model->getTransform().position.x *= -1;
 	AppRunner::draw(model.get());
 
@@ -88,23 +92,33 @@ void App::draw() {
 	AppRunner::draw(model.get());
 }
 
-void App::onKeyDown(SDL_KeyboardEvent key) {
+void App::drawGUI() 
+{
+	ImGui::ShowDemoWindow(&b_show_demo);
+}
+
+void App::onKeyDown(SDL_KeyboardEvent key) 
+{
 
 }
 
-void App::onKeyUp(SDL_KeyboardEvent key) {
+void App::onKeyUp(SDL_KeyboardEvent key) 
+{
 
 }
 
-void App::onMouseDown(SDL_MouseButtonEvent mButton) {
+void App::onMouseDown(SDL_MouseButtonEvent mButton) 
+{
 
 }
 
-void App::onMouseUp(SDL_MouseButtonEvent mButton) {
+void App::onMouseUp(SDL_MouseButtonEvent mButton) 
+{
 
 }
 
-void App::onMouseMove(SDL_MouseMotionEvent mEvent) {
+void App::onMouseMove(SDL_MouseMotionEvent mEvent) 
+{
 	APE::Render::Camera* cam = AppRunner::getMainCamera();
 	cam->rotate(mEvent.xrel, mEvent.yrel);
 }

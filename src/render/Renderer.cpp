@@ -4,6 +4,9 @@
 #include "util/Logger.h"
 
 #include <SDL3/SDL_gpu.h>
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlgpu3.h>
 #include <utility>
 
 namespace APE {
@@ -36,6 +39,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 
 	createSampler();
 	createDepthTexture();
+	initImGUI();
 }
 
 Renderer::Renderer(std::shared_ptr<Context> context,
@@ -61,6 +65,31 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 
 	createSampler();
 	createDepthTexture();
+	initImGUI();
+}
+
+void Renderer::initImGUI()
+{
+	// Setup context
+	ImGui::CreateContext();
+	ImGuiIO io = ImGui::GetIO(); 
+	(void) io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+	// Configure styles
+	ImGui::StyleColorsDark();
+
+	// Setup backend
+	ImGui_ImplSDL3_InitForSDLGPU(m_context->window);
+	ImGui_ImplSDLGPU3_InitInfo init_info = {
+		.Device = m_context->device,
+		.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(
+			m_context->device,
+			m_context->window
+		),
+		.MSAASamples = SDL_GPU_SAMPLECOUNT_1,
+	};
+	ImGui_ImplSDLGPU3_Init(&init_info);
 }
 
 std::unique_ptr<Shader> Renderer::createShader(
@@ -198,13 +227,14 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth)
 	SDL_GPUColorTargetInfo color_target_info = {
 		.texture = m_swapchain_texture,
 		.clear_color = m_clear_color,
-		.load_op = SDL_GPU_LOADOP_CLEAR,
+		.load_op = b_clear ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD,
 		.store_op = SDL_GPU_STOREOP_STORE,
 	};
+
 	SDL_GPUDepthStencilTargetInfo depth_target_info = {
 		.texture = m_depth_texture.get(),
 		.clear_depth = 1,
-		.load_op = SDL_GPU_LOADOP_CLEAR,
+		.load_op = b_clear ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD,
 		.store_op = SDL_GPU_STOREOP_STORE,
 		.stencil_load_op = SDL_GPU_LOADOP_CLEAR,
 		.stencil_store_op = SDL_GPU_STOREOP_STORE,
@@ -215,7 +245,7 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth)
 		m_cmd_buf, 
 		&color_target_info, 
 		1, 
-		&depth_target_info
+		(b_depth ? &depth_target_info : nullptr)
 	);
 }
 
@@ -248,6 +278,11 @@ void Renderer::beginDrawing()
 		"SDL_WaitAndAcquireGPUSwapchainTexture Failed - {}",
 		SDL_GetError()
 	);
+
+	// Start ImGUI frame
+	ImGui_ImplSDLGPU3_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
+	ImGui::NewFrame();
 
 	// Setup render pass
 	beginRenderPass(true, true);
@@ -384,12 +419,27 @@ void Renderer::endDrawing()
 	);
 	m_is_drawing = false;
 
-	// Cleanup render pass
+	// Finish scene render pass
 	SDL_EndGPURenderPass(m_render_pass);
 	m_render_pass = nullptr;
 
-	// Draw scene
+	// Build ImGUI drawing data
+	ImGui::Render();
+	ImDrawData* gui_data = ImGui::GetDrawData();
+	Imgui_ImplSDLGPU3_PrepareDrawData(gui_data, m_cmd_buf);
+
+	// Dispatch render pass for ImGUI
+	beginRenderPass(false, false);
+	ImGui_ImplSDLGPU3_RenderDrawData(gui_data, m_cmd_buf, m_render_pass);
+	
+	// Finish ImGUI render pass
+	SDL_EndGPURenderPass(m_render_pass);
+	m_render_pass = nullptr;
+
+	// Draw to swapchain texture
 	SDL_SubmitGPUCommandBuffer(m_cmd_buf);
+	m_cmd_buf = nullptr;
+	m_swapchain_texture = nullptr;
 }
 
 

@@ -45,13 +45,14 @@ Context::Context(std::string_view title,
 		"SDL_CreateWindow Failed - {}",
 		SDL_GetError()
 	);
-	SDL_SetWindowRelativeMouseMode(window, true);
 
 	bool succ_claim_window = SDL_ClaimWindowForGPUDevice(device, window);
 	APE_CHECK(succ_claim_window,
 		"SDL_ClaimWindowForGPUDevice Failed - {}",
 		SDL_GetError()
 	);
+
+	SDL_SetWindowRelativeMouseMode(window, true);
 }
 
 Context::~Context()

@@ -10,6 +10,7 @@
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_events.h>
+
 #include <memory>
 #include <string_view>
 
@@ -48,6 +49,7 @@ public:
 	static void run();
 
 	static bool keyDown(SDL_Keycode key);
+
 
 
 	// Graphics Functions

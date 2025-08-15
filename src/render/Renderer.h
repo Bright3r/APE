@@ -9,6 +9,10 @@
 #include "render/Image.h"
 
 #include <SDL3/SDL_gpu.h>
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlgpu3.h>
+
 #include <cstddef>
 #include <glm/fwd.hpp>
 #include <memory>
@@ -92,6 +96,8 @@ public:
 	void endDrawing();
 
 private:
+	void initImGUI();
+
 	void createDepthTexture();
 
 	void createSampler();
