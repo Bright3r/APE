@@ -41,24 +41,30 @@ void App::update()
 	if (AppRunner::keyDown(SDLK_Q)) {
 		AppRunner::setQuit(true);
 	}
-	if (AppRunner::keyDown(SDLK_W)) {
-		cam->moveForward(speed, dt);
+
+	if (AppRunner::keyDown(SDLK_TAB)) {
+		cam->setLocked(!cam->getLocked());
 	}
-	if (AppRunner::keyDown(SDLK_S)) {
-		cam->moveForward(-speed, dt);
-	}
-	if (AppRunner::keyDown(SDLK_A)) {
-		cam->moveRight(-speed, dt);
-	}
-	if (AppRunner::keyDown(SDLK_D)) {
-		cam->moveRight(speed, dt);
-	}
+
 	if (AppRunner::keyDown(SDLK_SPACE)) {
 		cam->moveUp(speed, dt);
 	}
 	if (AppRunner::keyDown(SDLK_LCTRL)) {
-		cam->moveUp(-speed, dt);
+		cam->moveDown(speed, dt);
 	}
+	if (AppRunner::keyDown(SDLK_A)) {
+		cam->moveLeft(speed, dt);
+	}
+	if (AppRunner::keyDown(SDLK_D)) {
+		cam->moveRight(speed, dt);
+	}
+	if (AppRunner::keyDown(SDLK_W)) {
+		cam->moveForward(speed, dt);
+	}
+	if (AppRunner::keyDown(SDLK_S)) {
+		cam->moveBackward(speed, dt);
+	}
+
 	if (AppRunner::keyDown(SDLK_M)) {
 		model->getTransform().position.x += 1;
 	}
