@@ -13,10 +13,10 @@ class Cylinder : public Model {
 	static constexpr std::string_view CYLINDER_PATH =
 		"res/models/textured-cylinder.obj";
 public:
-	Cylinder(float radius = 1.f, float height = 1.f)
+	Cylinder(float radius = 0.5f, float height = 1.f)
 		: Model(CYLINDER_PATH)
 	{
-		m_transform.scale = { radius, height, radius };
+		m_transform.scale = { 2*radius, height, 2*radius };
 	}
 
 	float getRadius() const
@@ -26,8 +26,8 @@ public:
 
 	void setRadius(float radius)
 	{
-		m_transform.scale.x = radius;
-		m_transform.scale.z = radius;
+		m_transform.scale.x = 2*radius;
+		m_transform.scale.z = 2*radius;
 	}
 
 	float getHeight() const

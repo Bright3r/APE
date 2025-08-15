@@ -12,7 +12,7 @@ namespace Render {
 Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	: m_context(context)
 	, m_wireframe_mode(false) 
-	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
+	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
 	, m_shader(nullptr)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
@@ -42,7 +42,7 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 		   std::shared_ptr<Shader> shader)
 	: m_context(context)
 	, m_wireframe_mode(false) 
-	, m_clear_color(SDL_FColor { 0.f, 255.f, 255.f, 1.f })
+	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
 	, m_shader(shader)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
@@ -203,7 +203,11 @@ void Renderer::beginDrawing()
 	// Acquire swapchain texture
 	SDL_GPUTexture *swapchain_texture;
 	bool succ_acquire_swapchain = SDL_WaitAndAcquireGPUSwapchainTexture(
-		m_cmd_buf, m_context->window, &swapchain_texture, NULL, NULL
+		m_cmd_buf,
+		m_context->window,
+		&swapchain_texture,
+		NULL,
+		NULL
 	);
 	APE_CHECK(succ_acquire_swapchain,
 		"SDL_WaitAndAcquireGPUSwapchainTexture Failed - {}",
