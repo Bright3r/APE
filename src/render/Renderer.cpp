@@ -13,10 +13,11 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 	: m_context(context)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
+	, m_cam(cam)
 	, m_shader(nullptr)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
-	, m_cam(cam)
+	, m_swapchain_texture(nullptr)
 	, m_render_pass(nullptr)
 	, m_cmd_buf(nullptr)
 	, m_is_drawing(false)
@@ -43,10 +44,11 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	: m_context(context)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
+	, m_cam(cam)
 	, m_shader(shader)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
-	, m_cam(cam)
+	, m_swapchain_texture(nullptr)
 	, m_render_pass(nullptr)
 	, m_cmd_buf(nullptr)
 	, m_is_drawing(false)
@@ -183,6 +185,40 @@ float Renderer::getAspectRatio() const
 	return m_context->window_width / static_cast<float>(m_context->window_height);
 }
 
+void Renderer::beginRenderPass(bool b_clear, bool b_depth)
+{
+	APE_CHECK((m_cmd_buf != nullptr),
+		"Renderer::beginRenderPass Failed: command_buffer == null"
+	);
+
+	APE_CHECK((m_swapchain_texture != nullptr),
+		"Renderer::beginRenderPass Failed: swapchain_texture == null"
+	);
+
+	SDL_GPUColorTargetInfo color_target_info = {
+		.texture = m_swapchain_texture,
+		.clear_color = m_clear_color,
+		.load_op = SDL_GPU_LOADOP_CLEAR,
+		.store_op = SDL_GPU_STOREOP_STORE,
+	};
+	SDL_GPUDepthStencilTargetInfo depth_target_info = {
+		.texture = m_depth_texture.get(),
+		.clear_depth = 1,
+		.load_op = SDL_GPU_LOADOP_CLEAR,
+		.store_op = SDL_GPU_STOREOP_STORE,
+		.stencil_load_op = SDL_GPU_LOADOP_CLEAR,
+		.stencil_store_op = SDL_GPU_STOREOP_STORE,
+		.cycle = true,
+		.clear_stencil = 0,
+	};
+	m_render_pass = SDL_BeginGPURenderPass(
+		m_cmd_buf, 
+		&color_target_info, 
+		1, 
+		&depth_target_info
+	);
+}
+
 void Renderer::beginDrawing()
 {
 	// Check that we are not already drawing
@@ -201,11 +237,10 @@ void Renderer::beginDrawing()
 	);
 
 	// Acquire swapchain texture
-	SDL_GPUTexture *swapchain_texture;
 	bool succ_acquire_swapchain = SDL_WaitAndAcquireGPUSwapchainTexture(
 		m_cmd_buf,
 		m_context->window,
-		&swapchain_texture,
+		&m_swapchain_texture,
 		NULL,
 		NULL
 	);
@@ -215,29 +250,7 @@ void Renderer::beginDrawing()
 	);
 
 	// Setup render pass
-	SDL_GPUColorTargetInfo color_target_info = {
-		.texture = swapchain_texture,
-		.clear_color = m_clear_color,
-		.load_op = SDL_GPU_LOADOP_CLEAR,
-		.store_op = SDL_GPU_STOREOP_STORE,
-	};
-	SDL_GPUDepthStencilTargetInfo depth_target_info = {
-		.texture = m_depth_texture.get(),
-		.clear_depth = 1,
-		.load_op = SDL_GPU_LOADOP_CLEAR,
-		.store_op = SDL_GPU_STOREOP_STORE,
-		.stencil_load_op = SDL_GPU_LOADOP_CLEAR,
-		.stencil_store_op = SDL_GPU_STOREOP_STORE,
-		.cycle = true,
-		.clear_stencil = 0,
-	};
-	SDL_GPURenderPass *render_pass = SDL_BeginGPURenderPass(
-		m_cmd_buf, 
-		&color_target_info, 
-		1, 
-		&depth_target_info
-	);
-	m_render_pass = render_pass;
+	beginRenderPass(true, true);
 
 	// Bind render pipeline
 	SDL_GPUGraphicsPipeline* render_pipeline = 
@@ -246,7 +259,7 @@ void Renderer::beginDrawing()
 	APE_CHECK((render_pipeline != nullptr),
 		"Renderer::draw Failed: render_pipeline == nullptr"
 	);
-	SDL_BindGPUGraphicsPipeline(render_pass, render_pipeline);
+	SDL_BindGPUGraphicsPipeline(m_render_pass, render_pipeline);
 }
 
 void Renderer::draw(Model* model)

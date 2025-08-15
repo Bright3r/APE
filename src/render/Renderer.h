@@ -47,16 +47,15 @@ private:
 	std::shared_ptr<Context> m_context;
 	bool m_wireframe_mode;
 	SDL_FColor m_clear_color;
+	Camera* m_cam;
 
 	std::shared_ptr<Shader> m_shader;
 	SafeGPU::UniqueGPUGraphicsPipeline m_fill_pipeline;
 	SafeGPU::UniqueGPUGraphicsPipeline m_line_pipeline;
-
-	Camera* m_cam;
+	SDL_GPUTexture* m_swapchain_texture;
 	SDL_GPURenderPass* m_render_pass;
 	SDL_GPUCommandBuffer* m_cmd_buf;
 	bool m_is_drawing;
-
 	SafeGPU::UniqueGPUSampler m_sampler;
 	SafeGPU::UniqueGPUTexture m_depth_texture;
 
@@ -81,6 +80,8 @@ public:
 	void useShader(Shader* shader);
 
 	float getAspectRatio() const;
+
+	void beginRenderPass(bool b_clear, bool b_depth);
 
 	void beginDrawing();
 
