@@ -7,27 +7,6 @@
 #include <imgui_impl_sdl3.h>
 
 #include <chrono>
-#include <exception>
-
-// Application State
-//
-std::unique_ptr<App> AppRunner::s_app {};
-std::unordered_map<SDL_Keycode, bool> AppRunner::s_key_state {};
-
-// Rendering
-//
-std::shared_ptr<APE::Render::Context> AppRunner::s_context {};
-std::shared_ptr<APE::Render::Shader> AppRunner::s_shader {};
-std::unique_ptr<APE::Render::Renderer> AppRunner::s_renderer {};
-std::unique_ptr<APE::Render::Camera> AppRunner::s_main_camera {};
-
-// Timing
-//
-bool AppRunner::s_quit {};
-int AppRunner::s_framerate {};
-APE::Timing::millis AppRunner::s_last_frame_time {};
-
-
 
 void AppRunner::init(
 	std::string_view window_title,
@@ -204,6 +183,9 @@ int AppRunner::getFramerate()
 
 void AppRunner::setFramerate(int fps) 
 {
+	APE_CHECK((fps > 0),
+	   "AppRunner::setFramerate(int fps) Failed: fps <= 0"
+	);
 	s_framerate = fps;
 }
 

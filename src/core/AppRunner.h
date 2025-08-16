@@ -18,21 +18,21 @@ class AppRunner {
 private:
 	// Application State
 	//
-	static std::unique_ptr<App> s_app;
-	static std::unordered_map<SDL_Keycode, bool> s_key_state;
+	static inline std::unique_ptr<App> s_app;
+	static inline std::unordered_map<SDL_Keycode, bool> s_key_state;
 
 	// Rendering
 	//
-	static std::shared_ptr<APE::Render::Context> s_context;
-	static std::shared_ptr<APE::Render::Shader> s_shader;
-	static std::unique_ptr<APE::Render::Renderer> s_renderer;
-	static std::unique_ptr<APE::Render::Camera> s_main_camera;
+	static inline std::shared_ptr<APE::Render::Context> s_context;
+	static inline std::shared_ptr<APE::Render::Shader> s_shader;
+	static inline std::unique_ptr<APE::Render::Renderer> s_renderer;
+	static inline std::unique_ptr<APE::Render::Camera> s_main_camera;
 
 	// Timing
 	//
-	static bool s_quit;
-	static int s_framerate;
-	static APE::Timing::millis s_last_frame_time;
+	static inline bool s_quit;
+	static inline int s_framerate;
+	static inline APE::Timing::millis s_last_frame_time;
 
 public:
 	// Main Functions
