@@ -20,9 +20,9 @@ void App::setup()
 
 	// model = std::make_unique<APE::Render::Sphere>();
 
-	model = std::make_unique<APE::Render::Cube>();
+	// model = std::make_unique<APE::Render::Cube>();
 
-	// model = std::make_unique<APE::Render::Model>("res/models/che/scene.gltf");
+	model = std::make_unique<APE::Render::Model>("res/models/che/scene.gltf");
 
 	// model = std::make_unique<APE::Render::Model>(
 	// 	"res/models/ship/source/full_scene.fbx"
@@ -40,16 +40,19 @@ void App::update()
 	float speed = 10.f;
 	float dt = AppRunner::getLastFrameTimeSec().count();
 	
+	// Quit
 	if (AppRunner::keyDown(SDLK_Q)) {
 		AppRunner::setQuit(true);
 	}
 
+	// Camera Tab In
 	if (AppRunner::keyDown(SDLK_TAB)) {
 		bool is_locked = cam->getLocked();
 		cam->setLocked(!is_locked);
 		AppRunner::setTabIn(is_locked);
 	}
 
+	// Camera Movement
 	if (AppRunner::keyDown(SDLK_SPACE)) {
 		cam->moveUp(speed, dt);
 	}
@@ -69,6 +72,7 @@ void App::update()
 		cam->moveBackward(speed, dt);
 	}
 
+	// Model Movement
 	if (AppRunner::keyDown(SDLK_M)) {
 		model->getTransform().position.x += 1;
 	}
@@ -88,7 +92,7 @@ void App::update()
 		model->getTransform().rotation *= 
 			glm::angleAxis(
 				0.1f, 
-		  		glm::normalize(glm::vec3(1, 1, 1))
+				glm::normalize(glm::vec3(1, 1, 1))
 			);
 	}
 }

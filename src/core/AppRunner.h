@@ -53,7 +53,6 @@ public:
 	static void setTabIn(bool is_tabbed_in);
 
 
-
 	// Graphics Functions
 	static std::unique_ptr<APE::Render::Shader> createShader(
 		const APE::Render::ShaderDescription& vert_shader_desc, 
