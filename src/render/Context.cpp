@@ -51,12 +51,6 @@ Context::Context(std::string_view title,
 		"SDL_ClaimWindowForGPUDevice Failed - {}",
 		SDL_GetError()
 	);
-
-	SDL_SetWindowSurfaceVSync(window, SDL_WINDOW_SURFACE_VSYNC_DISABLED);
-
-	int vsync;
-	SDL_GetWindowSurfaceVSync(window, &vsync);
-	APE_TRACE("Window vsync: {}", vsync);
 }
 
 Context::~Context()

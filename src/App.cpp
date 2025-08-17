@@ -7,9 +7,10 @@
 #include "render/Shapes/Cylinder.h"
 #include "util/Logger.h"
 
-#include <cmath>
 #include <glm/fwd.hpp>
 #include <imgui.h>
+
+#include <cmath>
 
 void App::setup() 
 {
@@ -30,6 +31,7 @@ void App::setup()
 	// 	"res/models/ship/source/full_scene.fbx"
 	// );
 	
+	/* TODO - Fix 60 fps cap */
 	AppRunner::setFramerate(240);
 }
 

@@ -6,7 +6,7 @@
 #include "render/Renderer.h"
 #include "render/Shader.h"
 #include "render/Model.h"
-#include "util/timing.h"
+#include "util/Timing.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_events.h>

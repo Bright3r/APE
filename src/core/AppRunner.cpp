@@ -27,7 +27,7 @@ void AppRunner::init(
 		window_title,
 		window_width,
 		window_height,
-		SDL_WINDOW_RESIZABLE | SDL_WINDOW_SURFACE_VSYNC_DISABLED
+		SDL_WINDOW_RESIZABLE
 	);
 
 	// Initialize main cam
