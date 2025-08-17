@@ -12,14 +12,14 @@ private:
 	inline static std::shared_ptr<spdlog::logger> s_core_logger;
 
 public:
-	static void init()
+	static void init() noexcept
 	{
 		spdlog::set_pattern("%^[%T] %n: %v%$");
 		s_core_logger = spdlog::stdout_color_mt("APE");
 		s_core_logger->set_level(spdlog::level::trace);
 	}
 
-	static std::shared_ptr<spdlog::logger> getCoreLogger()
+	[[nodiscard]] static std::shared_ptr<spdlog::logger> getCoreLogger() noexcept
 	{
 		return s_core_logger;
 	}

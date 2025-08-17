@@ -12,7 +12,7 @@
 namespace APE {
 namespace Render {
 
-Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
+Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam) noexcept
 	: m_context(context)
 	, m_cam(cam)
 	, m_wireframe_mode(false) 
@@ -42,7 +42,7 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam)
 
 Renderer::Renderer(std::shared_ptr<Context> context,
 		   Camera *cam,
-		   std::shared_ptr<Shader> shader)
+		   std::shared_ptr<Shader> shader) noexcept
 	: m_context(context)
 	, m_cam(cam)
 	, m_wireframe_mode(false) 
@@ -63,7 +63,7 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	reset();
 }
 
-void Renderer::reset()
+void Renderer::reset() noexcept
 {
 	useShader(m_shader.get());
 	createSampler();
@@ -76,7 +76,7 @@ void Renderer::reset()
 
 std::unique_ptr<Shader> Renderer::createShader(
 	const ShaderDescription& vert_shader_desc,
-	const ShaderDescription& frag_shader_desc) const
+	const ShaderDescription& frag_shader_desc) const noexcept
 {
 	return std::make_unique<Shader>(
 		vert_shader_desc,
@@ -86,7 +86,7 @@ std::unique_ptr<Shader> Renderer::createShader(
 }
 
 SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
-	const SDL_GPUGraphicsPipelineCreateInfo& create_info) const
+	const SDL_GPUGraphicsPipelineCreateInfo& create_info) const noexcept
 {
 	SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(
 		m_context->device, 
@@ -105,7 +105,7 @@ SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
 	);
 }
 
-void Renderer::useShader(Shader* shader) {
+void Renderer::useShader(Shader* shader) noexcept {
 	if (!shader) {
 		APE_ERROR(
 			"Renderer::useShader Failed: shader == nullptr"
@@ -165,7 +165,7 @@ void Renderer::useShader(Shader* shader) {
 	m_line_pipeline = createPipeline(pipeline_create_info);
 }
 
-void Renderer::createDepthTexture()
+void Renderer::createDepthTexture() noexcept
 {
 	SDL_GPUTextureCreateInfo tex_desc = {
 		.type = SDL_GPU_TEXTURETYPE_2D,
@@ -191,12 +191,12 @@ void Renderer::createDepthTexture()
 	);
 }
 
-float Renderer::getAspectRatio() const
+float Renderer::getAspectRatio() const noexcept
 {
 	return m_context->window_width / static_cast<float>(m_context->window_height);
 }
 
-void Renderer::beginRenderPass(bool b_clear, bool b_depth)
+void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 {
 	APE_CHECK((m_cmd_buf != nullptr),
 		"Renderer::beginRenderPass Failed: command_buffer == null"
@@ -231,7 +231,7 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth)
 	);
 }
 
-void Renderer::beginDrawing()
+void Renderer::beginDrawing() noexcept
 {
 	// Check that we are not already drawing
 	APE_CHECK(!m_is_drawing,
@@ -279,7 +279,7 @@ void Renderer::beginDrawing()
 	SDL_BindGPUGraphicsPipeline(m_render_pass, render_pipeline);
 }
 
-void Renderer::draw(Model* model)
+void Renderer::draw(Model* model) noexcept
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
@@ -294,7 +294,7 @@ void Renderer::draw(Model* model)
 	}
 }
 
-void Renderer::draw(Model::ModelMesh& mesh, const glm::mat4& model_mat)
+void Renderer::draw(Model::ModelMesh& mesh, const glm::mat4& model_mat) noexcept
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
@@ -393,7 +393,7 @@ void Renderer::draw(Model::ModelMesh& mesh, const glm::mat4& model_mat)
 	);
 }
 
-void Renderer::endDrawing()
+void Renderer::endDrawing() noexcept
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
@@ -428,7 +428,7 @@ void Renderer::endDrawing()
 
 SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	const std::vector<std::byte>& data,
-	Uint32 usage)
+	Uint32 usage) noexcept
 {
 	// Create GPU buffer
 	Uint32 buffer_size = data.size();
@@ -499,7 +499,7 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	return safe_buffer;
 }
 
-SDL_GPUTextureFormat Renderer::getTextureFormat(Image* image)
+SDL_GPUTextureFormat Renderer::getTextureFormat(Image* image) noexcept
 {
 	switch (image->getNumChannels()) {
 	case 1:
@@ -517,7 +517,7 @@ SDL_GPUTextureFormat Renderer::getTextureFormat(Image* image)
 	}
 }
 
-SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
+SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image) noexcept
 {
 	// Create texture
 	SDL_GPUTextureCreateInfo tex_desc = {
@@ -590,7 +590,7 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image)
 	return safe_tex;
 }
 
-void Renderer::createSampler()
+void Renderer::createSampler() noexcept
 {
 	SDL_GPUSamplerCreateInfo sampler_desc = {
 		.min_filter = SDL_GPU_FILTER_NEAREST,

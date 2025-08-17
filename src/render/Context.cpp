@@ -11,7 +11,7 @@ namespace Render {
 Context::Context(std::string_view title,
 		 int window_width,
 		 int window_height,
-		 int window_flags)
+		 int window_flags) noexcept
 	: title(title)
 	, window_width(window_width)
 	, window_height(window_height)

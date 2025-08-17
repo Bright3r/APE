@@ -32,25 +32,25 @@ public:
 	Shader(
 		const ShaderDescription& vert_shader_desc, 
 		const ShaderDescription& frag_shader_desc,
-		SDL_GPUDevice *device);
+		SDL_GPUDevice *device) noexcept;
 
-	~Shader();
-	Shader(const Shader& other) = delete;
-	Shader& operator=(const Shader& other) = delete;
-	Shader(Shader&& other);
-	Shader& operator=(Shader&& other);
+	~Shader() noexcept;
+	Shader(const Shader& other) noexcept = delete;
+	Shader& operator=(const Shader& other) noexcept = delete;
+	Shader(Shader&& other) noexcept;
+	Shader& operator=(Shader&& other) noexcept;
 
-	SDL_GPUShader* loadShader(
+	[[nodiscard]] SDL_GPUShader* loadShader(
 		const ShaderDescription& shader_desc, 
-		SDL_GPUShaderStage stage);
+		SDL_GPUShaderStage stage) noexcept;
 
-	SDL_GPUShader* getVertexShader() const;
+	[[nodiscard]] SDL_GPUShader* getVertexShader() const noexcept;
 
-	SDL_GPUShader* getFragmentShader() const;
+	[[nodiscard]] SDL_GPUShader* getFragmentShader() const noexcept;
 
-	SDL_GPUDevice* getDevice() const;
+	[[nodiscard]] SDL_GPUDevice* getDevice() const noexcept;
 
-	VertexFormat getVertexFormat() const;
+	[[nodiscard]] VertexFormat getVertexFormat() const noexcept;
 };
 
 };	// end of namespace Render

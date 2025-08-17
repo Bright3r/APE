@@ -32,43 +32,43 @@ private:
 
 
 	// Private methods
-	SDL_GPUBuffer* getVertexBuffer() const
+	[[nodiscard]] SDL_GPUBuffer* getVertexBuffer() const noexcept
 	{
 		return m_vertex_buffer.get();
 	}
 
-	void setVertexBuffer(SafeGPU::UniqueGPUBuffer buf)
+	void setVertexBuffer(SafeGPU::UniqueGPUBuffer buf) noexcept
 	{
 		m_vertex_buffer = std::move(buf);
 	}
 
-	SDL_GPUBuffer* getIndexBuffer() const
+	[[nodiscard]] SDL_GPUBuffer* getIndexBuffer() const noexcept
 	{
 		return m_index_buffer.get();
 	}
 
-	void setIndexBuffer(SafeGPU::UniqueGPUBuffer buf)
+	void setIndexBuffer(SafeGPU::UniqueGPUBuffer buf) noexcept
 	{
 		m_index_buffer = std::move(buf);
 	}
 
-	SDL_GPUTexture* getTextureBuffer() const
+	[[nodiscard]] SDL_GPUTexture* getTextureBuffer() const noexcept
 	{
 		return m_texture_buffer.get();
 	}
 
-	void setTextureBuffer(SafeGPU::UniqueGPUTexture tex)
+	void setTextureBuffer(SafeGPU::UniqueGPUTexture tex) noexcept
 	{
 		m_texture_buffer = std::move(tex);
 	}
 
 public:
-	Mesh() = default;
+	Mesh() noexcept = default;
 
 	Mesh(const std::vector<VertexType>& vertices, 
 		const std::vector<IndexType>& indices,
       		const std::shared_ptr<Image>& texture,
-      		const Transform& transform)
+      		const Transform& transform) noexcept
 		: m_vertices(vertices)
 		, m_indices(indices)
 		, m_texture(texture)
@@ -80,45 +80,45 @@ public:
 
 	}
 
-	~Mesh() = default;
+	~Mesh() noexcept = default;
 
 	// not copyable because of unique_ptr
-	Mesh(const Mesh&) = delete;
-	Mesh& operator=(const Mesh&) = delete;
+	Mesh(const Mesh&) noexcept = delete;
+	Mesh& operator=(const Mesh&) noexcept = delete;
 
 	// moveable
 	Mesh(Mesh&&) noexcept = default;
 	Mesh& operator=(Mesh&&) noexcept = default;
 
 
-	std::vector<VertexType> getVertices() const
+	[[nodiscard]] std::vector<VertexType> getVertices() const noexcept
 	{
 		return m_vertices;
 	}
 
-	std::vector<IndexType> getIndices() const
+	[[nodiscard]] std::vector<IndexType> getIndices() const noexcept
 	{
 		return m_indices;
 	}
 
-	std::shared_ptr<Image> getTexture() const
+	[[nodiscard]] std::shared_ptr<Image> getTexture() const noexcept
 	{
 		return m_texture;
 	}
 
-	Transform& getTransform()
+	[[nodiscard]] Transform& getTransform() noexcept
 	{
 		return m_transform;
 	}
 
-	void changeTopology(const std::vector<IndexType> indices)
+	void changeTopology(const std::vector<IndexType> indices) noexcept
 	{
 		m_indices = indices;
 		m_index_buffer = nullptr;
 	}
 
 	void changeMesh(const std::vector<VertexType>& vertices, 
-      		const std::vector<IndexType>& indices)
+      		const std::vector<IndexType>& indices) noexcept
 	{
 		m_vertices = vertices;
 		m_indices = indices;
@@ -127,7 +127,7 @@ public:
 		m_index_buffer = nullptr;
 	}
 
-	void changeTexture(std::shared_ptr<Image> texture)
+	void changeTexture(std::shared_ptr<Image> texture) noexcept
 	{
 		m_texture = texture;
 

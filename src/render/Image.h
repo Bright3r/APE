@@ -18,27 +18,27 @@ private:
 	std::vector<std::byte> m_pixels;
 
 public:
-	Image();
+	Image() noexcept;
 
-	Image(std::filesystem::path path);
+	Image(std::filesystem::path path) noexcept;
 
-	Image(int width, int height, const std::byte* data);
+	Image(int width, int height, const std::byte* data) noexcept;
 
-	void loadImage(std::filesystem::path path);
+	void loadImage(std::filesystem::path path) noexcept;
 
-	void loadCheckerboard();
+	void loadCheckerboard() noexcept;
 
-	Uint32 getSizeBytes() const;
+	[[nodiscard]] Uint32 getSizeBytes() const noexcept;
 
-	Uint32 getWidth() const;
+	[[nodiscard]] Uint32 getWidth() const noexcept;
 
-	Uint32 getHeight() const;
+	[[nodiscard]] Uint32 getHeight() const noexcept;
 
-	Uint32 getNumChannels() const;
+	[[nodiscard]] Uint32 getNumChannels() const noexcept;
 
-	std::byte* getPixels();
+	[[nodiscard]] std::byte* getPixels() noexcept;
 
-	void trace() const;
+	void trace() const noexcept;
 };
 
 };	// end of namespace Render

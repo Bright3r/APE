@@ -15,7 +15,8 @@ struct VertexFormat {
 	std::vector<SDL_GPUVertexBufferDescription> buffer_descs;
 
 	VertexFormat(const std::vector<SDL_GPUVertexAttribute>& attributes,
-	      const std::vector<SDL_GPUVertexBufferDescription>& buffer_descs)
+		const std::vector<SDL_GPUVertexBufferDescription>& buffer_descs)
+		noexcept
 		: attributes(attributes)
 		, buffer_descs(buffer_descs)
 	{
@@ -23,7 +24,7 @@ struct VertexFormat {
 	}
 
 	// Only allow to be called as an lvalue
-	SDL_GPUVertexInputState getInputState() const &
+	[[nodiscard]] SDL_GPUVertexInputState getInputState() const & noexcept
 	{
 		SDL_GPUVertexInputState input_state = {
 			.vertex_buffer_descriptions =
@@ -49,7 +50,7 @@ struct PositionColorVertex {
 	glm::vec3 pos;
 	Uint8 r, g, b, a;
 
-	static VertexFormat getLayout()
+	[[nodiscard]] static VertexFormat getLayout() noexcept
 	{
 		std::vector<SDL_GPUVertexBufferDescription> buffer_desc = {{
 			.slot = 0,
@@ -79,7 +80,7 @@ struct TextureVertex {
 	glm::vec3 normal;
 	glm::vec2 uv;
 
-	static VertexFormat getLayout()
+	[[nodiscard]] static VertexFormat getLayout() noexcept
 	{
 		std::vector<SDL_GPUVertexBufferDescription> buffer_desc = {{
 			.slot = 0,

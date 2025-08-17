@@ -10,17 +10,17 @@
 namespace APE {
 namespace Render {
 
-Image::Image()
+Image::Image() noexcept
 {
 	loadCheckerboard();
 }
 
-Image::Image(std::filesystem::path path)
+Image::Image(std::filesystem::path path) noexcept
 {
 	loadImage(path);
 }
 
-Image::Image(int width, int height, const std::byte* data)
+Image::Image(int width, int height, const std::byte* data) noexcept
 {
 	// Assume data is R8G8BA8 format
 	int num_channels = DEFAULT_IMG_CHANNELS;
@@ -65,7 +65,7 @@ Image::Image(int width, int height, const std::byte* data)
 	stbi_image_free(decompressed_data);
 }
 
-void Image::loadImage(std::filesystem::path path)
+void Image::loadImage(std::filesystem::path path) noexcept
 {
 	std::string abs_path = std::filesystem::absolute(path);
 	int width, height, num_channels;
@@ -98,7 +98,7 @@ void Image::loadImage(std::filesystem::path path)
 }
 
 
-void Image::loadCheckerboard()
+void Image::loadCheckerboard() noexcept
 {
 	m_width = 2;
 	m_height = 2;
@@ -114,32 +114,32 @@ void Image::loadCheckerboard()
 	};
 }
 
-Uint32 Image::getSizeBytes() const
+Uint32 Image::getSizeBytes() const noexcept
 {
 	return m_width * m_height * m_num_channels;
 }
 
-Uint32 Image::getWidth() const
+Uint32 Image::getWidth() const noexcept
 {
 	return m_width;
 }
 
-Uint32 Image::getHeight() const
+Uint32 Image::getHeight() const noexcept
 {
 	return m_height;
 }
 
-Uint32 Image::getNumChannels() const
+Uint32 Image::getNumChannels() const noexcept
 {
 	return m_num_channels;
 }
 
-std::byte* Image::getPixels()
+std::byte* Image::getPixels() noexcept
 {
 	return m_pixels.data();
 }
 
-void Image::trace() const
+void Image::trace() const noexcept
 {
 	std::string pixel_str;
 	for (size_t i = 0; i < m_pixels.size(); ++i) {

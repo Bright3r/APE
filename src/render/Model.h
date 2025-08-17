@@ -27,37 +27,39 @@ protected:
 	Transform m_transform;
 
 public:
-	Model() = default;
+	Model() noexcept = default;
 
-	Model(std::filesystem::path model_path, const Transform& transform = {});
+	Model(std::filesystem::path model_path,
+		const Transform& transform = {}) noexcept;
 
-	virtual ~Model() { }
+	virtual ~Model() noexcept { }
 
-	void loadModel(std::filesystem::path model_path);
+	void loadModel(std::filesystem::path model_path) noexcept;
 
-	std::vector<ModelMesh>& getMeshes();
+	std::vector<ModelMesh>& getMeshes() noexcept;
 
-	Transform& getTransform();
+	[[nodiscard]] Transform& getTransform() noexcept;
 
-	void setTransform(const Transform& transform);
+	void setTransform(const Transform& transform) noexcept;
 
 private:
-	static Transform convertAiTransform(const aiMatrix4x4 ai_transform);
+	[[nodiscard]] static Transform convertAiTransform(
+		const aiMatrix4x4 ai_transform) noexcept;
 
-	static std::shared_ptr<Image> convertAiMaterial(
+	[[nodiscard]] static std::shared_ptr<Image> convertAiMaterial(
 		const aiMaterial* ai_mat,
 		const aiScene* scene,
-		std::filesystem::path model_path);
+		std::filesystem::path model_path) noexcept;
 
 	void processNode(
 		const aiNode* node,
 		const aiScene* scene,
-		std::filesystem::path model_path);
+		std::filesystem::path model_path) noexcept;
 
-	Model::ModelMesh processAiMesh(
+	[[nodiscard]] Model::ModelMesh processAiMesh(
 		const aiMesh* ai_mesh,
 		std::shared_ptr<Image> texture,
-		const Transform& transform) const;
+		const Transform& transform) const noexcept;
 };
 
 };	// end of namespace Render

@@ -14,9 +14,9 @@ template <typename SDL_T>
 using UniqueGPUResource = std::unique_ptr<SDL_T, std::function<void(SDL_T*)>>;
 
 template <typename SDL_T>
-inline UniqueGPUResource<SDL_T> makeUnique(
+[[nodiscard]] inline UniqueGPUResource<SDL_T> makeUnique(
 	SDL_T* resource,
-	std::function<void(SDL_T*)> deleter)
+	std::function<void(SDL_T*)> deleter) noexcept
 {
 	return UniqueGPUResource<SDL_T>(resource, deleter);
 }
@@ -26,9 +26,9 @@ template <typename SDL_T>
 using SharedGPUResource = std::shared_ptr<SDL_T>;
 
 template <typename SDL_T>
-inline SharedGPUResource<SDL_T> makeShared(
+[[nodiscard]] inline SharedGPUResource<SDL_T> makeShared(
 	SDL_T* resource,
-	std::function<void(SDL_T*)> deleter)
+	std::function<void(SDL_T*)> deleter) noexcept
 {
 	return SharedGPUResource<SDL_T>(resource, deleter);
 }

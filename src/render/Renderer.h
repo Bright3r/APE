@@ -69,54 +69,56 @@ private:
 public:
 	// Special Member Functions
 	//
-	Renderer(std::shared_ptr<Context> context, Camera *cam);
+	Renderer(std::shared_ptr<Context> context, Camera *cam) noexcept;
 	Renderer(std::shared_ptr<Context> context, 
 		Camera *cam, 
-		std::shared_ptr<Shader> shader);
-	~Renderer() = default;
+		std::shared_ptr<Shader> shader) noexcept;
+	~Renderer() noexcept = default;
 	Renderer(const Renderer& other) = delete;
 	Renderer& operator=(const Renderer& other) = delete;
 
 	// API Functions
 	//
-	void reset();
+	void reset() noexcept;
 
-	std::unique_ptr<Shader> createShader(
+	[[nodiscard]] std::unique_ptr<Shader> createShader(
 		const ShaderDescription& vert_shader_desc,
-		const ShaderDescription& frag_shader_desc) const;
+		const ShaderDescription& frag_shader_desc) const noexcept;
 
-	void useShader(Shader* shader);
+	void useShader(Shader* shader) noexcept;
 
-	float getAspectRatio() const;
+	[[nodiscard]] float getAspectRatio() const noexcept;
 
-	void beginRenderPass(bool b_clear, bool b_depth);
+	void beginRenderPass(bool b_clear, bool b_depth) noexcept;
 
-	void beginDrawing();
+	void beginDrawing() noexcept;
 
-	void draw(Model* model);
+	void draw(Model* model) noexcept;
 
-	void draw(Model::ModelMesh& mesh, const glm::mat4& model_mat);
+	void draw(Model::ModelMesh& mesh, const glm::mat4& model_mat) noexcept;
 
-	void endDrawing();
+	void endDrawing() noexcept;
 
 private:
-	void createDepthTexture();
+	void createDepthTexture() noexcept;
 
-	void createSampler();
+	void createSampler() noexcept;
 
-	SafeGPU::UniqueGPUGraphicsPipeline createPipeline(
-		const SDL_GPUGraphicsPipelineCreateInfo& create_info) const;
+	[[nodiscard]] SafeGPU::UniqueGPUGraphicsPipeline createPipeline(
+		const SDL_GPUGraphicsPipelineCreateInfo& create_info) const noexcept;
 
-	SafeGPU::UniqueGPUBuffer uploadBuffer(
+	[[nodiscard]] SafeGPU::UniqueGPUBuffer uploadBuffer(
 		const std::vector<std::byte>& data,
-		Uint32 usage);
+		Uint32 usage) noexcept;
 
-	static SDL_GPUTextureFormat getTextureFormat(Image* image);
+	[[nodiscard]] static SDL_GPUTextureFormat getTextureFormat(
+		Image* image) noexcept;
 
-	SafeGPU::UniqueGPUTexture createTexture(Image* image);
+	[[nodiscard]] SafeGPU::UniqueGPUTexture createTexture(Image* image) noexcept;
 
 	template <typename T>
-	static std::vector<std::byte> vectorToRawBytes(const std::vector<T>& data)
+	[[nodiscard]] static std::vector<std::byte> vectorToRawBytes(
+		const std::vector<T>& data) noexcept
 	{
 		// Copy vertex data as a vector of bytes
 		const std::byte* raw_data = reinterpret_cast<const std::byte*>(data.data());

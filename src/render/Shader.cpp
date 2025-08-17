@@ -10,7 +10,7 @@ namespace Render {
 
 Shader::Shader(const ShaderDescription& vert_desc, 
 	       const ShaderDescription& frag_desc,
-	       SDL_GPUDevice* device)
+	       SDL_GPUDevice* device) noexcept
 	: m_vert_shader(nullptr)
 	, m_frag_shader(nullptr)
 	, m_device(device)
@@ -21,13 +21,13 @@ Shader::Shader(const ShaderDescription& vert_desc,
 	m_frag_shader = loadShader(frag_desc, SDL_GPU_SHADERSTAGE_FRAGMENT);
 }
 
-Shader::~Shader()
+Shader::~Shader() noexcept
 {
 	SDL_ReleaseGPUShader(m_device, m_vert_shader);
 	SDL_ReleaseGPUShader(m_device, m_frag_shader);
 }
 
-Shader::Shader(Shader&& other)
+Shader::Shader(Shader&& other) noexcept
 	: m_vert_shader(other.m_vert_shader)
 	, m_frag_shader(other.m_frag_shader)
 	, m_device(other.m_device)
@@ -39,7 +39,7 @@ Shader::Shader(Shader&& other)
 	other.m_frag_shader = nullptr;
 }
 
-Shader& Shader::operator=(Shader&& other)
+Shader& Shader::operator=(Shader&& other) noexcept
 {
 	if (this != &other) {
 		// Release our shaders
@@ -67,7 +67,7 @@ Shader& Shader::operator=(Shader&& other)
 
 SDL_GPUShader* Shader::loadShader(
 	const ShaderDescription& shader_desc, 
-	SDL_GPUShaderStage stage)
+	SDL_GPUShaderStage stage) noexcept
 {
 	// Read shader code into buffer
 	size_t code_size;
@@ -130,22 +130,22 @@ SDL_GPUShader* Shader::loadShader(
 }
 
 
-SDL_GPUShader* Shader::getVertexShader() const
+SDL_GPUShader* Shader::getVertexShader() const noexcept
 {
 	return m_vert_shader;
 }
 
-SDL_GPUShader* Shader::getFragmentShader() const
+SDL_GPUShader* Shader::getFragmentShader() const noexcept
 {
 	return m_frag_shader;
 }
 
-SDL_GPUDevice* Shader::getDevice() const
+SDL_GPUDevice* Shader::getDevice() const noexcept
 {
 	return m_device;
 }
 
-VertexFormat Shader::getVertexFormat() const
+VertexFormat Shader::getVertexFormat() const noexcept
 {
 	return m_vert_desc.vertex_format;
 }

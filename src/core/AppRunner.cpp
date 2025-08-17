@@ -11,7 +11,7 @@
 void AppRunner::init(
 	std::string_view window_title,
 	int window_width,
-	int window_height) 
+	int window_height) noexcept 
 {
 	// Initialize w/ default app settings
 	s_quit = false;
@@ -41,7 +41,7 @@ void AppRunner::init(
 	setTabIn(true);
 }
 
-void AppRunner::pollEvents()
+void AppRunner::pollEvents() noexcept
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event) != 0) {
@@ -74,7 +74,7 @@ void AppRunner::pollEvents()
 	}
 }
 
-void AppRunner::stepGameloop()
+void AppRunner::stepGameloop() noexcept
 {
 	// Poll User Input
 	pollEvents();
@@ -89,7 +89,7 @@ void AppRunner::stepGameloop()
 	s_renderer->endDrawing();
 }
 
-void AppRunner::run() 
+void AppRunner::run() noexcept 
 {
 	// Initial Setup
 	s_app->setup();
@@ -116,7 +116,7 @@ void AppRunner::run()
 	std::terminate();
 }
 
-bool AppRunner::keyDown(SDL_Keycode key)
+bool AppRunner::keyDown(SDL_Keycode key) noexcept
 {
 	if (s_key_state.find(key) != s_key_state.end()) {
 		return s_key_state.at(key);
@@ -125,63 +125,63 @@ bool AppRunner::keyDown(SDL_Keycode key)
 	return false;
 }
 
-void AppRunner::setTabIn(bool is_tabbed_in)
+void AppRunner::setTabIn(bool is_tabbed_in) noexcept
 {
 	SDL_SetWindowRelativeMouseMode(s_context->window, is_tabbed_in);
 }
 
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
 	const APE::Render::ShaderDescription& vert_shader_desc, 
-	const APE::Render::ShaderDescription& frag_shader_desc) 
+	const APE::Render::ShaderDescription& frag_shader_desc) noexcept 
 {
 	return s_renderer->createShader(vert_shader_desc, frag_shader_desc);
 }
 
-void AppRunner::useShader(std::shared_ptr<APE::Render::Shader> shader)
+void AppRunner::useShader(std::shared_ptr<APE::Render::Shader> shader) noexcept
 {
 	s_shader = shader;
 	s_renderer->useShader(shader.get());
 }
 
-APE::Render::Camera* AppRunner::getMainCamera() 
+APE::Render::Camera* AppRunner::getMainCamera() noexcept 
 {
 	return s_main_camera.get();
 }
 
-void AppRunner::draw(APE::Render::Model* model)
+void AppRunner::draw(APE::Render::Model* model) noexcept
 {
 	s_renderer->draw(model);
 }
 
-void AppRunner::resizeWindow(const SDL_Event& event)
+void AppRunner::resizeWindow(const SDL_Event& event) noexcept
 {
 	s_context->window_width = event.window.data1;
 	s_context->window_height = event.window.data2;
 	s_renderer->reset();
 }
 
-void AppRunner::setWindowTitle(std::string_view window_title)
+void AppRunner::setWindowTitle(std::string_view window_title) noexcept
 {
 	s_context->title = window_title;
 	SDL_SetWindowTitle(s_context->window, std::string(window_title).c_str());
 }
 
-bool AppRunner::getQuit() 
+bool AppRunner::getQuit() noexcept 
 {
 	return s_quit;
 }
 
-void AppRunner::setQuit(bool quit) 
+void AppRunner::setQuit(bool quit) noexcept 
 {
 	s_quit = quit;
 }
 
-int AppRunner::getFramerate() 
+int AppRunner::getFramerate() noexcept 
 {
 	return s_framerate;
 }
 
-void AppRunner::setFramerate(int fps) 
+void AppRunner::setFramerate(int fps) noexcept 
 {
 	APE_CHECK((fps > 0),
 	   "AppRunner::setFramerate(int fps) Failed: fps <= 0"
@@ -189,12 +189,12 @@ void AppRunner::setFramerate(int fps)
 	s_framerate = fps;
 }
 
-APE::Timing::seconds AppRunner::getLastFrameTimeSec() 
+APE::Timing::seconds AppRunner::getLastFrameTimeSec() noexcept 
 {
 	return std::chrono::duration_cast<APE::Timing::seconds>(s_last_frame_time);
 }
 
-APE::Timing::millis AppRunner::getLastFrameTimeMS() 
+APE::Timing::millis AppRunner::getLastFrameTimeMS() noexcept 
 {
 	return std::chrono::duration_cast<APE::Timing::millis>(s_last_frame_time);
 }

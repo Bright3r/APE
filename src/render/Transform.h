@@ -14,7 +14,7 @@ struct Transform {
 
 	Transform(glm::vec3 position = { 0, 0, 0 },
 		glm::vec3 scale = { 1, 1, 1 },
-	   	glm::quat rotation = { 1, 0, 0, 0 } )
+	   	glm::quat rotation = { 1, 0, 0, 0 } ) noexcept
 		: position(position)
 		, scale(scale)
 		, rotation(rotation)
@@ -22,7 +22,7 @@ struct Transform {
 
 	}
 
-	glm::mat4 getModelMatrix() const
+	[[nodiscard]] glm::mat4 getModelMatrix() const noexcept
 	{
 		glm::mat4 T { glm::translate(glm::mat4(1.f), position) };
 		glm::mat4 R = glm::mat4_cast(rotation);
@@ -31,7 +31,7 @@ struct Transform {
 		return T * R * S;
 	}
 
-	Transform operator*(const Transform& other) const
+	[[nodiscard]] Transform operator*(const Transform& other) const noexcept
 	{
 		glm::vec3 scale = this->scale * other.scale;
 		glm::quat rot = this->rotation * other.rotation;

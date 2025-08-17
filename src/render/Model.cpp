@@ -10,14 +10,14 @@
 namespace APE {
 namespace Render {
 
-Model::Model(std::filesystem::path model_path, const Transform& transform)
+Model::Model(std::filesystem::path model_path, const Transform& transform) noexcept
 	: m_meshes()
 	, m_transform(transform)
 {
 	loadModel(model_path);
 }
 
-void Model::loadModel(std::filesystem::path model_path)
+void Model::loadModel(std::filesystem::path model_path) noexcept
 {
 	m_meshes.clear();
 
@@ -44,7 +44,7 @@ void Model::loadModel(std::filesystem::path model_path)
 	processNode(scene->mRootNode, scene, model_path);
 }
 
-Transform Model::convertAiTransform(const aiMatrix4x4 ai_transform)
+Transform Model::convertAiTransform(const aiMatrix4x4 ai_transform) noexcept
 {
 	aiVector3f ai_pos;
 	aiVector3f ai_scale;
@@ -61,7 +61,7 @@ Transform Model::convertAiTransform(const aiMatrix4x4 ai_transform)
 std::shared_ptr<Image> Model::convertAiMaterial(
 	const aiMaterial* ai_mat,
 	const aiScene* scene,
-	std::filesystem::path model_path)
+	std::filesystem::path model_path) noexcept
 {
 	// Check for diffuse texture
 	if (ai_mat->GetTextureCount(aiTextureType_DIFFUSE) <=  0) {
@@ -105,7 +105,7 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 void Model::processNode(
 	const aiNode* node,
 	const aiScene* scene,
-	std::filesystem::path model_path)
+	std::filesystem::path model_path) noexcept
 {
 	Transform local_transform = convertAiTransform(node->mTransformation);
 
@@ -136,7 +136,7 @@ void Model::processNode(
 Model::ModelMesh Model::processAiMesh(
 	const aiMesh* ai_mesh,
 	std::shared_ptr<Image> texture,
-	const Transform& transform) const
+	const Transform& transform) const noexcept
 {
 	std::vector<VertexType> vertices;
 	vertices.reserve(ai_mesh->mNumVertices);
@@ -185,17 +185,17 @@ Model::ModelMesh Model::processAiMesh(
 	return ModelMesh(vertices, indices, texture, transform);
 }
 
-std::vector<Model::ModelMesh>& Model::getMeshes()
+std::vector<Model::ModelMesh>& Model::getMeshes() noexcept
 {
 	return m_meshes;
 }
 
-Transform& Model::getTransform()
+Transform& Model::getTransform() noexcept
 {
 	return m_transform;
 }
 
-void Model::setTransform(const Transform& transform)
+void Model::setTransform(const Transform& transform) noexcept
 {
 	m_transform = transform;
 }

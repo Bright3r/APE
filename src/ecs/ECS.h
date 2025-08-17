@@ -28,7 +28,7 @@ public:
 	/*
 	* Entity Creation
 	*/
-	Entity& createEntity() noexcept;
+	[[nodiscard]] Entity& createEntity() noexcept;
 
 	void destroyEntity(Entity& ent) noexcept;
 
@@ -78,22 +78,22 @@ public:
 	/*
 	* Checks on Entities
 	*/
-	bool isValid(const Entity& ent) const noexcept;
+	[[nodiscard]] bool isValid(const Entity& ent) const noexcept;
 
 	template <typename... Components>
-	bool hasAllComponents(const Entity& ent) const noexcept;
+	[[nodiscard]] bool hasAllComponents(const Entity& ent) const noexcept;
 
 	template <typename... Components>
-	bool hasAnyComponent(const Entity& ent) const noexcept;
+	[[nodiscard]] bool hasAnyComponent(const Entity& ent) const noexcept;
 
 	/*
 	* Retrieving Entities/Components
 	*/
 	template <typename... Components>
-	View getView() const noexcept;
+	[[nodiscard]] View getView() const noexcept;
 
 	template <typename... Components>
-	decltype(auto) getComponents(Entity& ent) noexcept;
+	[[nodiscard]] decltype(auto) getComponents(Entity& ent) noexcept;
 
 
 	/*

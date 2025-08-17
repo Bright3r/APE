@@ -11,7 +11,7 @@ namespace Render {
 
 struct ImGuiSession {
 
-	ImGuiSession(Context* context)
+	ImGuiSession(Context* context) noexcept
 	{
 		// Setup context
 		ImGui::CreateContext();
@@ -37,7 +37,7 @@ struct ImGuiSession {
 		ImGui_ImplSDLGPU3_Init(&init_info);
 	}
 
-	~ImGuiSession()
+	~ImGuiSession() noexcept
 	{
 		ImGui_ImplSDLGPU3_Shutdown();
 		ImGui_ImplSDL3_Shutdown();

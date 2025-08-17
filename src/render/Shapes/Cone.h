@@ -15,39 +15,39 @@ private:
 		"res/models/textured-cone.obj";
 
 public:
-	Cone(float radius = 0.5f, float height = 1.f)
+	Cone(float radius = 0.5f, float height = 1.f) noexcept
 		: Model(CONE_PATH)
 	{
 		m_transform.scale = { 2*radius, height, 2*radius };
 	}
 
-	float getRadius() const
+	[[nodiscard]] float getRadius() const noexcept
 	{
 		return m_transform.scale.x;
 	}
 
-	void setRadius(float radius)
+	void setRadius(float radius) noexcept
 	{
 		m_transform.scale.x = 2*radius;
 		m_transform.scale.z = 2*radius;
 	}
 
-	float getHeight() const
+	[[nodiscard]] float getHeight() const noexcept
 	{
 		return m_transform.scale.y;
 	}
 
-	void setHeight(float height)
+	void setHeight(float height) noexcept
 	{
 		m_transform.scale.y = height;
 	}
 
-	std::shared_ptr<Image> getTexture() const
+	[[nodiscard]] std::shared_ptr<Image> getTexture() const noexcept
 	{
 		return m_meshes[0].getTexture();
 	}
 
-	void setTexture(std::shared_ptr<Image> img)
+	void setTexture(std::shared_ptr<Image> img) noexcept
 	{
 		m_meshes[0].changeTexture(img);
 	}

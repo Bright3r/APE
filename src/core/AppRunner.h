@@ -40,47 +40,47 @@ public:
 	static void init(
 		std::string_view window_title,
 		int window_width,
-		int window_height);
+		int window_height) noexcept;
 
-	static void pollEvents();
+	static void pollEvents() noexcept;
 
-	static void stepGameloop();
+	static void stepGameloop() noexcept;
 
-	static void run();
+	static void run() noexcept;
 
-	static bool keyDown(SDL_Keycode key);
+	static bool keyDown(SDL_Keycode key) noexcept;
 
-	static void setTabIn(bool is_tabbed_in);
+	static void setTabIn(bool is_tabbed_in) noexcept;
 
 
 	// Graphics Functions
-	static std::unique_ptr<APE::Render::Shader> createShader(
+	[[nodiscard]] static std::unique_ptr<APE::Render::Shader> createShader(
 		const APE::Render::ShaderDescription& vert_shader_desc, 
-		const APE::Render::ShaderDescription& frag_shader_desc);
+		const APE::Render::ShaderDescription& frag_shader_desc) noexcept;
 
-	static void useShader(std::shared_ptr<APE::Render::Shader> shader);
+	static void useShader(std::shared_ptr<APE::Render::Shader> shader) noexcept;
 
-	static APE::Render::Camera* getMainCamera();
+	[[nodiscard]] static APE::Render::Camera* getMainCamera() noexcept;
 
-	static void draw(APE::Render::Model* mesh);
+	static void draw(APE::Render::Model* mesh) noexcept;
 
-	static void resizeWindow(const SDL_Event& event);
+	static void resizeWindow(const SDL_Event& event) noexcept;
 
-	static void setWindowTitle(std::string_view window_title);
+	static void setWindowTitle(std::string_view window_title) noexcept;
 
 
 	// Utility Functions
 	//
-	static bool getQuit();
+	[[nodiscard]] static bool getQuit() noexcept;
 
-	static void setQuit(bool quit);
+	static void setQuit(bool quit) noexcept;
 
-	static int getFramerate();
+	[[nodiscard]] static int getFramerate() noexcept;
 
-	static void setFramerate(int fps);
+	static void setFramerate(int fps) noexcept;
 
-	static APE::Timing::seconds getLastFrameTimeSec();
+	[[nodiscard]] static APE::Timing::seconds getLastFrameTimeSec() noexcept;
 
-	static APE::Timing::millis getLastFrameTimeMS();
+	[[nodiscard]] static APE::Timing::millis getLastFrameTimeMS() noexcept;
 };
 
