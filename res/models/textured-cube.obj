@@ -3,14 +3,14 @@ mtllib none
 o Cube
 
 # Vertex positions (8 vertices)
-v -1 -1  1
-v  1 -1  1
-v  1  1  1
-v -1  1  1
-v -1 -1 -1
-v  1 -1 -1
-v  1  1 -1
-v -1  1 -1
+v -0.5 -0.5  0.5
+v  0.5 -0.5  0.5
+v  0.5  0.5  0.5
+v -0.5  0.5  0.5
+v -0.5 -0.5 -0.5
+v  0.5 -0.5 -0.5
+v  0.5  0.5 -0.5
+v -0.5  0.5 -0.5
 
 # Texture coordinates (shared for each face)
 vt 0.0 0.0

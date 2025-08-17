@@ -24,7 +24,7 @@ public:
 private:
 	// App Data
 	std::unique_ptr<APE::Render::Shader> shader;
-	std::unique_ptr<APE::Render::Model> model;
+	std::vector<std::unique_ptr<APE::Render::Model>> scene;
 
 	bool b_show_demo = false;
 };

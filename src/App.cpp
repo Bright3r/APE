@@ -7,6 +7,7 @@
 #include "render/Shapes/Cylinder.h"
 #include "util/Logger.h"
 
+#include <cmath>
 #include <glm/fwd.hpp>
 #include <imgui.h>
 
@@ -14,26 +15,29 @@ void App::setup()
 {
 	AppRunner::setWindowTitle("APE Engine");;
 
-	// model = std::make_unique<APE::Render::Cylinder>();
+	// scene.emplace_back(
+	// 	std::make_unique<APE::Render::Model>("res/models/che/scene.gltf")
+	// );
 
-	// model = std::make_unique<APE::Render::Cone>();
-
-	// model = std::make_unique<APE::Render::Sphere>();
-
-	// model = std::make_unique<APE::Render::Cube>();
-
-	model = std::make_unique<APE::Render::Model>("res/models/che/scene.gltf");
+	for (size_t i = 0; i < 50; ++i) {
+		scene.emplace_back(std::make_unique<APE::Render::Cube>());
+		scene.emplace_back(std::make_unique<APE::Render::Sphere>());
+		scene.emplace_back(std::make_unique<APE::Render::Cone>());
+		scene.emplace_back(std::make_unique<APE::Render::Cylinder>());
+	}
 
 	// model = std::make_unique<APE::Render::Model>(
 	// 	"res/models/ship/source/full_scene.fbx"
 	// );
+	
+	AppRunner::setFramerate(240);
 }
 
 void App::update() 
 {
-	// std::cout << "Last Frame Time: " 
-	// 	<< AppRunner::lastFrameTimeMS().count() 
-	// 	<< std::endl;
+	std::string window_title = "FPS: " + 
+		std::to_string(1000.0 / AppRunner::getLastFrameTimeMS().count());
+	AppRunner::setWindowTitle(window_title);
 	
 	APE::Render::Camera* cam = AppRunner::getMainCamera();
 	// cam->print();
@@ -72,38 +76,43 @@ void App::update()
 		cam->moveBackward(speed, dt);
 	}
 
-	// Model Movement
-	if (AppRunner::keyDown(SDLK_M)) {
-		model->getTransform().position.x += 1;
-	}
-	if (AppRunner::keyDown(SDLK_N)) {
-		model->getTransform().position.x -= 1;
-	}
-	if (AppRunner::keyDown(SDLK_X)) {
-		model->getTransform().scale.x += 1;
-	}
-	if (AppRunner::keyDown(SDLK_Y)) {
-		model->getTransform().scale.y += 1;
-	}
-	if (AppRunner::keyDown(SDLK_Z)) {
-		model->getTransform().scale.z += 1;
-	}
-	if (AppRunner::keyDown(SDLK_R)) {
-		model->getTransform().rotation *= 
-			glm::angleAxis(
-				0.1f, 
-				glm::normalize(glm::vec3(1, 1, 1))
-			);
-	}
+	// // Model Movement
+	// if (AppRunner::keyDown(SDLK_M)) {
+	// 	model->getTransform().position.x += 1;
+	// }
+	// if (AppRunner::keyDown(SDLK_N)) {
+	// 	model->getTransform().position.x -= 1;
+	// }
+	// if (AppRunner::keyDown(SDLK_X)) {
+	// 	model->getTransform().scale.x += 1;
+	// }
+	// if (AppRunner::keyDown(SDLK_Y)) {
+	// 	model->getTransform().scale.y += 1;
+	// }
+	// if (AppRunner::keyDown(SDLK_Z)) {
+	// 	model->getTransform().scale.z += 1;
+	// }
+	// if (AppRunner::keyDown(SDLK_R)) {
+	// 	model->getTransform().rotation *= 
+	// 		glm::angleAxis(
+	// 			0.1f, 
+	// 			glm::normalize(glm::vec3(1, 1, 1))
+	// 		);
+	// }
 }
 
 void App::draw() 
 {
-	model->getTransform().position.x *= -1;
-	AppRunner::draw(model.get());
-
-	model->getTransform().position.x *= -1;
-	AppRunner::draw(model.get());
+	int sz = scene.size();
+	int sqrt = std::sqrt(sz);
+	for (int i = 0; i < sz; ++i) {
+		std::unique_ptr<APE::Render::Model>& model = scene[i];
+		model->getTransform().position.x = ((i % sqrt) - (sqrt / 2)) * 5;
+		model->getTransform().position.z = ((i / sqrt) - (sqrt / 2)) * 5;
+		// model->getTransform().position.x = i * 5;
+		// model->getTransform().position.z = i * 5;
+		AppRunner::draw(model.get());
+	}
 }
 
 void App::drawGUI() 

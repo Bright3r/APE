@@ -3,6 +3,7 @@
 
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
+#include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <imgui_impl_sdl3.h>
 
@@ -26,7 +27,7 @@ void AppRunner::init(
 		window_title,
 		window_width,
 		window_height,
-		SDL_WINDOW_RESIZABLE
+		SDL_WINDOW_RESIZABLE | SDL_WINDOW_SURFACE_VSYNC_DISABLED
 	);
 
 	// Initialize main cam
