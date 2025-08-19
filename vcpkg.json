@@ -26,6 +26,9 @@
 				"sdl3-binding",
 				"sdlgpu3-binding"
 			]
+		},
+		{
+			"name": "catch2"
 		}
 	]
 }
