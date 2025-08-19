@@ -1,33 +1,280 @@
 #pragma once
 
+#include "Logger.h"
+
+#include <algorithm>
+#include <functional>
+#include <iterator>
+#include <limits>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace APE {
 
-template <typename T>
+template <typename EntityID, typename T>
 class SparseSet {
 private:
 	// TODO - upgrade sparse list to a paginated vector
-	std::unordered_map<size_t, size_t> m_sparse;
+	// Map entity id to component in dense array
+	std::unordered_map<EntityID, size_t> m_sparse;
+
+	// Contains tightly-packed POD components
 	std::vector<T> m_dense;
 
+	// Maps dense component index to its EntityID
+	std::vector<EntityID> m_denseToID;
+
+	// Reserved id representing a null entity
+	EntityID m_tombstone;
+
 public:
-	[[nodiscard]] size_t getSize() const noexcept;
+	SparseSet() noexcept
+	{
+		m_tombstone = std::numeric_limits<EntityID>::max();
+	}
 
-	[[nodiscard]] bool empty() const noexcept;
+	[[nodiscard]] EntityID tombstone() const noexcept
+	{
+		return m_tombstone;
+	}
 
-	void remove(size_t ID) noexcept;
+	[[nodiscard]] size_t getSize() const noexcept
+	{
+		return m_dense.size();
+	}
 
-	void clear() noexcept;
+	[[nodiscard]] bool empty() const noexcept
+	{
+		return m_dense.empty();
+	}
 
-	[[nodiscard]] bool contains(size_t ID) const noexcept;
+	void clear() noexcept
+	{
+		m_sparse.clear();
+		m_dense.clear();
+		m_denseToID.clear();
+	}
 
-	T& set(size_t ID, const T& val) noexcept;
+	[[nodiscard]] bool contains(EntityID id) const noexcept
+	{
+		return (id != m_tombstone) && 
+			(m_sparse.find(id) != m_sparse.end());
+	}
 
-	[[nodiscard]] T& get(size_t ID) noexcept;
+	[[nodiscard]] bool remove(EntityID id) noexcept
+	{
+		if (empty()) {
+			APE_ERROR("SparseSet::remove() Failed: set is empty.");
+			return false;
+		}
 
-	[[nodiscard]] std::vector<T>& data() noexcept;
+		if (!isValidID(id)) {
+			APE_ERROR(
+				"SparseSet::remove() Failed: entity not in the set."
+			);
+			return false;
+		}
+
+		// Swap removal entity's component to back of dense array
+		EntityID remove_id = id;
+		EntityID swap_id = getEntityID(m_dense.size() - 1);
+		size_t remove_idx = getDenseIdx(remove_id);
+		size_t swap_idx = getDenseIdx(swap_id);
+
+		std::swap(
+			m_dense[swap_idx],
+	    		m_dense[remove_idx]
+		);
+
+		std::swap(
+			m_denseToID[swap_idx],
+			m_denseToID[remove_idx]
+		);
+
+		// Pop off removed component from back of dense array
+		m_dense.pop_back();
+		m_denseToID.pop_back();
+
+		// Update sparse list to reflect updated dense array
+		m_sparse[swap_id] = remove_idx;
+		m_sparse.erase(remove_id);
+
+		return true;
+	}
+
+	template <typename... Args>
+	T& emplace(EntityID id, Args&&... args) noexcept
+	{
+		APE_CHECK(!contains(id),
+			"SparseSet::emplace() Failed: set already contains this entity's component. Use set instead to replace component data."
+		);
+	
+		m_dense.emplace_back(std::forward<Args>(args)...);
+		m_denseToID.emplace_back(id);
+		m_sparse[id] = m_dense.size() - 1;
+
+		return m_dense.back();
+	}
+
+	template <typename... Args>
+	T& try_emplace(EntityID id, Args&&... args) noexcept
+	{
+		if (contains(id)) {
+			return set(id, std::forward<Args>(args)...);
+		}
+
+		return emplace(id, std::forward<Args>(args)...);
+	}
+
+	T& set(EntityID id, T&& val) noexcept
+	{
+		APE_CHECK(contains(id),
+			"SparseSet::set() Failed: set does not contain entity's component."
+		);
+	
+		size_t dense_idx = getDenseIdx(id);
+		m_dense[dense_idx] = std::move(val);
+
+		return m_dense[dense_idx];
+	}
+
+	T& set(EntityID id, const T& val) noexcept
+	{
+		APE_CHECK(contains(id),
+			"SparseSet::set() Failed: set does not contain entity's component."
+		);
+	
+		size_t dense_idx = getDenseIdx(id);
+		m_dense[dense_idx] = val;
+
+		return m_dense[dense_idx];
+	}
+
+	[[nodiscard]] T& get(EntityID id) noexcept
+	{
+		APE_CHECK(contains(id),
+			"SparseSet::get() Failed: set does not contain entity's component."
+		);
+
+		return m_dense[getDenseIdx(id)];
+	}
+
+	[[nodiscard]] const T& get(EntityID id) const noexcept
+	{
+		APE_CHECK(contains(id),
+			"SparseSet::get() Failed: set does not contain entity's component."
+		);
+
+		return m_dense[getDenseIdx(id)];
+	}
+
+	void forEach(std::function<void(T&)> fn)
+	{
+		std::for_each(m_dense.begin(), m_dense.end(), fn);
+	}
+
+private:
+	[[nodiscard]] size_t getDenseIdx(EntityID id) const noexcept
+	{
+		APE_CHECK(isValidID(id),
+			"SparseSet::getDenseIdx() Failed: invalid entity id."
+		);
+
+		return m_sparse.at(id);
+	}
+
+	[[nodiscard]] EntityID getEntityID(size_t dense_idx) const noexcept
+	{
+		APE_CHECK((dense_idx < m_dense.size()),
+			"SparseSet::getEntityID() Failed: dense index out of bounds."
+		);
+
+		return m_denseToID.at(dense_idx);
+	}
+
+	[[nodiscard]] bool isValidID(EntityID id) const noexcept
+	{
+		if (id == m_tombstone) {
+			APE_ERROR(
+				"SparseSet::isValidID() Failed: Cannot remove tombstone."
+			);
+			return false;
+		}
+
+		if (!contains(id)) {
+			APE_ERROR(
+				"SparseSet::isValidID() Failed: Entity not in the set."
+			);
+			return false;
+		}
+
+		return true;
+	}
+
+public:
+	struct Entry {
+		EntityID id;
+		T& component;
+	};
+
+	class iterator {
+	private:
+		SparseSet* m_set;
+		size_t m_idx;
+
+	public:
+		using value_type = Entry;
+		using reference = Entry;
+		using pointer = void;
+		using iterator_category = std::forward_iterator_tag;
+
+		iterator(SparseSet* set, size_t idx) noexcept
+			: m_set(set)
+			, m_idx(idx)
+		{
+
+		}
+
+		Entry operator*() const {
+			return {
+				m_set->m_denseToID[m_idx],
+				m_set->m_dense[m_idx]
+			};
+		}
+
+		// Prefix
+		iterator& operator++() {
+			++m_idx;
+			return *this;
+		}
+
+		// Postfix
+		iterator operator++(int) {
+			iterator tmp = *this;
+			++(*this);
+			return tmp;
+		}
+
+		bool operator==(const iterator& other) const {
+			return m_idx == other.m_idx && m_set == other.m_set;
+		}
+
+		bool operator!=(const iterator& other) const {
+			return !(*this == other);
+		}
+	};
+
+	[[nodiscard]] iterator begin() noexcept
+	{
+		return iterator(this, 0);
+	}
+
+	[[nodiscard]] iterator end() noexcept
+	{
+		return iterator(this, m_dense.size());
+	}
 };
 
 };	// end of namespace APE
+
