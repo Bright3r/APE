@@ -30,6 +30,7 @@ vcpkg_installed/
 *.opensdf
 *.sdf
 *.suo
+Testing/
 
 # OS-specific
 .DS_Store
