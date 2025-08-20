@@ -44,7 +44,7 @@ public:
 		return m_tombstone;
 	}
 
-	[[nodiscard]] size_t size() const noexcept
+	[[nodiscard]] size_t getSize() const noexcept
 	{
 		return m_dense.size();
 	}
@@ -70,17 +70,13 @@ public:
 	[[nodiscard]] bool remove(EntityID id) noexcept
 	{
 		if (empty()) {
-			APE_ERROR(
-				"SparseSet::remove() Failed: cannot remove entity {} because set is empty.",
-				id
-			);
+			APE_ERROR("SparseSet::remove() Failed: set is empty.");
 			return false;
 		}
 
 		if (!isValidID(id)) {
 			APE_ERROR(
-				"SparseSet::remove() Failed: entity {} is not in the set.",
-				id
+				"SparseSet::remove() Failed: entity not in the set."
 			);
 			return false;
 		}
@@ -116,8 +112,7 @@ public:
 	T& emplace(EntityID id, Args&&... args) noexcept
 	{
 		APE_CHECK(!contains(id),
-			"SparseSet::emplace() Failed: set already contains entity {}'s component. Use set instead to replace component data.",
-	    		id
+			"SparseSet::emplace() Failed: set already contains this entity's component. Use set instead to replace component data."
 		);
 	
 		m_dense.emplace_back(std::forward<Args>(args)...);
@@ -140,8 +135,7 @@ public:
 	T& set(EntityID id, T&& val) noexcept
 	{
 		APE_CHECK(contains(id),
-			"SparseSet::set() Failed: set does not contain entity {}'s component.",
-	    		id
+			"SparseSet::set() Failed: set does not contain entity's component."
 		);
 	
 		size_t dense_idx = getDenseIdx(id);
@@ -153,8 +147,7 @@ public:
 	T& set(EntityID id, const T& val) noexcept
 	{
 		APE_CHECK(contains(id),
-			"SparseSet::set() Failed: set does not contain entity {}'s component.",
-	    		id
+			"SparseSet::set() Failed: set does not contain entity's component."
 		);
 	
 		size_t dense_idx = getDenseIdx(id);
@@ -166,8 +159,7 @@ public:
 	[[nodiscard]] T& get(EntityID id) noexcept
 	{
 		APE_CHECK(contains(id),
-			"SparseSet::get() Failed: set does not contain entity {}'s component.",
-	    		id
+			"SparseSet::get() Failed: set does not contain entity's component."
 		);
 
 		return m_dense[getDenseIdx(id)];
@@ -176,8 +168,7 @@ public:
 	[[nodiscard]] const T& get(EntityID id) const noexcept
 	{
 		APE_CHECK(contains(id),
-			"SparseSet::get() Failed: set does not contain entity {}'s component.",
-	    		id
+			"SparseSet::get() Failed: set does not contain entity's component."
 		);
 
 		return m_dense[getDenseIdx(id)];
@@ -192,8 +183,7 @@ private:
 	[[nodiscard]] size_t getDenseIdx(EntityID id) const noexcept
 	{
 		APE_CHECK(isValidID(id),
-			"SparseSet::getDenseIdx() Failed: invalid entity id of {}",
-	    		id
+			"SparseSet::getDenseIdx() Failed: invalid entity id."
 		);
 
 		return m_sparse.at(id);
@@ -219,8 +209,7 @@ private:
 
 		if (!contains(id)) {
 			APE_ERROR(
-				"SparseSet::isValidID() Failed: entity {} is not in the set.",
-				id
+				"SparseSet::isValidID() Failed: Entity not in the set."
 			);
 			return false;
 		}

@@ -21,6 +21,9 @@ public:
 
 	[[nodiscard]] static std::shared_ptr<spdlog::logger> getCoreLogger() noexcept
 	{
+		if (!s_core_logger) {
+			init();
+		}
 		return s_core_logger;
 	}
 };
