@@ -234,6 +234,11 @@ public:
 		T& component;
 	};
 
+	/*
+	* Custom iterator that returns component data with corresponding EntityID
+	* Iterates in reverse order under the hood so that iterators are not
+	* invalidated from deletions
+	*/
 	class iterator {
 	private:
 		SparseSet* m_set;
@@ -254,21 +259,21 @@ public:
 
 		Entry operator*() const {
 			return {
-				m_set->m_denseToID[m_idx],
-				m_set->m_dense[m_idx]
+				m_set->m_denseToID[m_idx-1],
+				m_set->m_dense[m_idx-1]
 			};
 		}
 
 		// Prefix
 		iterator& operator++() {
-			++m_idx;
+			--m_idx;
 			return *this;
 		}
 
 		// Postfix
 		iterator operator++(int) {
 			iterator tmp = *this;
-			++(*this);
+			--(*this);
 			return tmp;
 		}
 
@@ -283,12 +288,12 @@ public:
 
 	[[nodiscard]] iterator begin() noexcept
 	{
-		return iterator(this, 0);
+		return iterator(this, m_dense.size());
 	}
 
 	[[nodiscard]] iterator end() noexcept
 	{
-		return iterator(this, m_dense.size());
+		return iterator(this, 0);
 	}
 };
 

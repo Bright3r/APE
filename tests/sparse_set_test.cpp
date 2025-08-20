@@ -231,15 +231,25 @@ TEST_F(SparseSetTest, BasicSet)
 
 TEST_F(SparseSetTest, BasicIteration)
 {
-	size_t expected_id = 0;
-	int expected_val = 0;
+	size_t expected_id = 49;
+	int expected_val = 5*expected_id;
 	for (auto [ id, val ] : filled_set) {
 		EXPECT_EQ(id, expected_id);
 		EXPECT_EQ(val, expected_val);
 
-		expected_id++;
-		expected_val += 5;
+		expected_id--;
+		expected_val = 5*expected_id;
 	}
+}
+
+TEST_F(SparseSetTest, RemoveWhileIterating)
+{
+	for (auto [ id, val ] : filled_set) {
+		EXPECT_TRUE(filled_set.remove(id)) 
+			<< "Set should remove entity " << id;
+	}
+
+	ASSERT_TRUE(filled_set.empty()) << "Set should be empty.";
 }
 
 
