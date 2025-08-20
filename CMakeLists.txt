@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 
 set (CMAKE_CXX_STANDARD 20)
-set(CMAKE_TOOLCHAIN_FILE "$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+set(CMAKE_TOOLCHAIN_FILE 
+	"$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" CACHE STRING ""
+)
 
 project(ape)
 
@@ -12,10 +14,11 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(imgui CONFIG REQUIRED)
-find_package(Catch2 CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 
 # Compile Engine into lib
-add_library(ape_lib
+add_library(
+	ape_lib
 	src/App.cpp
 	src/core/AppRunner.cpp
 	src/render/Shader.cpp
@@ -25,12 +28,14 @@ add_library(ape_lib
 	src/render/Image.cpp
 )
 
-target_include_directories(ape_lib PUBLIC
+target_include_directories(
+	ape_lib PUBLIC
 	${CMAKE_SOURCE_DIR}/src
 	${Stb_INCLUDE_DIR}
 )
 
-target_link_libraries(ape_lib PUBLIC
+target_link_libraries(
+	ape_lib PUBLIC
 	SDL3::SDL3
 	glm::glm
 	spdlog::spdlog
@@ -40,28 +45,40 @@ target_link_libraries(ape_lib PUBLIC
 
 
 # Program Executable
-add_executable(ape src/main.cpp)
-target_link_libraries(ape PRIVATE ape_lib)
-
-target_compile_options(ape PRIVATE
-    -fno-omit-frame-pointer
-    -fsanitize=address
+add_executable(
+	ape 
+	src/main.cpp
 )
-target_link_options(ape PRIVATE -fsanitize=address)
+target_link_libraries(
+	ape PRIVATE 
+	ape_lib
+)
+
+target_compile_options(
+	ape PRIVATE
+	-fno-omit-frame-pointer
+	-fsanitize=address
+)
+target_link_options(
+	ape PRIVATE
+	-fsanitize=address
+)
 
 
 # Testing
 enable_testing()
 
-add_executable(tests
+add_executable(
+	tests
 	tests/sparse_set_test.cpp
 )
 
-target_link_libraries(tests PRIVATE
+target_link_libraries(
+	tests PRIVATE
 	ape_lib
-	Catch2::Catch2WithMain
+	GTest::gtest_main
 )
 
-include(CTest)
-include(Catch)
-catch_discover_tests(tests)
+include(GoogleTest)
+gtest_discover_tests(tests)
+
