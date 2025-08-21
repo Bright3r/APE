@@ -13,8 +13,12 @@
 
 namespace APE {
 
+struct SparseSetInterface {
+	virtual ~SparseSetInterface() = default;
+};
+
 template <typename EntityID, typename T>
-class SparseSet {
+class SparseSet : SparseSetInterface {
 private:
 	// TODO - upgrade sparse list to a paginated vector
 	// Map entity id to component in dense array
@@ -128,7 +132,7 @@ public:
 	}
 
 	template <typename... Args>
-	T& try_emplace(EntityID id, Args&&... args) noexcept
+	T& tryEmplace(EntityID id, Args&&... args) noexcept
 	{
 		if (contains(id)) {
 			return set(id, std::forward<Args>(args)...);

@@ -54,7 +54,7 @@ TEST_F(SparseSetTest, BasicEmplace)
 
 TEST_F(SparseSetTest, BasicTryEmplace)
 {
-	set.try_emplace(0, 27);
+	set.tryEmplace(0, 27);
 	EXPECT_TRUE(!set.empty()) << "Set should not be empty.";
 	EXPECT_EQ(set.size(), 1) << "Set should be size 1.";
 }
@@ -62,7 +62,7 @@ TEST_F(SparseSetTest, BasicTryEmplace)
 TEST_F(SparseSetTest, MixedEmplacement)
 {
 	set.emplace(0, 27);
-	set.try_emplace(0, 30);
+	set.tryEmplace(0, 30);
 
 	EXPECT_EQ(set.size(), 1) << "Set should be size 1.";
 	EXPECT_EQ(set.get(0), 30) << "Set should have (0, 30).";
@@ -83,12 +83,12 @@ TEST_F(SparseSetTest, EmplaceCopy)
 TEST_F(SparseSetTest, TryEmplaceCopy)
 {
 	int x = 27;
-	set.try_emplace(0, x);
+	set.tryEmplace(0, x);
 	ASSERT_EQ(set.size(), 1) << "Set should be size 1.";
 	ASSERT_EQ(set.get(0), x) << "Set should have (0, 27)";
 
 	x = 30;
-	set.try_emplace(0, x);
+	set.tryEmplace(0, x);
 	ASSERT_EQ(set.size(), 1) << "Set should be size 1.";
 	ASSERT_EQ(set.get(0), x) << "Set should have (0, 27)";
 }
