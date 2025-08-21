@@ -2,33 +2,57 @@
 
 #include <bitset>
 #include <cstdint>
-#include <limits>
+#include <unordered_map>
 #include <vector>
 
 namespace APE {
 namespace ECS {
 
+/*
+ * Aliases + Constants
+*/
+using EntityID = uint64_t;
+using TypeID = size_t;
 constexpr int MAX_NUM_COMPONENTS = 64;
+using Bitmask = std::bitset<MAX_NUM_COMPONENTS>;
 
+
+/*
+ * Entity
+*/
 struct Entity {
-	uint64_t ID;
-	std::bitset<MAX_NUM_COMPONENTS> component_mask;
+	EntityID id;
+	Bitmask component_mask;
 };
 
 
+/*
+ * ECS
+*/
 class ECS {
 public:
 	using View = std::vector<Entity*>;
-	static constexpr uint64_t tombstone = std::numeric_limits<uint64_t>::max();
 
 private:
-	uint64_t m_curr_ID = 0;
+	inline static TypeID s_type_counter = 0;
+	inline static EntityID s_entity_counter = 0;
+
+	std::unordered_map<EntityID, Entity> m_entities;
 
 public:
 	/*
 	* Entity Creation
 	*/
-	[[nodiscard]] Entity& createEntity() noexcept;
+	[[nodiscard]] Entity& createEntity() noexcept
+	{
+		EntityID ent_id = nextEntityID();
+		m_entities[ent_id] = {
+			.id = ent_id,
+			.component_mask = 0x0,
+		};
+
+		return m_entities[ent_id];
+	}
 
 	void destroyEntity(Entity& ent) noexcept;
 
@@ -68,9 +92,11 @@ public:
 	/*
 	* Removing Components
 	*/
-	// try to remove component from ent if it exists
 	template <typename Component>
 	bool removeComponent(Entity& ent) noexcept;
+
+	template <typename Component>
+	bool tryRemoveComponent(Entity& ent) noexcept;
 
 	template <typename Component>
 	void clearComponent() noexcept;
@@ -78,7 +104,10 @@ public:
 	/*
 	* Checks on Entities
 	*/
-	[[nodiscard]] bool isValid(const Entity& ent) const noexcept;
+	[[nodiscard]] bool isValid(const Entity& ent) const noexcept
+	{
+		return m_entities.contains(ent.id);
+	}
 
 	template <typename... Components>
 	[[nodiscard]] bool hasAllComponents(const Entity& ent) const noexcept;
@@ -107,7 +136,37 @@ public:
 	/*
 	* In-place Sorting
 	*/
+
+private:
+	[[nodiscard]] static EntityID nextEntityID() noexcept
+	{
+		return s_entity_counter++;
+	}
+
+	[[nodiscard]] static Bitmask nextTypeBitmask() noexcept
+	{
+		static Bitmask curr_mask = 0x1;
+		
+		Bitmask res = curr_mask;
+		curr_mask <<= 1;
+		return res;
+	}
+
+	template <typename Component>
+	[[nodiscard]] static TypeID typeID() noexcept
+	{
+		static const TypeID id = s_type_counter++;
+		return id;
+	}
+
+	template <typename Component>
+	[[nodiscard]] static Bitmask typeBitmask() noexcept
+	{
+		static const Bitmask mask = nextTypeBitmask();
+		return mask;
+	}
 };
 
 };	// end of namespace ECS
 };	// end of namespace APE
+
