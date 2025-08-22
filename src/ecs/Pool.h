@@ -12,13 +12,17 @@
 #include <vector>
 
 namespace APE {
+namespace ECS {
 
+template <typename EntityID>
 struct PoolInterface {
 	virtual ~PoolInterface() = default;
+
+	virtual bool remove(EntityID id) noexcept = 0;
 };
 
 template <typename EntityID, typename T>
-class Pool : PoolInterface {
+class Pool : PoolInterface<EntityID> {
 private:
 	// TODO - upgrade sparse list to a paginated vector
 	// Map entity id to component in dense array
@@ -290,6 +294,55 @@ public:
 		}
 	};
 
+
+	class const_iterator {
+	private:
+		const Pool* m_set;
+		size_t m_idx;
+
+	public:
+		using value_type = Entry;
+		using reference = Entry;
+		using pointer = void;
+		using iterator_category = std::forward_iterator_tag;
+
+		const_iterator(const Pool* set, size_t idx) noexcept
+			: m_set(set)
+			, m_idx(idx)
+		{
+
+		}
+
+		Entry operator*() const {
+			return {
+				m_set->m_denseToID[m_idx-1],
+				m_set->m_dense[m_idx-1]
+			};
+		}
+
+		// Prefix
+		const_iterator& operator++() {
+			--m_idx;
+			return *this;
+		}
+
+		// Postfix
+		const_iterator operator++(int) {
+			const_iterator tmp = *this;
+			--(*this);
+			return tmp;
+		}
+
+		bool operator==(const const_iterator& other) const {
+			return m_idx == other.m_idx && m_set == other.m_set;
+		}
+
+		bool operator!=(const const_iterator& other) const {
+			return !(*this == other);
+		}
+	};
+
+
 	[[nodiscard]] iterator begin() noexcept
 	{
 		return iterator(this, m_dense.size());
@@ -299,7 +352,18 @@ public:
 	{
 		return iterator(this, 0);
 	}
+
+	[[nodiscard]] const_iterator begin() const noexcept
+	{
+		return const_iterator(this, m_dense.size());
+	}
+
+	[[nodiscard]] const_iterator end() const noexcept
+	{
+		return const_iterator(this, 0);
+	}
 };
 
+};	// end of namespace ECS
 };	// end of namespace APE
 

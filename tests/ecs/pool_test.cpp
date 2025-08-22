@@ -4,7 +4,7 @@
 
 #include <limits>
 
-using namespace APE;
+using namespace APE::ECS;
 
 class PoolTest : public testing::Test {
 protected:
@@ -252,7 +252,16 @@ TEST_F(PoolTest, RemoveWhileIterating)
 	ASSERT_TRUE(filled_set.empty()) << "Set should be empty.";
 }
 
+TEST_F(PoolTest, ConstIteration)
+{
+	size_t expected_id = 49;
+	int expected_val = 5*expected_id;
+	for (const auto [ id, val ] : filled_set) {
+		EXPECT_EQ(id, expected_id);
+		EXPECT_EQ(val, expected_val);
 
-
-
+		expected_id--;
+		expected_val = 5*expected_id;
+	}
+}
 

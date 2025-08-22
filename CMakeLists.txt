@@ -70,7 +70,8 @@ enable_testing()
 
 add_executable(
 	tests
-	tests/pool_test.cpp
+	tests/ecs/pool_test.cpp
+	tests/ecs/registry_test.cpp
 )
 
 target_link_libraries(

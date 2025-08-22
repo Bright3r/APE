@@ -4,7 +4,7 @@
 
 #include <bitset>
 #include <cstdint>
-#include <memory>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -20,8 +20,11 @@ using TypeID = size_t;
 constexpr int MAX_NUM_COMPONENTS = 64;
 using Bitmask = std::bitset<MAX_NUM_COMPONENTS>;
 
+using IPool = PoolInterface<EntityID>;
+
 template <typename Component>
 using CPool = Pool<EntityID, Component>;
+
 
 /*
  * Entity
@@ -31,21 +34,18 @@ struct Entity {
 	Bitmask component_mask;
 };
 
-
+using EntityView = std::vector<Entity*>;
 
 /*
- * ECS
+ * Registry
 */
-class ECS {
-public:
-	using View = std::vector<Entity*>;
-
+class Registry {
 private:
 	inline static TypeID s_type_counter = 0;
 	inline static EntityID s_entity_counter = 0;
 
 	Pool<EntityID, Entity> m_entities;
-	std::unordered_map<TypeID, std::unique_ptr<PoolInterface>> m_pools;
+	std::unordered_map<TypeID, std::unique_ptr<IPool>> m_pools;
 
 public:
 	/*
@@ -59,7 +59,18 @@ public:
 		return m_entities.get(ent_id);
 	}
 
-	void destroyEntity(Entity& ent) noexcept;
+	void destroyEntity(Entity& ent) noexcept
+	{
+		if (!m_entities.remove(ent.id)) {
+			APE_WARN("Tried to destroy untracked entity {}.", ent.id);
+			return;
+		}
+
+		for (auto& [ type_id, pool ] : m_pools) {
+			pool->remove(ent.id);
+		}
+	}
+
 
 	/*
 	* Adding Components
@@ -69,14 +80,14 @@ public:
 	{
 		maskEntity<Component>(ent);
 
-		auto pool = getPool<Component>();
+		auto& pool = getPool<Component>();
 		return pool.emplace(ent.id, std::forward<Args>(args)...);
 	}
 
 	template <typename Component, typename... Args>
-	void emplaceComponent(const View& ents, Args&&... args) noexcept
+	void emplaceComponent(const EntityView& ents, Args&&... args) noexcept
 	{
-		auto pool = getPool<Component>();
+		auto& pool = getPool<Component>();
 		for (Entity* ent : ents) {
 			maskEntity<Component>(*ent);
 			pool.emplace(ent->id, std::forward<Args>(args)...);
@@ -86,14 +97,14 @@ public:
 	template <typename Component>
 	Component& replaceComponent(Entity& ent, Component&& comp) noexcept
 	{
-		auto pool = getPool<Component>();
-		return pool.set(ent.id, std::forward(comp));
+		auto& pool = getPool<Component>();
+		return pool.set(ent.id, std::forward<Component>(comp));
 	}
 
 	template <typename Component>
-	void replaceComponent(const View& ents, Component&& comp) noexcept
+	void replaceComponent(const EntityView& ents, Component&& comp) noexcept
 	{
-		auto pool = getPool<Component>();
+		auto& pool = getPool<Component>();
 		for (Entity* ent : ents) {
 			pool.emplace(ent->id, std::forward<Component>(comp));
 		}
@@ -104,14 +115,14 @@ public:
 	{
 		maskEntity<Component>(ent);
 
-		auto pool = getPool<Component>();
-		pool.tryEmplace(ent.id, std::forward<Args>(args)...);
+		auto& pool = getPool<Component>();
+		return pool.tryEmplace(ent.id, std::forward<Args>(args)...);
 	}
 
 	template <typename Component, typename... Args>
-	void emplaceOrReplaceComponent(const View& ents, Args... args) noexcept
+	void emplaceOrReplaceComponent(const EntityView& ents, Args... args) noexcept
 	{
-		auto pool = getPool<Component>();
+		auto& pool = getPool<Component>();
 		for (Entity* ent : ents) {
 			maskEntity<Component>(*ent);
 			pool.tryEmplace(ent->id, std::forward<Args>(args)...);
@@ -126,16 +137,16 @@ public:
 	{
 		unmaskEntity<Component>(ent);
 
-		auto pool = getPool<Component>();
+		auto& pool = getPool<Component>();
 		return pool.remove(ent.id);
 	}
 
 	template <typename Component>
 	void clearComponent() noexcept
 	{
-		auto pool = getPool<Component>();
+		auto& pool = getPool<Component>();
 		for (auto [ ent_id, comp ] : pool) {
-			unmaskEntity<Component>(ent_id);
+			unmaskEntity<Component>(m_entities.get(ent_id));
 		}
 		m_pools.erase(typeID<Component>());
 	}
@@ -149,19 +160,78 @@ public:
 	}
 
 	template <typename... Components>
-	[[nodiscard]] bool hasAllComponents(const Entity& ent) const noexcept;
+	[[nodiscard]] bool hasAllComponents(const Entity& ent) const noexcept
+	{
+		return (hasComponent<Components>(ent) && ...);
+	}
 
 	template <typename... Components>
-	[[nodiscard]] bool hasAnyComponent(const Entity& ent) const noexcept;
+	[[nodiscard]] bool hasAnyComponent(const Entity& ent) const noexcept
+	{
+		return (hasComponent<Components>(ent) || ...);
+	}
+
+	template <typename Component>
+	[[nodiscard]] bool hasComponent(const Entity& ent) const noexcept
+	{
+		return (typeBitmask<Component>() & ent.component_mask) != 0;
+	}
+
+	[[nodiscard]] size_t numComponents() const noexcept
+	{
+		return s_type_counter;
+	}
+
+	[[nodiscard]] size_t numEntities() const noexcept
+	{
+		return m_entities.size();
+	}
 
 	/*
 	* Retrieving Entities/Components
 	*/
 	template <typename... Components>
-	[[nodiscard]] View getView() const noexcept;
+	[[nodiscard]] EntityView entityView() const noexcept
+	{
+		EntityView res;
+		for (auto [ id, ent ] : m_entities) {
+			if (hasAllComponents<Components...>(ent)) {
+				res.emplace_back(&ent);
+			}
+		}
+		return res;
+	}
+
+	template <typename Component>
+	[[nodiscard]] Component& getComponent(Entity& ent) const noexcept
+	{
+		APE_CHECK(hasComponent<Component>(ent),
+			"Cannot get component that an entity does not have."
+		);
+
+		auto& pool = getPool<Component>();
+		return pool.get(ent.id);
+	}
 
 	template <typename... Components>
-	[[nodiscard]] decltype(auto) getComponents(Entity& ent) noexcept;
+	[[nodiscard]] decltype(auto) getComponents(Entity& ent) const noexcept
+	{
+		return std::tie(getComponent<Components>(ent)...);
+	}
+
+	template <typename... Components>
+	[[nodiscard]] decltype(auto) view() const noexcept
+	{
+		std::vector<std::tuple<Components...>> res;
+		for (auto [ id, ent ] : m_entities) {
+			if (hasAllComponents<Components...>(ent)) {
+				res.emplace_back(
+					getComponents<Components...>(ent)
+				);
+			}
+		}
+		return res;
+	}
 
 
 	/*
@@ -175,6 +245,7 @@ public:
 	/*
 	* In-place Sorting
 	*/
+
 
 private:
 	[[nodiscard]] static EntityID nextEntityID() noexcept
@@ -214,7 +285,7 @@ private:
 	template <typename Component>
 	inline void unmaskEntity(Entity& ent) noexcept
 	{
-		ent.component_mask ^= typeBitmask<Component>();
+		ent.component_mask &= ~typeBitmask<Component>();
 	}
 
 	template <typename Component>
