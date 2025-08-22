@@ -70,7 +70,7 @@ enable_testing()
 
 add_executable(
 	tests
-	tests/sparse_set_test.cpp
+	tests/pool_test.cpp
 )
 
 target_link_libraries(

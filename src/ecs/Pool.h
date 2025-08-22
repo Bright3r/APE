@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Logger.h"
+#include "util/Logger.h"
 
 #include <algorithm>
 #include <functional>
@@ -13,12 +13,12 @@
 
 namespace APE {
 
-struct SparseSetInterface {
-	virtual ~SparseSetInterface() = default;
+struct PoolInterface {
+	virtual ~PoolInterface() = default;
 };
 
 template <typename EntityID, typename T>
-class SparseSet : SparseSetInterface {
+class Pool : PoolInterface {
 private:
 	// TODO - upgrade sparse list to a paginated vector
 	// Map entity id to component in dense array
@@ -34,11 +34,11 @@ private:
 	EntityID m_tombstone;
 
 public:
-	SparseSet() noexcept
+	Pool() noexcept
 	{
 		static_assert(
 			std::is_integral_v<EntityID>, 
-			"SparseSet only supports integral EntityID types."
+			"Pool only supports integral EntityID types."
 		);
 		m_tombstone = std::numeric_limits<EntityID>::max();
 	}
@@ -75,7 +75,7 @@ public:
 	{
 		if (empty()) {
 			APE_ERROR(
-				"SparseSet::remove() Failed: cannot remove entity {} because set is empty.",
+				"Pool::remove() Failed: cannot remove entity {} because set is empty.",
 				id
 			);
 			return false;
@@ -83,7 +83,7 @@ public:
 
 		if (!isValidID(id)) {
 			APE_ERROR(
-				"SparseSet::remove() Failed: entity {} is not in the set.",
+				"Pool::remove() Failed: entity {} is not in the set.",
 				id
 			);
 			return false;
@@ -120,7 +120,7 @@ public:
 	T& emplace(EntityID id, Args&&... args) noexcept
 	{
 		APE_CHECK(!contains(id),
-			"SparseSet::emplace() Failed: set already contains entity {}'s component. Use set instead to replace component data.",
+			"Pool::emplace() Failed: set already contains entity {}'s component. Use set instead to replace component data.",
 	    		id
 		);
 	
@@ -144,7 +144,7 @@ public:
 	T& set(EntityID id, T&& val) noexcept
 	{
 		APE_CHECK(contains(id),
-			"SparseSet::set() Failed: set does not contain entity {}'s component.",
+			"Pool::set() Failed: set does not contain entity {}'s component.",
 	    		id
 		);
 	
@@ -157,7 +157,7 @@ public:
 	T& set(EntityID id, const T& val) noexcept
 	{
 		APE_CHECK(contains(id),
-			"SparseSet::set() Failed: set does not contain entity {}'s component.",
+			"Pool::set() Failed: set does not contain entity {}'s component.",
 	    		id
 		);
 	
@@ -170,7 +170,7 @@ public:
 	[[nodiscard]] T& get(EntityID id) noexcept
 	{
 		APE_CHECK(contains(id),
-			"SparseSet::get() Failed: set does not contain entity {}'s component.",
+			"Pool::get() Failed: set does not contain entity {}'s component.",
 	    		id
 		);
 
@@ -180,7 +180,7 @@ public:
 	[[nodiscard]] const T& get(EntityID id) const noexcept
 	{
 		APE_CHECK(contains(id),
-			"SparseSet::get() Failed: set does not contain entity {}'s component.",
+			"Pool::get() Failed: set does not contain entity {}'s component.",
 	    		id
 		);
 
@@ -196,7 +196,7 @@ private:
 	[[nodiscard]] size_t getDenseIdx(EntityID id) const noexcept
 	{
 		APE_CHECK(isValidID(id),
-			"SparseSet::getDenseIdx() Failed: invalid entity id of {}",
+			"Pool::getDenseIdx() Failed: invalid entity id of {}",
 	    		id
 		);
 
@@ -206,7 +206,7 @@ private:
 	[[nodiscard]] EntityID getEntityID(size_t dense_idx) const noexcept
 	{
 		APE_CHECK((dense_idx < m_dense.size()),
-			"SparseSet::getEntityID() Failed: dense index out of bounds."
+			"Pool::getEntityID() Failed: dense index out of bounds."
 		);
 
 		return m_denseToID.at(dense_idx);
@@ -216,14 +216,14 @@ private:
 	{
 		if (id == m_tombstone) {
 			APE_ERROR(
-				"SparseSet::isValidID() Failed: Cannot remove tombstone."
+				"Pool::isValidID() Failed: Cannot remove tombstone."
 			);
 			return false;
 		}
 
 		if (!contains(id)) {
 			APE_ERROR(
-				"SparseSet::isValidID() Failed: entity {} is not in the set.",
+				"Pool::isValidID() Failed: entity {} is not in the set.",
 				id
 			);
 			return false;
@@ -245,7 +245,7 @@ public:
 	*/
 	class iterator {
 	private:
-		SparseSet* m_set;
+		Pool* m_set;
 		size_t m_idx;
 
 	public:
@@ -254,7 +254,7 @@ public:
 		using pointer = void;
 		using iterator_category = std::forward_iterator_tag;
 
-		iterator(SparseSet* set, size_t idx) noexcept
+		iterator(Pool* set, size_t idx) noexcept
 			: m_set(set)
 			, m_idx(idx)
 		{

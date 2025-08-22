@@ -1,17 +1,17 @@
 #include "gtest/gtest.h"
 
-#include "util/SparseSet.h"
+#include "ecs/Pool.h"
 
 #include <limits>
 
 using namespace APE;
 
-class SparseSetTest : public testing::Test {
+class PoolTest : public testing::Test {
 protected:
-	SparseSet<size_t, int> set;
-	SparseSet<size_t, int> filled_set;
+	Pool<size_t, int> set;
+	Pool<size_t, int> filled_set;
 
-	SparseSetTest()
+	PoolTest()
 	{
 		for (size_t i = 0; i < 50; ++i) {
 			filled_set.emplace(i, 5*i);
@@ -23,19 +23,19 @@ protected:
 /*
  * Basic Initialization Tests
 */
-TEST_F(SparseSetTest, Init)
+TEST_F(PoolTest, Init)
 {
 	EXPECT_TRUE(!filled_set.empty()) << "Set should not be empty.";
 	EXPECT_EQ(filled_set.size(), 50) << "Set should be size 50.";
 }
 
-TEST_F(SparseSetTest, ValidTombstone) 
+TEST_F(PoolTest, ValidTombstone) 
 {
 	ASSERT_EQ(set.tombstone(), std::numeric_limits<size_t>::max())
 		<< "Tombstone must be the max of an integral type.";
 }
 
-TEST_F(SparseSetTest, EmptyInitially)
+TEST_F(PoolTest, EmptyInitially)
 {
 	EXPECT_TRUE(set.empty()) << "Newly construct set should be empty.";
 	EXPECT_EQ(set.size(), 0) << "Set size should be 0 when empty.";
@@ -45,21 +45,21 @@ TEST_F(SparseSetTest, EmptyInitially)
 /*
  * Component Addition Tests
 */
-TEST_F(SparseSetTest, BasicEmplace)
+TEST_F(PoolTest, BasicEmplace)
 {
 	set.emplace(0, 27);
 	EXPECT_TRUE(!set.empty()) << "Set should not be empty.";
 	EXPECT_EQ(set.size(), 1) << "Set should be size 1.";
 }
 
-TEST_F(SparseSetTest, BasicTryEmplace)
+TEST_F(PoolTest, BasicTryEmplace)
 {
 	set.tryEmplace(0, 27);
 	EXPECT_TRUE(!set.empty()) << "Set should not be empty.";
 	EXPECT_EQ(set.size(), 1) << "Set should be size 1.";
 }
 
-TEST_F(SparseSetTest, MixedEmplacement)
+TEST_F(PoolTest, MixedEmplacement)
 {
 	set.emplace(0, 27);
 	set.tryEmplace(0, 30);
@@ -72,7 +72,7 @@ TEST_F(SparseSetTest, MixedEmplacement)
 	}, "");
 }
 
-TEST_F(SparseSetTest, EmplaceCopy)
+TEST_F(PoolTest, EmplaceCopy)
 {
 	int x = 27;
 	set.emplace(0, x);
@@ -80,7 +80,7 @@ TEST_F(SparseSetTest, EmplaceCopy)
 	ASSERT_EQ(set.get(0), x) << "Set should have (0, 27)";
 }
 
-TEST_F(SparseSetTest, TryEmplaceCopy)
+TEST_F(PoolTest, TryEmplaceCopy)
 {
 	int x = 27;
 	set.tryEmplace(0, x);
@@ -96,12 +96,12 @@ TEST_F(SparseSetTest, TryEmplaceCopy)
 /*
 * Component Removal Tests
 */
-TEST_F(SparseSetTest, RemoveFromEmpty)
+TEST_F(PoolTest, RemoveFromEmpty)
 {
 	EXPECT_FALSE(set.remove(0)) << "Set cannot remove entity 0.";
 }
 
-TEST_F(SparseSetTest, RemoveFromBack)
+TEST_F(PoolTest, RemoveFromBack)
 {
 	set.emplace(0, 27);
 	EXPECT_TRUE(set.remove(0)) << "Set should remove entity 0.";
@@ -114,7 +114,7 @@ TEST_F(SparseSetTest, RemoveFromBack)
 	EXPECT_FALSE(set.contains(0)) << "Set should no longer contain entity 0.";
 }
 
-TEST_F(SparseSetTest, RemoveFromMiddle)
+TEST_F(PoolTest, RemoveFromMiddle)
 {
 	EXPECT_TRUE(filled_set.remove(25)) << "Set should have entity 25 removed.";
 	EXPECT_EQ(filled_set.size(), 49) << "Set should be size 49.";
@@ -133,7 +133,7 @@ TEST_F(SparseSetTest, RemoveFromMiddle)
 	}, "");
 }
 
-TEST_F(SparseSetTest, RemoveFromFront)
+TEST_F(PoolTest, RemoveFromFront)
 {
 	for (size_t i = 0; i < 50; ++i) {
 		ASSERT_TRUE(filled_set.remove(i)) << "Set should remove entity " << i;
@@ -154,7 +154,7 @@ TEST_F(SparseSetTest, RemoveFromFront)
 	}, "");
 }
 
-TEST_F(SparseSetTest, BasicClear)
+TEST_F(PoolTest, BasicClear)
 {
 	filled_set.clear();
 	EXPECT_TRUE(filled_set.empty()) << "Set should be empty.";
@@ -171,7 +171,7 @@ TEST_F(SparseSetTest, BasicClear)
 * Component Retrieval Tests
 */
 
-TEST_F(SparseSetTest, BasicContains)
+TEST_F(PoolTest, BasicContains)
 {
 	EXPECT_TRUE(!set.contains(0)) << "Set should not have entity 0.";
 	EXPECT_TRUE(!set.contains(100)) << "Set should not have entity 100.";
@@ -190,7 +190,7 @@ TEST_F(SparseSetTest, BasicContains)
 }
 
 
-TEST_F(SparseSetTest, BasicGet)
+TEST_F(PoolTest, BasicGet)
 {
 	set.emplace(0, 27);
 	EXPECT_EQ(set.get(0), 27) << "Set should have (0, 27).";
@@ -200,7 +200,7 @@ TEST_F(SparseSetTest, BasicGet)
 	EXPECT_EQ(set.size(), 1) << "Set should be size 1.";
 }
 
-TEST_F(SparseSetTest, GetRemovedComponent)
+TEST_F(PoolTest, GetRemovedComponent)
 {
 	set.emplace(0, 27);
 	EXPECT_EQ(set.get(0), 27) << "Set should have (0, 27).";
@@ -213,7 +213,7 @@ TEST_F(SparseSetTest, GetRemovedComponent)
 	}, "");
 }
 
-TEST_F(SparseSetTest, BasicSet)
+TEST_F(PoolTest, BasicSet)
 {
 	filled_set.set(0, 100);
 	EXPECT_EQ(filled_set.get(0), 100) << "Set should have (0, 100)";
@@ -229,7 +229,7 @@ TEST_F(SparseSetTest, BasicSet)
 	}, "");
 }
 
-TEST_F(SparseSetTest, BasicIteration)
+TEST_F(PoolTest, BasicIteration)
 {
 	size_t expected_id = 49;
 	int expected_val = 5*expected_id;
@@ -242,7 +242,7 @@ TEST_F(SparseSetTest, BasicIteration)
 	}
 }
 
-TEST_F(SparseSetTest, RemoveWhileIterating)
+TEST_F(PoolTest, RemoveWhileIterating)
 {
 	for (auto [ id, val ] : filled_set) {
 		EXPECT_TRUE(filled_set.remove(id)) 

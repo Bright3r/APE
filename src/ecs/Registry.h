@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/SparseSet.h"
+#include "ecs/Pool.h"
 
 #include <bitset>
 #include <cstdint>
@@ -20,10 +20,8 @@ using TypeID = size_t;
 constexpr int MAX_NUM_COMPONENTS = 64;
 using Bitmask = std::bitset<MAX_NUM_COMPONENTS>;
 
-using PoolInterface = SparseSetInterface;
-
 template <typename Component>
-using Pool = SparseSet<EntityID, Component>;
+using CPool = Pool<EntityID, Component>;
 
 /*
  * Entity
@@ -46,7 +44,7 @@ private:
 	inline static TypeID s_type_counter = 0;
 	inline static EntityID s_entity_counter = 0;
 
-	SparseSet<EntityID, Entity> m_entities;
+	Pool<EntityID, Entity> m_entities;
 	std::unordered_map<TypeID, std::unique_ptr<PoolInterface>> m_pools;
 
 public:
@@ -220,13 +218,13 @@ private:
 	}
 
 	template <typename Component>
-	[[nodiscard]] Pool<Component>& getPool() noexcept
+	[[nodiscard]] CPool<Component>& getPool() noexcept
 	{
 		TypeID type_id = typeID<Component>();
 		if (!m_pools.contains(type_id)) {
-			m_pools[type_id] = std::make_unique<Pool<Component>>();
+			m_pools[type_id] = std::make_unique<CPool<Component>>();
 		}
-		return *static_cast<Pool<Component>*>(m_pools[type_id].get());
+		return *static_cast<CPool<Component>*>(m_pools[type_id].get());
 	}
 };
 
