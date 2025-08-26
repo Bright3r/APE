@@ -22,7 +22,7 @@ struct PoolInterface {
 };
 
 template <typename EntityID, typename T>
-class Pool : PoolInterface<EntityID> {
+class Pool : public PoolInterface<EntityID> {
 private:
 	// TODO - upgrade sparse list to a paginated vector
 	// Map entity id to component in dense array
