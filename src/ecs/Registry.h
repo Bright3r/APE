@@ -59,16 +59,17 @@ public:
 		return m_entities.get(ent_id);
 	}
 
-	void destroyEntity(Entity& ent) noexcept
+	bool destroyEntity(Entity& ent) noexcept
 	{
 		if (!m_entities.remove(ent.id)) {
 			APE_WARN("Tried to destroy untracked entity {}.", ent.id);
-			return;
+			return false;
 		}
 
 		for (auto& [ type_id, pool ] : m_pools) {
 			pool->remove(ent.id);
 		}
+		return true;
 	}
 
 
@@ -94,19 +95,19 @@ public:
 		}
 	}
 
-	template <typename Component>
-	Component& replaceComponent(Entity& ent, Component&& comp) noexcept
+	template <typename Component, typename... Args>
+	Component& replaceComponent(Entity& ent, Args&&... args) noexcept
 	{
 		auto& pool = getPool<Component>();
-		return pool.set(ent.id, std::forward<Component>(comp));
+		return pool.set(ent.id, std::forward<Args>(args)...);
 	}
 
-	template <typename Component>
-	void replaceComponent(const EntityView& ents, Component&& comp) noexcept
+	template <typename Component, typename... Args>
+	void replaceComponent(const EntityView& ents, Args&&... args) noexcept
 	{
 		auto& pool = getPool<Component>();
 		for (Entity* ent : ents) {
-			pool.emplace(ent->id, std::forward<Component>(comp));
+			pool.emplace(ent->id, std::forward<Args>(args)...);
 		}
 	}
 
@@ -203,7 +204,7 @@ public:
 	}
 
 	template <typename Component>
-	[[nodiscard]] Component& getComponent(Entity& ent) const noexcept
+	[[nodiscard]] Component& getComponent(Entity& ent) noexcept
 	{
 		APE_CHECK(hasComponent<Component>(ent),
 			"Cannot get component that an entity does not have."
@@ -214,7 +215,7 @@ public:
 	}
 
 	template <typename... Components>
-	[[nodiscard]] decltype(auto) getComponents(Entity& ent) const noexcept
+	[[nodiscard]] decltype(auto) getComponents(Entity& ent) noexcept
 	{
 		return std::tie(getComponent<Components>(ent)...);
 	}
@@ -266,6 +267,7 @@ private:
 	[[nodiscard]] static TypeID typeID() noexcept
 	{
 		static const TypeID id = s_type_counter++;
+		APE_TRACE("TypeID = {}", id);
 		return id;
 	}
 
@@ -277,13 +279,13 @@ private:
 	}
 
 	template <typename Component>
-	inline void maskEntity(Entity& ent) noexcept
+	void maskEntity(Entity& ent) noexcept
 	{
 		ent.component_mask |= typeBitmask<Component>();
 	}
 
 	template <typename Component>
-	inline void unmaskEntity(Entity& ent) noexcept
+	void unmaskEntity(Entity& ent) noexcept
 	{
 		ent.component_mask &= ~typeBitmask<Component>();
 	}

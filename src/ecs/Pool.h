@@ -145,7 +145,8 @@ public:
 		return emplace(id, std::forward<Args>(args)...);
 	}
 
-	T& set(EntityID id, T&& val) noexcept
+	template <typename... Args>
+	T& set(EntityID id, Args&&... args) noexcept
 	{
 		APE_CHECK(contains(id),
 			"Pool::set() Failed: set does not contain entity {}'s component.",
@@ -153,20 +154,7 @@ public:
 		);
 	
 		size_t dense_idx = getDenseIdx(id);
-		m_dense[dense_idx] = std::move(val);
-
-		return m_dense[dense_idx];
-	}
-
-	T& set(EntityID id, const T& val) noexcept
-	{
-		APE_CHECK(contains(id),
-			"Pool::set() Failed: set does not contain entity {}'s component.",
-	    		id
-		);
-	
-		size_t dense_idx = getDenseIdx(id);
-		m_dense[dense_idx] = val;
+		m_dense[dense_idx] = T(args...);
 
 		return m_dense[dense_idx];
 	}
