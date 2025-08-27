@@ -4,8 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 class Camera {
 private:
@@ -170,5 +169,5 @@ public:
 	}
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

@@ -8,8 +8,7 @@
 #include <utility>
 #include <vector>
 
-namespace APE {
-namespace ECS {
+namespace APE::ECS {
 
 /*
  * Aliases + Constants
@@ -192,6 +191,7 @@ public:
 		return m_entities.size();
 	}
 
+
 	/*
 	* Retrieving Entities/Components
 	*/
@@ -292,6 +292,5 @@ private:
 	}
 };
 
-};	// end of namespace ECS
-};	// end of namespace APE
+};	// end of namespace
 

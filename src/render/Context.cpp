@@ -5,8 +5,7 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 Context::Context(std::string_view title,
 		 int window_width,
@@ -60,5 +59,5 @@ Context::~Context()
 	SDL_DestroyGPUDevice(device);
 }
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

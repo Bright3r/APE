@@ -9,8 +9,7 @@
 #include <imgui_impl_sdlgpu3.h>
 #include <utility>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam) noexcept
 	: m_context(context)
@@ -613,5 +612,5 @@ void Renderer::createSampler() noexcept
 	);
 }
 
-}; // end of namespace Render
-}; // end of namespace APE
+}; // end of namespace
+

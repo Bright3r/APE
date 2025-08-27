@@ -4,8 +4,7 @@
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 struct Transform {
 	glm::vec3 position;
@@ -42,5 +41,5 @@ struct Transform {
 	}
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

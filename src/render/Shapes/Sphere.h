@@ -6,8 +6,7 @@
 #include <memory>
 #include <string_view>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 class Sphere : public Model {
 private:
@@ -42,5 +41,5 @@ public:
 	}
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

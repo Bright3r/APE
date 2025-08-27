@@ -12,8 +12,7 @@
 #include <vector>
 #include <memory>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 template <typename VertexType, typename IndexType>
 class Mesh {
@@ -135,6 +134,5 @@ public:
 	}
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
 

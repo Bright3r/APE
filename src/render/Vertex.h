@@ -7,8 +7,7 @@
 #include <glm/fwd.hpp>
 #include <vector>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 struct VertexFormat {
 	std::vector<SDL_GPUVertexAttribute> attributes;
@@ -110,5 +109,5 @@ struct TextureVertex {
 	}
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

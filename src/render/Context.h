@@ -9,8 +9,7 @@
 #include <string>
 #include <string_view>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 struct Context {
 	SDL_Window *window;
@@ -30,5 +29,5 @@ struct Context {
 };
 
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

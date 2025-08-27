@@ -6,8 +6,7 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlgpu3.h>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 struct ImGuiSession {
 
@@ -45,6 +44,5 @@ struct ImGuiSession {
 	}
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
 

@@ -4,8 +4,7 @@
 #include <thread>
 #include <type_traits>
 
-namespace APE {
-namespace Timing {
+namespace APE::Timing {
 
 // Type Aliases
 using seconds = std::chrono::duration<double>;
@@ -69,5 +68,5 @@ void waitFor(const std::chrono::duration<Rep, Period>& wait_time) noexcept
 	spinWait(duration_remaining);
 }
 
-};	// end of namespace Timing
-};	// end of namespace APE
+};	// end of namespace
+

@@ -6,8 +6,7 @@
 #include <memory>
 #include <string_view>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 class Cylinder : public Model {
 	static constexpr std::string_view CYLINDER_PATH =
@@ -51,5 +50,5 @@ public:
 	}
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

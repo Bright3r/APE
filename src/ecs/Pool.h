@@ -11,8 +11,7 @@
 #include <utility>
 #include <vector>
 
-namespace APE {
-namespace ECS {
+namespace APE::ECS {
 
 template <typename EntityID>
 struct PoolInterface {
@@ -352,6 +351,5 @@ public:
 	}
 };
 
-};	// end of namespace ECS
-};	// end of namespace APE
+};	// end of namespace
 

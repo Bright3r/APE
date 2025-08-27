@@ -19,8 +19,7 @@
 #include <memory>
 #include <vector>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 struct ModelViewProjUniform {
 	glm::mat4 model;
@@ -128,5 +127,5 @@ private:
 	}
 };
 
-}; // end of namespace Render
-}; // end of namespace APE
+}; // end of namespace
+

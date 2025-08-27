@@ -5,8 +5,7 @@
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_stdinc.h>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 Shader::Shader(const ShaderDescription& vert_desc, 
 	       const ShaderDescription& frag_desc,
@@ -150,5 +149,5 @@ VertexFormat Shader::getVertexFormat() const noexcept
 	return m_vert_desc.vertex_format;
 }
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

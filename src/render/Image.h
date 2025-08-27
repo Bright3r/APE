@@ -5,8 +5,7 @@
 #include <filesystem>
 #include <vector>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 class Image {
 private:
@@ -41,6 +40,5 @@ public:
 	void trace() const noexcept;
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
 

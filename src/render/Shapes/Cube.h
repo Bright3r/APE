@@ -6,8 +6,7 @@
 #include <memory>
 #include <string_view>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 class Cube : public Model {
 	static constexpr std::string_view CUBE_PATH = "res/models/textured-cube.obj";
@@ -59,5 +58,5 @@ public:
 	}
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

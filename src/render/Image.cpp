@@ -7,8 +7,7 @@
 #include "stb_image.h"
 
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 Image::Image() noexcept
 {
@@ -156,6 +155,4 @@ void Image::trace() const noexcept
 	);
 }
 
-};	// end of namespace Render
-};	// end of namespace APE
-
+};	// end of namespace

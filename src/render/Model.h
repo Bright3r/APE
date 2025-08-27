@@ -11,8 +11,7 @@
 #include <filesystem>
 #include <vector>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 class Model {
 public:
@@ -62,5 +61,5 @@ private:
 		const Transform& transform) const noexcept;
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

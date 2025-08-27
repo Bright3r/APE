@@ -8,8 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 struct ShaderDescription {
 	std::filesystem::path filepath;
@@ -53,5 +52,5 @@ public:
 	[[nodiscard]] VertexFormat getVertexFormat() const noexcept;
 };
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
+

@@ -4,10 +4,7 @@
 #include <functional>
 #include <memory>
 
-namespace APE {
-namespace Render {
-
-namespace SafeGPU {
+namespace APE::Render::SafeGPU {
 
 // Unique Resources wrapped with deleter for memory safety
 template <typename SDL_T>
@@ -40,7 +37,5 @@ using UniqueGPUGraphicsPipeline = UniqueGPUResource<SDL_GPUGraphicsPipeline>;
 using UniqueGPUTexture = UniqueGPUResource<SDL_GPUTexture>;
 using UniqueGPUSampler = UniqueGPUResource<SDL_GPUSampler>;
 
-};	// end of namespace SafeGPU
+};	// end of namespace
 
-};	// end of namespace Render
-};	// end of namespace APE

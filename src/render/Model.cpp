@@ -7,8 +7,7 @@
 #include <cstdlib>
 #include <vector>
 
-namespace APE {
-namespace Render {
+namespace APE::Render {
 
 Model::Model(std::filesystem::path model_path, const Transform& transform) noexcept
 	: m_meshes()
@@ -201,6 +200,5 @@ void Model::setTransform(const Transform& transform) noexcept
 }
 
 
-};	// end of namespace Render
-};	// end of namespace APE
+};	// end of namespace
 
