@@ -47,7 +47,7 @@ public:
 	struct EntityHandle {
 		EntityID id;
 	};
-	using EntityView = std::vector<EntityHandle>;
+	using View = std::vector<EntityHandle>;
 
 	/*
 	* Entity Creation
@@ -87,7 +87,7 @@ public:
 	}
 
 	template <typename Component, typename... Args>
-	void emplaceComponent(const EntityView& ents, Args&&... args) noexcept
+	void emplaceComponent(const View& ents, Args&&... args) noexcept
 	{
 		auto& pool = getPool<Component>();
 		for (auto ent : ents) {
@@ -104,7 +104,7 @@ public:
 	}
 
 	template <typename Component, typename... Args>
-	void replaceComponent(const EntityView& ents, Args&&... args) noexcept
+	void replaceComponent(const View& ents, Args&&... args) noexcept
 	{
 		auto& pool = getPool<Component>();
 		for (auto ent : ents) {
@@ -124,7 +124,7 @@ public:
 	}
 
 	template <typename Component, typename... Args>
-	void emplaceOrReplaceComponent(const EntityView& ents, Args... args) noexcept
+	void emplaceOrReplaceComponent(const View& ents, Args... args) noexcept
 	{
 		auto& pool = getPool<Component>();
 		for (auto& ent : ents) {
@@ -196,12 +196,12 @@ public:
 	* Retrieving Entities/Components
 	*/
 	template <typename... Components>
-	[[nodiscard]] EntityView entityView() const noexcept
+	[[nodiscard]] View view() noexcept
 	{
-		EntityView res;
+		View res;
 		for (auto [ id, ent ] : m_entities) {
-			if (hasAllComponents<Components...>(ent)) {
-				res.emplace_back(EntityHandle(ent.id));
+			if (hasAllComponents<Components...>(EntityHandle(id))) {
+				res.emplace_back(EntityHandle(id));
 			}
 		}
 		return res;
@@ -224,20 +224,6 @@ public:
 		return std::tie(getComponent<Components>(ent)...);
 	}
 
-	template <typename... Components>
-	[[nodiscard]] decltype(auto) view() const noexcept
-	{
-		std::vector<std::tuple<Components...>> res;
-		for (auto [ id, ent ] : m_entities) {
-			if (hasAllComponents<Components...>(ent)) {
-				res.emplace_back(
-					getComponents<Components...>(ent)
-				);
-			}
-		}
-		return res;
-	}
-
 
 	/*
 	* Potential Future Additions
@@ -252,8 +238,7 @@ public:
 	*/
 
 
-// private:
-public:
+private:
 	[[nodiscard]] static EntityID nextEntityID() noexcept
 	{
 		return s_entity_counter++;
