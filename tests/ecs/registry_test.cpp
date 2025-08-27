@@ -44,7 +44,7 @@ protected:
 	Registry r;
 
 	Registry r_filled;
-	std::vector<Entity> ents_filled;
+	std::vector<Registry::EntityHandle> ents_filled;
 
 	RegistryTest()
 	{
@@ -64,7 +64,7 @@ TEST_F(RegistryTest, Init)
 	ASSERT_EQ(r_filled.numEntities(), ents_filled.size()) 
 		<< "r_filled's initial entities should be stored";
 
-	for (const Entity& ent : ents_filled) {
+	for (const auto ent : ents_filled) {
 		ASSERT_TRUE(r_filled.isValid(ent)) 
 			<< "r_filled's initial entities should be valid.";
 	}
@@ -121,7 +121,7 @@ TEST_F(RegistryTest, BasicNumEntities)
 TEST_F(RegistryTest, BasicRemoveEntity)
 {
 	size_t len { 10 };
-	std::vector<Entity> ents;
+	std::vector<Registry::EntityHandle> ents;
 	for (int i = 0; i < len; ++i) {
 		ents.emplace_back(r.createEntity());
 	}
@@ -290,7 +290,7 @@ TEST_F(RegistryTest, BasicRemoveComponent)
 
 TEST_F(RegistryTest, BasicClearComponent)
 {
-	auto& ent = r.createEntity();
+	auto ent = r.createEntity();
 	r.emplaceComponent<PosComp>(ent, -1, -2, -3);
 
 	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
@@ -308,8 +308,8 @@ TEST_F(RegistryTest, BasicClearComponent)
 
 TEST_F(RegistryTest, ComponentLifecycle)
 {
-	auto& ent = r.createEntity();
-	auto& ent2 = r.createEntity();
+	auto ent = r.createEntity();
+	auto ent2 = r.createEntity();
 	r.emplaceOrReplaceComponent<PosComp>(ent, -1, -2, -3);
 
 	PosComp comp { 3, 5, 7 };
