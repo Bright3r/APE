@@ -147,9 +147,10 @@ public:
 	{
 		auto& pool = getPool<Component>();
 		for (auto [ ent_id, comp ] : pool) {
-			unmaskEntity<Component>(m_entities.get(ent_id));
+			auto& ent = m_entities.get(ent_id);
+			unmaskEntity<Component>(ent);
 		}
-		m_pools.erase(typeID<Component>());
+		pool.clear();
 	}
 
 	/*
@@ -248,7 +249,8 @@ public:
 	*/
 
 
-private:
+// private:
+public:
 	[[nodiscard]] static EntityID nextEntityID() noexcept
 	{
 		return s_entity_counter++;
@@ -267,7 +269,6 @@ private:
 	[[nodiscard]] static TypeID typeID() noexcept
 	{
 		static const TypeID id = s_type_counter++;
-		APE_TRACE("TypeID = {}", id);
 		return id;
 	}
 

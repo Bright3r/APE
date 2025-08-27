@@ -169,15 +169,15 @@ public:
 		return m_dense[getDenseIdx(id)];
 	}
 
-	[[nodiscard]] const T& get(EntityID id) const noexcept
-	{
-		APE_CHECK(contains(id),
-			"Pool::get() Failed: set does not contain entity {}'s component.",
-	    		id
-		);
-
-		return m_dense[getDenseIdx(id)];
-	}
+	// [[nodiscard]] const T& get(EntityID id) const noexcept
+	// {
+	// 	APE_CHECK(contains(id),
+	// 		"Pool::get() Failed: set does not contain entity {}'s component.",
+	//     		id
+	// 	);
+	//
+	// 	return m_dense[getDenseIdx(id)];
+	// }
 
 	void forEach(std::function<void(T&)> fn)
 	{
@@ -269,7 +269,7 @@ public:
 		// Postfix
 		iterator operator++(int) {
 			iterator tmp = *this;
-			--(*this);
+			++(*this);
 			return tmp;
 		}
 
@@ -317,7 +317,7 @@ public:
 		// Postfix
 		const_iterator operator++(int) {
 			const_iterator tmp = *this;
-			--(*this);
+			++(*this);
 			return tmp;
 		}
 

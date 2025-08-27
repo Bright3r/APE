@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
 #include "ecs/Registry.h"
+#include "util/Logger.h"
 
 #include <glm/glm.hpp>
 #include <string>
@@ -18,8 +19,8 @@ struct PosComp {
 	bool operator==(const PosComp& other) const
 	{
 		return x == other.x &&
-	  		y == other.y &&
-	  		z == other.z;
+			y == other.y &&
+			z == other.z;
 	}
 };
 
@@ -289,11 +290,16 @@ TEST_F(RegistryTest, BasicRemoveComponent)
 
 TEST_F(RegistryTest, BasicClearComponent)
 {
-	auto ent = r.createEntity();
+	auto& ent = r.createEntity();
 	r.emplaceComponent<PosComp>(ent, -1, -2, -3);
 
 	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
 		<< "Entity " << ent.id << " should have Position Component.";
+
+	APE_TRACE("Should clear entity {} of component #{}.",
+		ent.id,
+		Registry::typeID<PosComp>()
+	);
 
 	r.clearComponent<PosComp>();
 	EXPECT_FALSE(r.hasComponent<PosComp>(ent))
@@ -302,8 +308,8 @@ TEST_F(RegistryTest, BasicClearComponent)
 
 TEST_F(RegistryTest, ComponentLifecycle)
 {
-	auto ent = r.createEntity();
-	auto ent2 = r.createEntity();
+	auto& ent = r.createEntity();
+	auto& ent2 = r.createEntity();
 	r.emplaceOrReplaceComponent<PosComp>(ent, -1, -2, -3);
 
 	PosComp comp { 3, 5, 7 };
