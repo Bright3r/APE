@@ -11,7 +11,7 @@ struct Integrator {
 		float dt) const noexcept = 0;
 };
 
-struct Euler : public Integrator {
+struct EulerIntegrator : public Integrator {
 	State integrate(
 		const State& start,
 		glm::vec3 forces,

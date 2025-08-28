@@ -72,6 +72,7 @@ add_executable(
 	tests
 	tests/ecs/pool_test.cpp
 	tests/ecs/registry_test.cpp
+	tests/physics/integrator_test.cpp
 )
 
 target_link_libraries(
