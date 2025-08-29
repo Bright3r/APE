@@ -1,32 +1,26 @@
 #pragma once
 
-#include "physics/State.h"
+#include "physics/RigidBody.h"
 
 namespace APE::Physics {
 
 struct Integrator {
-	virtual State integrate(
-		const State& start,
-		glm::vec3 forces,
+	virtual void integrate(
+		RigidBody& rb,
 		float dt) const noexcept = 0;
 };
 
 struct EulerIntegrator : public Integrator {
-	State integrate(
-		const State& start,
-		glm::vec3 forces,
+	void integrate(
+		RigidBody& rb,
 		float dt) const noexcept
 	{
-		glm::vec3 accel = forces / start.mass;
-		glm::vec3 vel_next = start.vel + accel * dt;
+		glm::vec3 accel = rb.forces / rb.mass;
+		glm::vec3 next_vel_linear = rb.vel_linear + accel * dt;
 
-		glm::vec3 vel_avg = (start.vel + vel_next) / 2.f;
-		glm::vec3 pos_next = start.pos + vel_avg * dt;
-		return {
-			pos_next,
-			vel_next,
-			start.mass
-		};
+		glm::vec3 vel_avg = (rb.vel_linear + next_vel_linear) / 2.f;
+		rb.pos += vel_avg * dt;
+		rb.vel_linear = next_vel_linear;
 	}
 };
 

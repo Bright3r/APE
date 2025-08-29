@@ -9,7 +9,6 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include <memory>
-#include <utility>
 #include <vector>
 
 using namespace APE::Physics;
@@ -17,8 +16,7 @@ using namespace APE::Physics;
 constexpr float ERROR_BOUND = 0.75f;
 
 struct Scenario {
-	State start;
-	glm::vec3 forces;
+	RigidBody start;
 	std::vector<glm::vec3> expected_per_sec;
 };
 
@@ -40,10 +38,10 @@ protected:
 		Scenario freefall {
 			.start = {
 				.pos = { 0, 100, 0 },
-				.vel = { 0, 0, 0 },
+				.vel_linear = { 0, 0, 0 },
 				.mass = 1.f,
+				.forces = { 0, -9.8f, 0 },
 			},
-			.forces = { 0, -9.8f, 0 },
 			.expected_per_sec = { 
 				{ 0, 95.1, 0 },
 				{ 0, 80.4, 0 },
@@ -84,10 +82,10 @@ TEST_F(IntegratorTest, EulerFreefall)
 	auto fps_array = std::array { 1, 12, 30, 60, 144, 240, 500, 1000 };
 	for (int fps : fps_array) {
 		float dt = 1.f / fps;
-		State curr = freefall.start;
+		RigidBody curr = freefall.start;
 		for (auto& expected_pos : freefall.expected_per_sec) {
 			for (int i = 0; i < fps; ++i) {
-				curr = euler->integrate(curr, freefall.forces, dt);
+				euler->integrate(curr, dt);
 			}
 			EXPECT_TRUE(isNear(curr.pos, expected_pos, ERROR_BOUND * dt))
 				<< printError(curr.pos, expected_pos);
