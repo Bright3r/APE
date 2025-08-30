@@ -29,7 +29,57 @@ public:
 		, m_is_locked(false)
 	{ }
 
-	[[nodiscard]] bool getLocked() noexcept
+	[[nodiscard]] glm::vec3 getPosition() const noexcept
+	{
+		return m_position;
+	}
+
+	void setPosition(const glm::vec3& pos) noexcept
+	{
+		m_position = pos;
+	}
+
+	[[nodiscard]] float getPitch() const noexcept
+	{
+		return m_pitch;
+	}
+
+	void setPitch(float pitch) noexcept
+	{
+		m_pitch = pitch;
+	}
+
+	[[nodiscard]] float getYaw() const noexcept
+	{
+		return m_yaw;
+	}
+
+	void setYaw(float yaw) noexcept
+	{
+		m_yaw = yaw;
+	}
+
+	[[nodiscard]] float getFOV() const noexcept
+	{
+		return m_fov;
+	}
+
+	void setFOV(float fov) noexcept
+	{
+		m_fov = fov;
+	}
+
+	[[nodiscard]] float getSensitivity() const noexcept
+	{
+		return m_sensitivity;
+	}
+
+	void setSensitivity(float sensitivity) noexcept
+	{
+		m_sensitivity = sensitivity;
+	}
+
+	[[nodiscard]] bool getLocked() const noexcept
 	{
 		return m_is_locked;
 	}

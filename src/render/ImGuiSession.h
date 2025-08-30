@@ -9,7 +9,6 @@
 namespace APE::Render {
 
 struct ImGuiSession {
-
 	ImGuiSession(Context* context) noexcept
 	{
 		// Setup context
@@ -20,8 +19,8 @@ struct ImGuiSession {
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-		// Configure styles
-		ImGui::StyleColorsDark();
+		// Apply styles
+		configureStyles();
 
 		// Setup backend
 		ImGui_ImplSDL3_InitForSDLGPU(context->window);
@@ -41,6 +40,11 @@ struct ImGuiSession {
 		ImGui_ImplSDLGPU3_Shutdown();
 		ImGui_ImplSDL3_Shutdown();
 		ImGui::DestroyContext();
+	}
+
+	void configureStyles() noexcept
+	{
+		ImGui::StyleColorsDark();
 	}
 };
 

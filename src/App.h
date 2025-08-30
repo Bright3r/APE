@@ -1,5 +1,6 @@
 #pragma once
 
+#include "render/Camera.h"
 #include "render/Shader.h"
 #include "render/Model.h"
 
@@ -25,7 +26,6 @@ private:
 	// App Data
 	std::unique_ptr<APE::Render::Shader> shader;
 	std::vector<std::unique_ptr<APE::Render::Model>> scene;
-
-	bool b_show_demo = false;
+	std::shared_ptr<APE::Render::Camera> cam;
 };
 

@@ -1,11 +1,11 @@
 #include "App.h"
 #include "core/AppRunner.h"
+#include "render/Camera.h"
 #include "render/Model.h"
 #include "render/Shapes/Cube.h"
 #include "render/Shapes/Sphere.h"
 #include "render/Shapes/Cone.h"
 #include "render/Shapes/Cylinder.h"
-#include "util/Logger.h"
 
 #include <glm/fwd.hpp>
 #include <imgui.h>
@@ -20,7 +20,8 @@ void App::setup()
 	// 	std::make_unique<APE::Render::Model>("res/models/che/scene.gltf")
 	// );
 
-	for (size_t i = 0; i < 50; ++i) {
+	constexpr int NUM_SHAPE_SETS = 1;
+	for (size_t i = 0; i < NUM_SHAPE_SETS; ++i) {
 		scene.emplace_back(std::make_unique<APE::Render::Cube>());
 		scene.emplace_back(std::make_unique<APE::Render::Sphere>());
 		scene.emplace_back(std::make_unique<APE::Render::Cone>());
@@ -31,8 +32,17 @@ void App::setup()
 	// 	"res/models/ship/source/full_scene.fbx"
 	// );
 	
-	/* TODO - Fix 60 fps cap */
-	AppRunner::setFramerate(240);
+	AppRunner::setFramerate(144);
+
+	cam = std::make_shared<APE::Render::Camera>(
+		glm::vec3(-2.5f, 8.f, 8.f),
+		-45.f,
+		-90.f,
+		45.f,
+		0.3f
+	);
+	AppRunner::setCamera(cam);
+	AppRunner::setTabIn(true);
 }
 
 void App::update() 
@@ -41,7 +51,6 @@ void App::update()
 		std::to_string(1000.0 / AppRunner::getLastFrameTimeMS().count());
 	AppRunner::setWindowTitle(window_title);
 	
-	APE::Render::Camera* cam = AppRunner::getMainCamera();
 	// cam->print();
 	float speed = 10.f;
 	float dt = AppRunner::getLastFrameTimeSec().count();
@@ -119,7 +128,27 @@ void App::draw()
 
 void App::drawGUI() 
 {
-	ImGui::ShowDemoWindow(&b_show_demo);
+	ImGui::Text("Camera");
+
+	glm::vec3 pos { cam->getPosition() };
+	ImGui::SliderFloat3("pos", &pos[0], -100.f, 100.f, "%.2f");
+	cam->setPosition(pos);
+
+	float pitch { cam->getPitch() };
+	ImGui::SliderFloat("pitch", &pitch, -90.f, 90.f, "%.2f");
+	cam->setPitch(pitch);
+
+	float yaw { cam->getYaw() };
+	ImGui::SliderFloat("yaw", &yaw, -360.f, 360.f, "%.2f");
+	cam->setYaw(yaw);
+
+	float fov { cam->getFOV() };
+	ImGui::SliderFloat("fov", &fov, 10.f, 120.f, "%.1f");
+	cam->setFOV(fov);
+
+	float sensitivity { cam->getSensitivity() };
+	ImGui::SliderFloat("sensitivity", &sensitivity, 0.01f, 1.f, "%.2f");
+	cam->setSensitivity(sensitivity);
 }
 
 void App::onKeyDown(SDL_KeyboardEvent key) 
@@ -144,7 +173,6 @@ void App::onMouseUp(SDL_MouseButtonEvent mButton)
 
 void App::onMouseMove(SDL_MouseMotionEvent mEvent) 
 {
-	APE::Render::Camera* cam = AppRunner::getMainCamera();
 	cam->rotate(mEvent.xrel, mEvent.yrel);
 }
 

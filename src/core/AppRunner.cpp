@@ -31,15 +31,10 @@ void AppRunner::init(
 	);
 
 	// Initialize main cam
-	s_main_camera = std::make_unique<APE::Render::Camera>();
+	s_camera = std::make_shared<APE::Render::Camera>();
 
 	// Create Renderer
-	s_renderer = std::make_unique<APE::Render::Renderer>(
-		s_context, 
-		s_main_camera.get()
-	);
-
-	setTabIn(true);
+	s_renderer = std::make_unique<APE::Render::Renderer>(s_context);
 }
 
 void AppRunner::pollEvents() noexcept
@@ -144,14 +139,19 @@ void AppRunner::useShader(std::shared_ptr<APE::Render::Shader> shader) noexcept
 	s_renderer->useShader(shader.get());
 }
 
-APE::Render::Camera* AppRunner::getMainCamera() noexcept 
+APE::Render::Camera* AppRunner::getCamera() noexcept 
 {
-	return s_main_camera.get();
+	return s_camera.get();
+}
+
+void AppRunner::setCamera(std::shared_ptr<APE::Render::Camera> cam) noexcept
+{
+	s_camera = cam;
 }
 
 void AppRunner::draw(APE::Render::Model* model) noexcept
 {
-	s_renderer->draw(model);
+	s_renderer->draw(model, s_camera);
 }
 
 void AppRunner::resizeWindow(const SDL_Event& event) noexcept

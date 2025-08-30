@@ -11,9 +11,8 @@
 
 namespace APE::Render {
 
-Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam) noexcept
+Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	: m_context(context)
-	, m_cam(cam)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
 	, m_shader(nullptr)
@@ -25,10 +24,6 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam) noexcept
 	, m_is_drawing(false)
 	, m_imgui_session(nullptr)
 {
-	APE_CHECK((cam != nullptr),
-		"Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam) Failed: cam == nullptr"
-	);
-
 	// Construct default shader
 	m_shader = std::make_shared<Shader>(
 		default_vert_shader_desc,
@@ -39,11 +34,9 @@ Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam) noexcept
 	reset();
 }
 
-Renderer::Renderer(std::shared_ptr<Context> context,
-		   Camera *cam,
+Renderer::Renderer(std::shared_ptr<Context> context, 
 		   std::shared_ptr<Shader> shader) noexcept
 	: m_context(context)
-	, m_cam(cam)
 	, m_wireframe_mode(false) 
 	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
 	, m_shader(shader)
@@ -55,10 +48,6 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	, m_is_drawing(false)
 	, m_imgui_session(nullptr)
 {
-	APE_CHECK((cam != nullptr),
-		"Renderer::Renderer(std::shared_ptr<Context> context, Camera *cam, Shader* shader) Failed: cam == nullptr"
-	);
-
 	reset();
 }
 
@@ -278,28 +267,31 @@ void Renderer::beginDrawing() noexcept
 	SDL_BindGPUGraphicsPipeline(m_render_pass, render_pipeline);
 }
 
-void Renderer::draw(Model* model) noexcept
+void Renderer::draw(Model* model, std::weak_ptr<Camera> camera) noexcept
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
 		"Renderer::draw(Model& mesh) Failed: beginDrawing() not called"
 	);
 
+	// Check that camera is valid
+	APE_CHECK(!camera.expired(),
+		"Renderer::draw() Failed: camera does not exist."
+	);
+
+	auto cam = camera.lock();
 	for (Model::ModelMesh& mesh : model->getMeshes()) {
 		glm::mat4 model_mat = model->getTransform().getModelMatrix() *
 			mesh.getTransform().getModelMatrix();
 
-		draw(mesh, model_mat);
+		draw(mesh, model_mat, cam.get());
 	}
 }
 
-void Renderer::draw(Model::ModelMesh& mesh, const glm::mat4& model_mat) noexcept
+void Renderer::draw(Model::ModelMesh& mesh,
+		const glm::mat4& model_mat,
+		Camera* camera) noexcept
 {
-	// Check that we are already drawing
-	APE_CHECK(m_is_drawing,
-		"Renderer::draw(Mesh& mesh) Failed: beginDrawing() not called"
-	);
-
 	// Check if gpu vertex buffer was already created
 	if (!mesh.getVertexBuffer()) {
 		// Create GPU buffer with vertex data
@@ -373,8 +365,8 @@ void Renderer::draw(Model::ModelMesh& mesh, const glm::mat4& model_mat) noexcept
 	// Bind MVP matrix uniform
 	ModelViewProjUniform mvp_uniform { 
 		glm::transpose(model_mat),
-		glm::transpose(m_cam->getViewMatrix()), 
-		glm::transpose(m_cam->getProjectionMatrix(getAspectRatio()))
+		glm::transpose(camera->getViewMatrix()), 
+		glm::transpose(camera->getProjectionMatrix(getAspectRatio()))
 	};
 	SDL_PushGPUVertexUniformData(
 		m_cmd_buf,

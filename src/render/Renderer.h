@@ -51,7 +51,6 @@ private:
 	std::shared_ptr<Context> m_context;
 	bool m_wireframe_mode;
 	SDL_FColor m_clear_color;
-	Camera* m_cam;
 
 	std::shared_ptr<Shader> m_shader;
 	SafeGPU::UniqueGPUGraphicsPipeline m_fill_pipeline;
@@ -68,9 +67,8 @@ private:
 public:
 	// Special Member Functions
 	//
-	Renderer(std::shared_ptr<Context> context, Camera *cam) noexcept;
+	Renderer(std::shared_ptr<Context> context) noexcept;
 	Renderer(std::shared_ptr<Context> context, 
-		Camera *cam, 
 		std::shared_ptr<Shader> shader) noexcept;
 	~Renderer() noexcept = default;
 	Renderer(const Renderer& other) = delete;
@@ -92,13 +90,15 @@ public:
 
 	void beginDrawing() noexcept;
 
-	void draw(Model* model) noexcept;
-
-	void draw(Model::ModelMesh& mesh, const glm::mat4& model_mat) noexcept;
+	void draw(Model* model, std::weak_ptr<Camera> camera) noexcept;
 
 	void endDrawing() noexcept;
 
 private:
+	void draw(Model::ModelMesh& mesh,
+		const glm::mat4& model_mat, 
+		Camera* camera) noexcept;
+
 	void createDepthTexture() noexcept;
 
 	void createSampler() noexcept;

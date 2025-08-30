@@ -26,7 +26,7 @@ private:
 	static inline std::shared_ptr<APE::Render::Context> s_context;
 	static inline std::shared_ptr<APE::Render::Shader> s_shader;
 	static inline std::unique_ptr<APE::Render::Renderer> s_renderer;
-	static inline std::unique_ptr<APE::Render::Camera> s_main_camera;
+	static inline std::shared_ptr<APE::Render::Camera> s_camera;
 
 	// Timing
 	//
@@ -60,9 +60,11 @@ public:
 
 	static void useShader(std::shared_ptr<APE::Render::Shader> shader) noexcept;
 
-	[[nodiscard]] static APE::Render::Camera* getMainCamera() noexcept;
+	[[nodiscard]] static APE::Render::Camera* getCamera() noexcept;
 
-	static void draw(APE::Render::Model* mesh) noexcept;
+	static void setCamera(std::shared_ptr<APE::Render::Camera> cam) noexcept;
+
+	static void draw(APE::Render::Model* model) noexcept;
 
 	static void resizeWindow(const SDL_Event& event) noexcept;
 
