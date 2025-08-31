@@ -90,15 +90,14 @@ public:
 
 	void beginDrawing() noexcept;
 
-	void draw(Model* model, std::weak_ptr<Camera> camera) noexcept;
+	void draw(MeshComponent& mesh,
+		MaterialComponent& material,
+		std::weak_ptr<Camera> camera,
+		const glm::mat4& model_matrix) noexcept;
 
 	void endDrawing() noexcept;
 
 private:
-	void draw(Model::ModelMesh& mesh,
-		const glm::mat4& model_mat, 
-		Camera* camera) noexcept;
-
 	void createDepthTexture() noexcept;
 
 	void createSampler() noexcept;

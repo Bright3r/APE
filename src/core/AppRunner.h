@@ -6,7 +6,6 @@
 #include "render/Context.h"
 #include "render/Renderer.h"
 #include "render/Shader.h"
-#include "render/Model.h"
 #include "util/Timing.h"
 
 #include <SDL3/SDL_gpu.h>
@@ -71,7 +70,9 @@ public:
 
 	static void setCamera(std::shared_ptr<APE::Render::Camera> cam) noexcept;
 
-	static void draw(APE::Render::Model* model) noexcept;
+	static glm::mat4 getModelMatrix(APE::ECS::EntityHandle ent) noexcept;
+
+	static void draw() noexcept;
 
 	static void resizeWindow(const SDL_Event& event) noexcept;
 

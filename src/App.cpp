@@ -11,28 +11,45 @@
 #include <imgui.h>
 
 #include <cmath>
+#include <vector>
 
 void App::setup() 
 {
 	AppRunner::setWindowTitle("APE Engine");;
 
-	// scene.emplace_back(
-	// 	std::make_unique<APE::Render::Model>("res/models/che/scene.gltf")
-	// );
+	auto& world = AppRunner::getWorld();
 
-	constexpr int NUM_SHAPE_SETS = 1;
-	for (size_t i = 0; i < NUM_SHAPE_SETS; ++i) {
-		scene.emplace_back(std::make_unique<APE::Render::Cube>());
-		scene.emplace_back(std::make_unique<APE::Render::Sphere>());
-		scene.emplace_back(std::make_unique<APE::Render::Cone>());
-		scene.emplace_back(std::make_unique<APE::Render::Cylinder>());
-	}
+	// auto car = std::make_unique<APE::Render::Model>("res/models/che/scene.gltf");
+	// world.addModel(car.get());
 
-	// model = std::make_unique<APE::Render::Model>(
+	// auto ship = std::make_unique<APE::Render::Model>(
 	// 	"res/models/ship/source/full_scene.fbx"
 	// );
-	
-	AppRunner::setFramerate(144);
+	// world.addModel(ship.get());
+
+	auto cube = std::make_unique<APE::Render::Cube>();
+	auto sphere = std::make_unique<APE::Render::Sphere>();
+	auto cone = std::make_unique<APE::Render::Cone>();
+	auto cylinder = std::make_unique<APE::Render::Cylinder>();
+
+	constexpr int NUM_SHAPE_SETS = 50;
+	std::vector<APE::Render::Model*> models;
+	for (size_t i = 0; i < NUM_SHAPE_SETS; ++i) {
+		models.push_back(cube.get());
+		models.push_back(sphere.get());
+		models.push_back(cone.get());
+		models.push_back(cylinder.get());
+	}
+
+	int sqrt = std::sqrt(models.size());
+	for (int i = 0; i < models.size(); ++i) {
+		APE::Render::Model* model = models[i];
+		model->getTransform().position.x = ((i % sqrt) - (sqrt / 2.f)) * 5;
+		model->getTransform().position.z = ((i / sqrt) - (sqrt / 2.f)) * 5;
+
+		world.addModel(models[i]);
+	}
+
 
 	cam = std::make_shared<APE::Render::Camera>(
 		glm::vec3(-2.5f, 8.f, 8.f),
@@ -43,6 +60,8 @@ void App::setup()
 	);
 	AppRunner::setCamera(cam);
 	AppRunner::setTabIn(true);
+
+	AppRunner::setFramerate(144);
 }
 
 void App::update() 
@@ -86,44 +105,11 @@ void App::update()
 	if (AppRunner::keyDown(SDLK_S)) {
 		cam->moveBackward(speed, dt);
 	}
-
-	// // Model Movement
-	// if (AppRunner::keyDown(SDLK_M)) {
-	// 	model->getTransform().position.x += 1;
-	// }
-	// if (AppRunner::keyDown(SDLK_N)) {
-	// 	model->getTransform().position.x -= 1;
-	// }
-	// if (AppRunner::keyDown(SDLK_X)) {
-	// 	model->getTransform().scale.x += 1;
-	// }
-	// if (AppRunner::keyDown(SDLK_Y)) {
-	// 	model->getTransform().scale.y += 1;
-	// }
-	// if (AppRunner::keyDown(SDLK_Z)) {
-	// 	model->getTransform().scale.z += 1;
-	// }
-	// if (AppRunner::keyDown(SDLK_R)) {
-	// 	model->getTransform().rotation *= 
-	// 		glm::angleAxis(
-	// 			0.1f, 
-	// 			glm::normalize(glm::vec3(1, 1, 1))
-	// 		);
-	// }
 }
 
 void App::draw() 
 {
-	int sz = scene.size();
-	int sqrt = std::sqrt(sz);
-	for (int i = 0; i < sz; ++i) {
-		std::unique_ptr<APE::Render::Model>& model = scene[i];
-		model->getTransform().position.x = ((i % sqrt) - (sqrt / 2)) * 5;
-		model->getTransform().position.z = ((i / sqrt) - (sqrt / 2)) * 5;
-		// model->getTransform().position.x = i * 5;
-		// model->getTransform().position.z = i * 5;
-		AppRunner::draw(model.get());
-	}
+
 }
 
 void App::drawGUI() 

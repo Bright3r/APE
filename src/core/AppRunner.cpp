@@ -1,5 +1,7 @@
 #include "core/AppRunner.h"
+#include "components/Object.h"
 #include "render/Shader.h"
+#include "util/Logger.h"
 
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
@@ -8,6 +10,7 @@
 #include <imgui_impl_sdl3.h>
 
 #include <chrono>
+#include <vector>
 
 void AppRunner::init(
 	std::string_view window_title,
@@ -80,6 +83,7 @@ void AppRunner::stepGameloop() noexcept
 
 	// Draw To Screen
 	s_renderer->beginDrawing();
+	draw();
 	s_app->draw();
 	s_app->drawGUI();
 	s_renderer->endDrawing();
@@ -154,9 +158,46 @@ void AppRunner::setCamera(std::shared_ptr<APE::Render::Camera> cam) noexcept
 	s_camera = cam;
 }
 
-void AppRunner::draw(APE::Render::Model* model) noexcept
+glm::mat4 AppRunner::getModelMatrix(APE::ECS::EntityHandle ent) noexcept
 {
-	s_renderer->draw(model, s_camera);
+	std::vector<glm::mat4> stack;
+	while (s_world.registry.hasAllComponents<
+		APE::TransformComponent, APE::HierarchyComponent>(ent)) 
+	{
+		auto [transform, hierarchy] = s_world.registry.getComponents<
+			APE::TransformComponent, APE::HierarchyComponent>(ent);
+
+		stack.emplace_back(transform.getModelMatrix());
+		ent = hierarchy.parent;
+	}
+
+	glm::mat4 model_mat(1.f);
+	while (!stack.empty()) {
+		model_mat *= stack.back();
+		stack.pop_back();
+	}
+	return model_mat;
+}
+
+void AppRunner::draw() noexcept
+{
+	auto view = s_world.registry.view<
+		APE::Render::MeshComponent,
+		APE::Render::MaterialComponent,
+		APE::TransformComponent,
+		APE::HierarchyComponent>();
+
+	for (auto& ent : view) {
+		auto [mesh, material, transform, hierarchy] = 
+			s_world.registry.getComponents<
+				APE::Render::MeshComponent,
+				APE::Render::MaterialComponent,
+				APE::TransformComponent,
+				APE::HierarchyComponent>(ent);
+
+		glm::mat4 model_mat = getModelMatrix(ent);
+		s_renderer->draw(mesh, material, s_camera, model_mat);
+	}
 }
 
 void AppRunner::resizeWindow(const SDL_Event& event) noexcept

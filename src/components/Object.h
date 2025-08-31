@@ -12,6 +12,12 @@ namespace APE {
 
 struct HierarchyComponent {
 	ECS::EntityHandle parent;
+
+	HierarchyComponent(ECS::EntityHandle parent) noexcept
+		: parent(parent)
+	{
+
+	}
 };
 
 struct TagComponent {

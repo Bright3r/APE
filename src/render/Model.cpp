@@ -185,7 +185,7 @@ Model::ModelMesh Model::processAiMesh(
 		}
 	}
 
-	return ModelMesh(vertices, indices, texture, transform);
+	return ModelMesh(vertices, indices, transform, texture);
 }
 
 std::vector<Model::ModelMesh>& Model::getMeshes() noexcept

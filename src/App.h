@@ -2,7 +2,6 @@
 
 #include "render/Camera.h"
 #include "render/Shader.h"
-#include "render/Model.h"
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_gpu.h>
@@ -25,7 +24,6 @@ public:
 private:
 	// App Data
 	std::unique_ptr<APE::Render::Shader> shader;
-	std::vector<std::unique_ptr<APE::Render::Model>> scene;
 	std::shared_ptr<APE::Render::Camera> cam;
 };
 

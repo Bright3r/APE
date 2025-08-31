@@ -46,6 +46,11 @@ private:
 	std::unordered_map<TypeID, std::unique_ptr<IPool>> m_pools;
 
 public:
+	Registry() = default;
+
+	Registry(const Registry& other) = delete;
+	Registry& operator=(const Registry& other) = delete;
+
 	/*
 	* Entity Creation
 	*/
@@ -187,6 +192,11 @@ public:
 	[[nodiscard]] size_t numEntities() const noexcept
 	{
 		return m_entities.size();
+	}
+
+	[[nodiscard]] EntityHandle tombstone() const noexcept
+	{
+		return { m_entities.tombstone() };
 	}
 
 

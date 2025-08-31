@@ -267,7 +267,10 @@ void Renderer::beginDrawing() noexcept
 	SDL_BindGPUGraphicsPipeline(m_render_pass, render_pipeline);
 }
 
-void Renderer::draw(Model* model, std::weak_ptr<Camera> camera) noexcept
+void Renderer::draw(MeshComponent& mesh,
+		MaterialComponent& material,
+		std::weak_ptr<Camera> camera,
+		const glm::mat4& model_matrix) noexcept
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
@@ -278,34 +281,22 @@ void Renderer::draw(Model* model, std::weak_ptr<Camera> camera) noexcept
 	APE_CHECK(!camera.expired(),
 		"Renderer::draw() Failed: camera does not exist."
 	);
-
 	auto cam = camera.lock();
-	for (Model::ModelMesh& mesh : model->getMeshes()) {
-		glm::mat4 model_mat = model->getTransform().getModelMatrix() *
-			mesh.getTransform().getModelMatrix();
 
-		draw(mesh, model_mat, cam.get());
-	}
-}
-
-void Renderer::draw(Model::ModelMesh& mesh,
-		const glm::mat4& model_mat,
-		Camera* camera) noexcept
-{
 	// Check if gpu vertex buffer was already created
-	if (!mesh.getVertexBuffer()) {
+	if (!mesh.vertex_buffer) {
 		// Create GPU buffer with vertex data
 		SafeGPU::UniqueGPUBuffer vertex_buffer = uploadBuffer(
-			vectorToRawBytes(mesh.getVertices()),
+			vectorToRawBytes(mesh.vertices),
 			SDL_GPU_BUFFERUSAGE_VERTEX
 		);
 
-		mesh.setVertexBuffer(std::move(vertex_buffer));
+		mesh.vertex_buffer = std::move(vertex_buffer);
 	}
 
 	// Bind vertex buffer
 	SDL_GPUBufferBinding vertex_buffer_binding = {
-		.buffer = mesh.getVertexBuffer(),
+		.buffer = mesh.vertex_buffer.get(),
 		.offset = 0,
 	};
 	SDL_BindGPUVertexBuffers(
@@ -317,19 +308,19 @@ void Renderer::draw(Model::ModelMesh& mesh,
 
 
 	// Check if gpu index buffer was already created
-	if (!mesh.getIndexBuffer()) {
+	if (!mesh.index_buffer) {
 		// Create GPU buffer with index data
 		SafeGPU::UniqueGPUBuffer index_buffer = uploadBuffer(
-			vectorToRawBytes(mesh.getIndices()),
+			vectorToRawBytes(mesh.indices),
 			SDL_GPU_BUFFERUSAGE_INDEX
 		);
 
-		mesh.setIndexBuffer(std::move(index_buffer));
+		mesh.index_buffer = std::move(index_buffer);
 	}
 
 	// Bind index buffer
 	SDL_GPUBufferBinding index_buffer_binding = {
-		.buffer = mesh.getIndexBuffer(),
+		.buffer = mesh.index_buffer.get(),
 		.offset = 0,
 	};
 	SDL_BindGPUIndexBuffer(
@@ -340,18 +331,17 @@ void Renderer::draw(Model::ModelMesh& mesh,
 
 
 	// Check if mesh texture was uploaded yet
-	if (!mesh.getTextureBuffer()) {
+	if (!material.texture_buffer) {
 		// Create GPU Texture
 		SafeGPU::UniqueGPUTexture gpu_tex = createTexture(
-			mesh.getTexture().get()
+			material.texture.get()
 		);
-		mesh.setTextureBuffer(std::move(gpu_tex));
+		material.texture_buffer = std::move(gpu_tex);
 	}
 
 	// Bind texture sampler
-	// mesh.getTexture()->trace();
 	std::vector<SDL_GPUTextureSamplerBinding> sampler_bindings = {{
-		.texture = mesh.getTextureBuffer(),
+		.texture = material.texture_buffer.get(),
 		.sampler = m_sampler.get(),
 	}};
 	SDL_BindGPUFragmentSamplers(
@@ -364,9 +354,9 @@ void Renderer::draw(Model::ModelMesh& mesh,
 
 	// Bind MVP matrix uniform
 	ModelViewProjUniform mvp_uniform { 
-		glm::transpose(model_mat),
-		glm::transpose(camera->getViewMatrix()), 
-		glm::transpose(camera->getProjectionMatrix(getAspectRatio()))
+		glm::transpose(model_matrix),
+		glm::transpose(cam->getViewMatrix()), 
+		glm::transpose(cam->getProjectionMatrix(getAspectRatio()))
 	};
 	SDL_PushGPUVertexUniformData(
 		m_cmd_buf,
@@ -379,7 +369,7 @@ void Renderer::draw(Model::ModelMesh& mesh,
 	// Draw mesh
 	SDL_DrawGPUIndexedPrimitives(
 		m_render_pass, 
-		mesh.getIndices().size(), 
+		mesh.indices.size(), 
 		1, 0, 0, 0
 	);
 }
