@@ -1,6 +1,8 @@
 #include "render/Model.h"
 #include "util/Logger.h"
+
 #include <SDL3/SDL_stdinc.h>
+
 #include <assimp/material.h>
 #include <assimp/postprocess.h>
 #include <cstddef>
@@ -9,7 +11,8 @@
 
 namespace APE::Render {
 
-Model::Model(std::filesystem::path model_path, const Transform& transform) noexcept
+Model::Model(std::filesystem::path model_path,
+	     const TransformComponent& transform) noexcept
 	: m_meshes()
 	, m_transform(transform)
 {
@@ -43,14 +46,14 @@ void Model::loadModel(std::filesystem::path model_path) noexcept
 	processNode(scene->mRootNode, scene, model_path);
 }
 
-Transform Model::convertAiTransform(const aiMatrix4x4 ai_transform) noexcept
+TransformComponent Model::convertAiTransform(const aiMatrix4x4 ai_transform) noexcept
 {
 	aiVector3f ai_pos;
 	aiVector3f ai_scale;
 	aiQuaternion ai_rot;
 	ai_transform.Decompose(ai_scale, ai_rot, ai_pos);
 
-	return Transform(
+	return TransformComponent(
 		glm::vec3(ai_pos.x, ai_pos.y, ai_pos.z),
 		glm::vec3(ai_scale.x, ai_scale.y, ai_scale.z),
 		glm::quat(ai_rot.w, ai_rot.x, ai_rot.y, ai_rot.z)
@@ -106,7 +109,8 @@ void Model::processNode(
 	const aiScene* scene,
 	std::filesystem::path model_path) noexcept
 {
-	Transform local_transform = convertAiTransform(node->mTransformation);
+	TransformComponent local_transform = 
+		convertAiTransform(node->mTransformation);
 
 	// Convert nodes aiMeshes into our own Meshes
 	for (size_t i = 0; i < node->mNumMeshes; ++i) {
@@ -135,7 +139,7 @@ void Model::processNode(
 Model::ModelMesh Model::processAiMesh(
 	const aiMesh* ai_mesh,
 	std::shared_ptr<Image> texture,
-	const Transform& transform) const noexcept
+	const TransformComponent& transform) const noexcept
 {
 	std::vector<VertexType> vertices;
 	vertices.reserve(ai_mesh->mNumVertices);
@@ -189,12 +193,12 @@ std::vector<Model::ModelMesh>& Model::getMeshes() noexcept
 	return m_meshes;
 }
 
-Transform& Model::getTransform() noexcept
+TransformComponent& Model::getTransform() noexcept
 {
 	return m_transform;
 }
 
-void Model::setTransform(const Transform& transform) noexcept
+void Model::setTransform(const TransformComponent& transform) noexcept
 {
 	m_transform = transform;
 }

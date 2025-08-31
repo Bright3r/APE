@@ -1,17 +1,29 @@
 #pragma once
 
+#include "ecs/Registry.h"
+
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-namespace APE::Render {
+#include <string>
 
-struct Transform {
+namespace APE {
+
+struct HierarchyComponent {
+	ECS::EntityHandle parent;
+};
+
+struct TagComponent {
+	std::string name;
+};
+
+struct TransformComponent {
 	glm::vec3 position;
 	glm::vec3 scale;
 	glm::quat rotation;
 
-	Transform(glm::vec3 position = { 0, 0, 0 },
+	TransformComponent(glm::vec3 position = { 0, 0, 0 },
 		glm::vec3 scale = { 1, 1, 1 },
 	   	glm::quat rotation = { 1, 0, 0, 0 } ) noexcept
 		: position(position)
@@ -30,14 +42,15 @@ struct Transform {
 		return T * R * S;
 	}
 
-	[[nodiscard]] Transform operator*(const Transform& other) const noexcept
+	[[nodiscard]] TransformComponent operator*(
+		const TransformComponent& other) const noexcept
 	{
 		glm::vec3 scale = this->scale * other.scale;
 		glm::quat rot = this->rotation * other.rotation;
 		glm::vec3 pos = this->position + 
 			(this->rotation * this->scale * other.position);
 
-		return Transform(pos, scale, rot);
+		return TransformComponent(pos, scale, rot);
 	}
 };
 

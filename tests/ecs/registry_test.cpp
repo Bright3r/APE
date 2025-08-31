@@ -56,7 +56,7 @@ protected:
 	Registry r;
 
 	Registry r_filled;
-	std::vector<Registry::EntityHandle> ents_filled;
+	std::vector<EntityHandle> ents_filled;
 
 	RegistryTest()
 	{
@@ -137,7 +137,7 @@ TEST_F(RegistryTest, BasicNumEntities)
 TEST_F(RegistryTest, BasicRemoveEntity)
 {
 	size_t len { 10 };
-	std::vector<Registry::EntityHandle> ents;
+	std::vector<EntityHandle> ents;
 	for (int i = 0; i < len; ++i) {
 		ents.emplace_back(r.createEntity());
 	}

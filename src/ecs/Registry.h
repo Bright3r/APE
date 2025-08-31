@@ -24,7 +24,10 @@ using IPool = PoolInterface<EntityID>;
 template <typename Component>
 using CPool = Pool<EntityID, Component>;
 
-
+struct EntityHandle {
+	EntityID id;
+};
+using View = std::vector<EntityHandle>;
 
 /*
  * Registry
@@ -43,11 +46,6 @@ private:
 	std::unordered_map<TypeID, std::unique_ptr<IPool>> m_pools;
 
 public:
-	struct EntityHandle {
-		EntityID id;
-	};
-	using View = std::vector<EntityHandle>;
-
 	/*
 	* Entity Creation
 	*/

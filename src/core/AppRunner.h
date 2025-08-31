@@ -1,6 +1,7 @@
 #pragma once
 
 #include "App.h"
+#include "core/Scene.h"
 #include "render/Camera.h"
 #include "render/Context.h"
 #include "render/Renderer.h"
@@ -20,6 +21,10 @@ private:
 	//
 	static inline std::unique_ptr<App> s_app;
 	static inline std::unordered_map<SDL_Keycode, bool> s_key_state;
+
+	// Scene Hierarchy
+	//
+	static inline APE::Scene s_world;
 
 	// Rendering
 	//
@@ -51,6 +56,8 @@ public:
 	static bool keyDown(SDL_Keycode key) noexcept;
 
 	static void setTabIn(bool is_tabbed_in) noexcept;
+
+	static APE::Scene& getWorld() noexcept;
 
 
 	// Graphics Functions

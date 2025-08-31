@@ -126,6 +126,11 @@ void AppRunner::setTabIn(bool is_tabbed_in) noexcept
 	SDL_SetWindowRelativeMouseMode(s_context->window, is_tabbed_in);
 }
 
+APE::Scene& AppRunner::getWorld() noexcept
+{
+	return s_world;
+}
+
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
 	const APE::Render::ShaderDescription& vert_shader_desc, 
 	const APE::Render::ShaderDescription& frag_shader_desc) noexcept 

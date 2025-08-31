@@ -1,9 +1,8 @@
 #pragma once
 
+#include "components/Object.h"
 #include "render/SafeGPU.h"
 #include "render/Image.h"
-#include "render/Transform.h"
-
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
 #include <glm/glm.hpp>
@@ -22,7 +21,7 @@ private:
 	std::vector<VertexType> m_vertices;
 	std::vector<IndexType> m_indices;
 	std::shared_ptr<Image> m_texture;
-	Transform m_transform;
+	TransformComponent m_transform;
 
 	// Rendering data
 	SafeGPU::UniqueGPUBuffer m_vertex_buffer;
@@ -67,7 +66,7 @@ public:
 	Mesh(const std::vector<VertexType>& vertices, 
 		const std::vector<IndexType>& indices,
       		const std::shared_ptr<Image>& texture,
-      		const Transform& transform) noexcept
+      		const TransformComponent& transform) noexcept
 		: m_vertices(vertices)
 		, m_indices(indices)
 		, m_texture(texture)
@@ -105,7 +104,7 @@ public:
 		return m_texture;
 	}
 
-	[[nodiscard]] Transform& getTransform() noexcept
+	[[nodiscard]] TransformComponent& getTransform() noexcept
 	{
 		return m_transform;
 	}
