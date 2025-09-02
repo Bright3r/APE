@@ -54,6 +54,114 @@ public:
 	Registry(Registry&& other) = default;
 	Registry& operator=(Registry&& other) = default;
 
+
+	template <typename... Components>
+	struct View2 {
+		Registry* m_registry;
+		std::tuple<IPool*> m_pools;
+		const std::vector<EntityID>& m_driver_ents;
+		size_t m_size;
+
+		View2(Registry* registry, std::tuple<IPool*> pools)
+			: m_registry(registry)
+			, m_pools(pools)
+			, m_driver_ents(std::get<0>(pools)->entities())
+			, m_size(m_driver_ents.size())
+		{
+
+		}
+
+		[[nodiscard]] bool isViewMember(EntityID id) const noexcept
+		{
+			return m_registry->hasAllComponents<Components...>({ id });
+		}
+
+		class Iterator {
+			using Entry = std::tuple<EntityHandle, Components&...>;
+
+			View2* m_view;
+			size_t m_idx;
+
+		public:
+			using value_type = Entry;
+			using reference = Entry;
+			using pointer = void;
+			using iterator_category = std::forward_iterator_tag;
+
+			Iterator(View2* view, size_t idx)
+				: m_view(view)
+				, m_idx(idx)
+			{
+
+			}
+
+			Entry operator*() const
+			{
+				EntityID id = m_view->m_driver_ents[m_idx];
+				EntityHandle ent { id };
+
+				return std::tuple_cat(
+					std::make_tuple(ent),
+					std::apply([&](auto*... pools) {
+						return std::make_tuple(
+							static_cast<CPool<Components>*>(pools)->get(id)...
+						);
+					}, m_view->m_pools)
+				);
+			}
+
+			// Prefix
+			Iterator& operator++()
+			{
+				if (++m_idx >= m_view->m_size) {
+					return *this;
+				}
+
+				EntityID id { m_view->m_driver_ents[m_idx] };
+				while (m_idx < m_view->m_size && !m_view->isViewMember(m_view->m_driver_ents[m_idx])) {
+					++m_idx;
+				}
+				return *this;
+			}
+
+			// Postfix
+			Iterator operator++(int)
+			{
+				Iterator tmp = *this;
+				++(*this);
+				return tmp;
+			}
+
+			bool operator==(const Iterator& other) const
+			{
+				return m_idx == other.m_idx && m_view == other.m_view;
+			}
+
+			bool operator!=(const Iterator& other) const
+			{
+				return !(*this == other);
+			}
+		};
+
+		Iterator begin() noexcept
+		{
+			Iterator first(this, 0);
+			if (m_size == 0) return first;
+
+			EntityID id = m_driver_ents[0];
+			if (!m_registry->hasAllComponents<Components...>(id)) {
+				++first;
+			}
+			return first;
+		}
+
+		Iterator end() noexcept
+		{
+			return Iterator(this, m_size);
+		}
+	};
+
+
 	/*
 	* Entity Creation
 	*/
@@ -154,7 +262,7 @@ public:
 	void clearComponent() noexcept
 	{
 		auto& pool = getPool<Component>();
-		for (auto [ ent_id, comp ] : pool) {
+		for (auto ent_id : pool.entities()) {
 			unmaskEntity<Component>(EntityHandle(ent_id));
 		}
 		pool.clear();
@@ -198,7 +306,7 @@ public:
 	}
 
 	[[nodiscard]] EntityHandle tombstone() const noexcept
-	{
+{
 		return { m_entities.tombstone() };
 	}
 

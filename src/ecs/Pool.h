@@ -17,6 +17,7 @@ struct PoolInterface {
 	virtual ~PoolInterface() = default;
 
 	virtual bool remove(EntityID id) noexcept = 0;
+	virtual const std::vector<EntityID>& entities() const noexcept = 0;
 };
 
 template <typename EntityID, typename T>
@@ -55,9 +56,9 @@ public:
 		return m_dense.size();
 	}
 
-	[[nodiscard]] EntityID* entities() const noexcept
+	[[nodiscard]] const std::vector<EntityID>& entities() const noexcept override
 	{
-		return m_denseToID.data();
+		return m_denseToID;
 	}
 
 	[[nodiscard]] bool empty() const noexcept
@@ -78,7 +79,7 @@ public:
 			(m_sparse.find(id) != m_sparse.end());
 	}
 
-	[[nodiscard]] bool remove(EntityID id) noexcept
+	[[nodiscard]] bool remove(EntityID id) noexcept override
 	{
 		if (empty()) {
 			APE_ERROR(
@@ -247,7 +248,7 @@ public:
 		using value_type = Entry;
 		using reference = Entry;
 		using pointer = void;
-		using Iterator_category = std::forward_iterator_tag;
+		using iterator_category = std::forward_iterator_tag;
 
 		Iterator(Pool* set, size_t idx) noexcept
 			: m_set(set)
@@ -300,7 +301,7 @@ public:
 		using value_type = Entry;
 		using reference = Entry;
 		using pointer = void;
-		using Iterator_category = std::forward_iterator_tag;
+		using iterator_category = std::forward_iterator_tag;
 
 		ConstIterator(const Pool* set, size_t idx) noexcept
 			: m_set(set)
