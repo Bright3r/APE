@@ -51,6 +51,9 @@ public:
 	Registry(const Registry& other) = delete;
 	Registry& operator=(const Registry& other) = delete;
 
+	Registry(Registry&& other) = default;
+	Registry& operator=(Registry&& other) = default;
+
 	/*
 	* Entity Creation
 	*/

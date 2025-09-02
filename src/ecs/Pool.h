@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <functional>
-#include <iterator>
 #include <limits>
 #include <type_traits>
 #include <unordered_map>
@@ -54,6 +53,11 @@ public:
 	[[nodiscard]] size_t size() const noexcept
 	{
 		return m_dense.size();
+	}
+
+	[[nodiscard]] EntityID* entities() const noexcept
+	{
+		return m_denseToID.data();
 	}
 
 	[[nodiscard]] bool empty() const noexcept
@@ -124,7 +128,7 @@ public:
 	{
 		APE_CHECK(!contains(id),
 			"Pool::emplace() Failed: set already contains entity {}'s component. Use set instead to replace component data.",
-	    		id
+			id
 		);
 	
 		m_dense.emplace_back(std::forward<Args>(args)...);
@@ -149,7 +153,7 @@ public:
 	{
 		APE_CHECK(contains(id),
 			"Pool::set() Failed: set does not contain entity {}'s component.",
-	    		id
+			id
 		);
 	
 		size_t dense_idx = getDenseIdx(id);
@@ -162,21 +166,21 @@ public:
 	{
 		APE_CHECK(contains(id),
 			"Pool::get() Failed: set does not contain entity {}'s component.",
-	    		id
+			id
 		);
 
 		return m_dense[getDenseIdx(id)];
 	}
 
-	// [[nodiscard]] const T& get(EntityID id) const noexcept
-	// {
-	// 	APE_CHECK(contains(id),
-	// 		"Pool::get() Failed: set does not contain entity {}'s component.",
-	//     		id
-	// 	);
-	//
-	// 	return m_dense[getDenseIdx(id)];
-	// }
+	[[nodiscard]] const T& get(EntityID id) const noexcept
+	{
+		APE_CHECK(contains(id),
+			"Pool::get() Failed: set does not contain entity {}'s component.",
+			id
+		);
+
+		return m_dense[getDenseIdx(id)];
+	}
 
 	void forEach(std::function<void(T&)> fn)
 	{
@@ -230,11 +234,11 @@ public:
 	};
 
 	/*
-	* Custom iterator that returns component data with corresponding EntityID
-	* Iterates in reverse order under the hood so that iterators are not
+	* Custom Iterator that returns component data with corresponding EntityID
+	* Iterates in reverse order under the hood so that Iterators are not
 	* invalidated from deletions
 	*/
-	class iterator {
+	class Iterator {
 	private:
 		Pool* m_set;
 		size_t m_idx;
@@ -243,16 +247,17 @@ public:
 		using value_type = Entry;
 		using reference = Entry;
 		using pointer = void;
-		using iterator_category = std::forward_iterator_tag;
+		using Iterator_category = std::forward_iterator_tag;
 
-		iterator(Pool* set, size_t idx) noexcept
+		Iterator(Pool* set, size_t idx) noexcept
 			: m_set(set)
 			, m_idx(idx)
 		{
 
 		}
 
-		Entry operator*() const {
+		Entry operator*() const 
+		{
 			return {
 				m_set->m_denseToID[m_idx-1],
 				m_set->m_dense[m_idx-1]
@@ -260,29 +265,33 @@ public:
 		}
 
 		// Prefix
-		iterator& operator++() {
+		Iterator& operator++() 
+		{
 			--m_idx;
 			return *this;
 		}
 
 		// Postfix
-		iterator operator++(int) {
-			iterator tmp = *this;
+		Iterator operator++(int) 
+		{
+			Iterator tmp = *this;
 			++(*this);
 			return tmp;
 		}
 
-		bool operator==(const iterator& other) const {
+		bool operator==(const Iterator& other) const 
+		{
 			return m_idx == other.m_idx && m_set == other.m_set;
 		}
 
-		bool operator!=(const iterator& other) const {
+		bool operator!=(const Iterator& other) const 
+		{
 			return !(*this == other);
 		}
 	};
 
 
-	class const_iterator {
+	class ConstIterator {
 	private:
 		const Pool* m_set;
 		size_t m_idx;
@@ -291,16 +300,17 @@ public:
 		using value_type = Entry;
 		using reference = Entry;
 		using pointer = void;
-		using iterator_category = std::forward_iterator_tag;
+		using Iterator_category = std::forward_iterator_tag;
 
-		const_iterator(const Pool* set, size_t idx) noexcept
+		ConstIterator(const Pool* set, size_t idx) noexcept
 			: m_set(set)
 			, m_idx(idx)
 		{
 
 		}
 
-		Entry operator*() const {
+		Entry operator*() const 
+		{
 			return {
 				m_set->m_denseToID[m_idx-1],
 				m_set->m_dense[m_idx-1]
@@ -308,46 +318,50 @@ public:
 		}
 
 		// Prefix
-		const_iterator& operator++() {
+		ConstIterator& operator++() 
+		{
 			--m_idx;
 			return *this;
 		}
 
 		// Postfix
-		const_iterator operator++(int) {
-			const_iterator tmp = *this;
+		ConstIterator operator++(int) 
+		{
+			ConstIterator tmp = *this;
 			++(*this);
 			return tmp;
 		}
 
-		bool operator==(const const_iterator& other) const {
+		bool operator==(const ConstIterator& other) const 
+		{
 			return m_idx == other.m_idx && m_set == other.m_set;
 		}
 
-		bool operator!=(const const_iterator& other) const {
+		bool operator!=(const ConstIterator& other) const 
+		{
 			return !(*this == other);
 		}
 	};
 
 
-	[[nodiscard]] iterator begin() noexcept
+	[[nodiscard]] Iterator begin() noexcept
 	{
-		return iterator(this, m_dense.size());
+		return Iterator(this, m_dense.size());
 	}
 
-	[[nodiscard]] iterator end() noexcept
+	[[nodiscard]] Iterator end() noexcept
 	{
-		return iterator(this, 0);
+		return Iterator(this, 0);
 	}
 
-	[[nodiscard]] const_iterator begin() const noexcept
+	[[nodiscard]] ConstIterator begin() const noexcept
 	{
-		return const_iterator(this, m_dense.size());
+		return ConstIterator(this, m_dense.size());
 	}
 
-	[[nodiscard]] const_iterator end() const noexcept
+	[[nodiscard]] ConstIterator end() const noexcept
 	{
-		return const_iterator(this, 0);
+		return ConstIterator(this, 0);
 	}
 };
 
