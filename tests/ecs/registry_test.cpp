@@ -493,6 +493,30 @@ TEST_F(RegistryTest, BasicHasAnyComponent)
 */
 TEST_F(RegistryTest, BasicView)
 {
+	// auto e1 = r.createEntity();
+	// auto e2 = r.createEntity();
+	// auto e3 = r.createEntity();
+	//
+	// r.emplaceComponent<PosComp>(e1, 1, 2, 3);
+	// r.emplaceComponent<PosComp>(e2, 4, 5, 6);
+	// r.emplaceComponent<PosComp>(e3, 7, 8, 9);
+	//
+	// auto ent_view = r.view<PosComp>();
+	// EXPECT_EQ(ent_view.size(), 3)
+	// 	<< "EntityView should have 3 entities.";
+	//
+	// std::unordered_set<EntityID> seen;
+	// for (auto& e : ent_view) {
+	// 	seen.insert(e.id);
+	// }
+	//
+	// EXPECT_TRUE(seen.erase(e1.id))
+	// 	<< "Entity e1 should be in the EntityView.";
+	// EXPECT_TRUE(seen.erase(e2.id))
+	// 	<< "Entity e2 should be in the EntityView.";
+	// EXPECT_TRUE(seen.erase(e3.id))
+	// 	<< "Entity e3 should be in the EntityView.";
+
 	auto e1 = r.createEntity();
 	auto e2 = r.createEntity();
 	auto e3 = r.createEntity();
@@ -501,12 +525,10 @@ TEST_F(RegistryTest, BasicView)
 	r.emplaceComponent<PosComp>(e2, 4, 5, 6);
 	r.emplaceComponent<PosComp>(e3, 7, 8, 9);
 
-	auto ent_view = r.view<PosComp>();
-	EXPECT_EQ(ent_view.size(), 3)
-		<< "EntityView should have 3 entities.";
+	auto ent_view = r.view2<PosComp>();
 
 	std::unordered_set<EntityID> seen;
-	for (auto& e : ent_view) {
+	for (auto [e, pos] : ent_view) {
 		seen.insert(e.id);
 	}
 

@@ -101,9 +101,9 @@ public:
 				EntityHandle ent { id };
 
 				return std::tuple_cat(
-					std::make_tuple(ent),
+					std::forward_as_tuple(ent),
 					std::apply([&](auto*... pools) {
-						return std::make_tuple(
+						return std::forward_as_tuple(
 							static_cast<CPool<Components>*>(pools)->get(id)...
 						);
 					}, m_view->m_pools)
@@ -148,8 +148,8 @@ public:
 			Iterator first(this, 0);
 			if (m_size == 0) return first;
 
-			EntityID id = m_driver_ents[0];
-			if (!m_registry->hasAllComponents<Components...>(id)) {
+			EntityHandle e { m_driver_ents[0] };
+			if (!m_registry->hasAllComponents<Components...>(e)) {
 				++first;
 			}
 			return first;
@@ -325,6 +325,17 @@ public:
 		}
 		return res;
 	}
+
+	template <typename... Components>
+	[[nodiscard]] View2<Components...> view2() noexcept
+	{
+		std::tuple<IPool*> pools = std::make_tuple(
+			&getPool<Components>()...
+		);
+		return View2<Components...>(this, pools);
+	}
+
+
 
 	template <typename Component>
 	[[nodiscard]] Component& getComponent(const EntityHandle& ent) noexcept
