@@ -187,14 +187,7 @@ void AppRunner::draw() noexcept
 		APE::TransformComponent,
 		APE::HierarchyComponent>();
 
-	for (auto& ent : view) {
-		auto [mesh, material, transform, hierarchy] = 
-			s_world.registry.getComponents<
-				APE::Render::MeshComponent,
-				APE::Render::MaterialComponent,
-				APE::TransformComponent,
-				APE::HierarchyComponent>(ent);
-
+	for (auto [ent, mesh, material, transform, hierarchy] : view) {
 		glm::mat4 model_mat = getModelMatrix(ent);
 		s_renderer->draw(mesh, material, s_camera, model_mat);
 	}

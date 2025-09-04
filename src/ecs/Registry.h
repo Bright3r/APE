@@ -27,7 +27,7 @@ using CPool = Pool<EntityID, Component>;
 struct EntityHandle {
 	EntityID id;
 };
-using View = std::vector<EntityHandle>;
+using EntitySet = std::vector<EntityHandle>;
 
 /*
  * Registry
@@ -56,13 +56,16 @@ public:
 
 
 	template <typename... Components>
-	struct View2 {
+	class View {
+		using PoolsTuple = std::tuple<CPool<Components>*...>;
+
 		Registry* m_registry;
-		std::tuple<IPool*> m_pools;
-		const std::vector<EntityID>& m_driver_ents;
+		PoolsTuple m_pools;
+		std::vector<EntityID> m_driver_ents;
 		size_t m_size;
 
-		View2(Registry* registry, std::tuple<IPool*> pools)
+	public:
+		View(Registry* registry, PoolsTuple pools)
 			: m_registry(registry)
 			, m_pools(pools)
 			, m_driver_ents(std::get<0>(pools)->entities())
@@ -71,6 +74,12 @@ public:
 
 		}
 
+		View(const View& other) = default;
+		View& operator=(const View& other) = default;
+		View(View&& other) = default;
+		View& operator=(View&& other) = default;
+
+	private:
 		[[nodiscard]] bool isViewMember(EntityID id) const noexcept
 		{
 			return m_registry->hasAllComponents<Components...>({ id });
@@ -79,7 +88,7 @@ public:
 		class Iterator {
 			using Entry = std::tuple<EntityHandle, Components&...>;
 
-			View2* m_view;
+			View* m_view;
 			size_t m_idx;
 
 		public:
@@ -88,14 +97,14 @@ public:
 			using pointer = void;
 			using iterator_category = std::forward_iterator_tag;
 
-			Iterator(View2* view, size_t idx)
+			Iterator(View* view, size_t idx)
 				: m_view(view)
 				, m_idx(idx)
 			{
 
 			}
 
-			Entry operator*() const
+			Entry operator*()
 			{
 				EntityID id = m_view->m_driver_ents[m_idx];
 				EntityHandle ent { id };
@@ -143,6 +152,7 @@ public:
 			}
 		};
 
+	public:
 		Iterator begin() noexcept
 		{
 			Iterator first(this, 0);
@@ -200,7 +210,7 @@ public:
 	}
 
 	template <typename Component, typename... Args>
-	void emplaceComponent(const View& ents, Args&&... args) noexcept
+	void emplaceComponent(const EntitySet& ents, Args&&... args) noexcept
 	{
 		auto& pool = getPool<Component>();
 		for (auto ent : ents) {
@@ -217,7 +227,7 @@ public:
 	}
 
 	template <typename Component, typename... Args>
-	void replaceComponent(const View& ents, Args&&... args) noexcept
+	void replaceComponent(const EntitySet& ents, Args&&... args) noexcept
 	{
 		auto& pool = getPool<Component>();
 		for (auto ent : ents) {
@@ -237,7 +247,7 @@ public:
 	}
 
 	template <typename Component, typename... Args>
-	void emplaceOrReplaceComponent(const View& ents, Args... args) noexcept
+	void emplaceOrReplaceComponent(const EntitySet& ents, Args... args) noexcept
 	{
 		auto& pool = getPool<Component>();
 		for (auto& ent : ents) {
@@ -315,27 +325,26 @@ public:
 	* Retrieving Entities/Components
 	*/
 	template <typename... Components>
-	[[nodiscard]] View view() noexcept
+	[[nodiscard]] View<Components...> view() noexcept
 	{
-		View res;
-		for (auto [ id, ent ] : m_entities) {
-			if (hasAllComponents<Components...>(EntityHandle(id))) {
-				res.emplace_back(EntityHandle(id));
-			}
-		}
-		return res;
+		auto pools = std::make_tuple(
+			&getPool<Components>()...
+		);
+		return View<Components...>(this, pools);
 	}
 
 	template <typename... Components>
-	[[nodiscard]] View2<Components...> view2() noexcept
+	[[nodiscard]] EntitySet entitySet() noexcept
 	{
-		std::tuple<IPool*> pools = std::make_tuple(
-			&getPool<Components>()...
-		);
-		return View2<Components...>(this, pools);
+		EntitySet ents;
+		for (auto ent_id : m_entities.entities()) {
+			EntityHandle ent { ent_id };
+			if (hasAllComponents<Components...>(ent)) {
+				ents.push_back(ent);
+			}
+		}
+		return ents;
 	}
-
-
 
 	template <typename Component>
 	[[nodiscard]] Component& getComponent(const EntityHandle& ent) noexcept

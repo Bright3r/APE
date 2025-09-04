@@ -48,6 +48,17 @@ struct NameComp {
 };
 
 
+template <typename... Components>
+[[nodiscard]] size_t viewSize(Registry::View<Components...>& view) noexcept
+{
+	size_t sz { 0 };
+	for (auto comps : view) {
+		++sz;
+	}
+	return sz;
+}
+
+
 /*
  * Test Fixture
 */
@@ -493,30 +504,6 @@ TEST_F(RegistryTest, BasicHasAnyComponent)
 */
 TEST_F(RegistryTest, BasicView)
 {
-	// auto e1 = r.createEntity();
-	// auto e2 = r.createEntity();
-	// auto e3 = r.createEntity();
-	//
-	// r.emplaceComponent<PosComp>(e1, 1, 2, 3);
-	// r.emplaceComponent<PosComp>(e2, 4, 5, 6);
-	// r.emplaceComponent<PosComp>(e3, 7, 8, 9);
-	//
-	// auto ent_view = r.view<PosComp>();
-	// EXPECT_EQ(ent_view.size(), 3)
-	// 	<< "EntityView should have 3 entities.";
-	//
-	// std::unordered_set<EntityID> seen;
-	// for (auto& e : ent_view) {
-	// 	seen.insert(e.id);
-	// }
-	//
-	// EXPECT_TRUE(seen.erase(e1.id))
-	// 	<< "Entity e1 should be in the EntityView.";
-	// EXPECT_TRUE(seen.erase(e2.id))
-	// 	<< "Entity e2 should be in the EntityView.";
-	// EXPECT_TRUE(seen.erase(e3.id))
-	// 	<< "Entity e3 should be in the EntityView.";
-
 	auto e1 = r.createEntity();
 	auto e2 = r.createEntity();
 	auto e3 = r.createEntity();
@@ -525,7 +512,7 @@ TEST_F(RegistryTest, BasicView)
 	r.emplaceComponent<PosComp>(e2, 4, 5, 6);
 	r.emplaceComponent<PosComp>(e3, 7, 8, 9);
 
-	auto ent_view = r.view2<PosComp>();
+	auto ent_view = r.view<PosComp>();
 
 	std::unordered_set<EntityID> seen;
 	for (auto [e, pos] : ent_view) {
@@ -543,7 +530,7 @@ TEST_F(RegistryTest, BasicView)
 TEST_F(RegistryTest, EmptyView)
 {
 	auto ent_view = r.view<PosComp, NameComp>();
-	EXPECT_TRUE(ent_view.empty())
+	EXPECT_EQ(viewSize(ent_view), 0)
 		<< "EntityView should be empty.";
 }
 
@@ -555,10 +542,10 @@ TEST_F(RegistryTest, RemoveEntityFromView)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto ent_view = r.view<PosComp>();
-	EXPECT_EQ(ent_view.size(), 2)
+	EXPECT_EQ(viewSize(ent_view), 2)
 		<< "EntityView should be have 2 entities.";
 
-	for (auto e : ent_view) {
+	for (auto [e, PosComp] : ent_view) {
 		r.destroyEntity(e);
 	}
 
@@ -574,10 +561,10 @@ TEST_F(RegistryTest, RemoveComponentFromView)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto ent_view = r.view<PosComp>();
-	EXPECT_EQ(ent_view.size(), 2)
+	EXPECT_EQ(viewSize(ent_view), 2)
 		<< "EntityView should be have 2 entities.";
 
-	for (auto e : ent_view) {
+	for (auto [e, pos] : ent_view) {
 		r.removeComponent<PosComp>(e);
 	}
 
@@ -587,7 +574,7 @@ TEST_F(RegistryTest, RemoveComponentFromView)
 		<< "Entity e2 should not have Position Component.";
 
 	ent_view = r.view<PosComp>();
-	EXPECT_TRUE(ent_view.empty())
+	EXPECT_EQ(viewSize(ent_view), 0)
 		<< "EntityView should be empty.";
 }
 
@@ -599,8 +586,7 @@ TEST_F(RegistryTest, ModifyComponentFromView)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto ent_view = r.view<PosComp>();
-	for (auto e : ent_view) {
-		auto& pos = r.getComponent<PosComp>(e);
+	for (auto [e, pos] : ent_view) {
 		pos.x = 5;
 	}
 
@@ -618,35 +604,35 @@ TEST_F(RegistryTest, MultiComponentView)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto view = r.view<PosComp>();
-	ASSERT_EQ(view.size(), 2)
+	EXPECT_EQ(viewSize(view), 2)
 		<< "View should have 2 entities.";
 
 	r.emplaceComponent<PhysComp>(e1);
-	view = r.view<PosComp, PhysComp>();
-	ASSERT_EQ(view.size(), 1)
+	auto view2 = r.view<PosComp, PhysComp>();
+	EXPECT_EQ(viewSize(view2), 1)
 		<< "View should have 1 entity.";
 
-	view = r.view<PosComp, NameComp>();
-	ASSERT_TRUE(view.empty())
+	auto view3 = r.view<PosComp, NameComp>();
+	EXPECT_EQ(viewSize(view3), 0)
 		<< "View should be empty.";
 
 	r.emplaceComponent<NameComp>(e2);
-	view = r.view<PosComp, NameComp>();
-	ASSERT_EQ(view.size(), 1)
+	view3 = r.view<PosComp, NameComp>();
+	EXPECT_EQ(viewSize(view3), 1)
 		<< "View should have 1 entity.";
 
-	view = r.view<PosComp, PhysComp, NameComp>();
-	ASSERT_TRUE(view.empty())
+	auto view4 = r.view<PosComp, PhysComp, NameComp>();
+	EXPECT_EQ(viewSize(view4), 0)
 		<< "View should be empty.";
 
 	r.removeComponent<PhysComp>(e1);
-	view = r.view<PhysComp>();
-	ASSERT_TRUE(view.empty())
+	auto view5 = r.view<PhysComp>();
+	EXPECT_EQ(viewSize(view5), 0)
 		<< "View should be empty.";
 
 	r.removeComponent<PosComp>(e1);
 	view = r.view<PosComp>();
-	ASSERT_EQ(view.size(), 1)
+	EXPECT_EQ(viewSize(view), 1)
 		<< "View should have 1 entity.";
 }
 

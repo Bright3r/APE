@@ -17,7 +17,6 @@ struct PoolInterface {
 	virtual ~PoolInterface() = default;
 
 	virtual bool remove(EntityID id) noexcept = 0;
-	virtual const std::vector<EntityID>& entities() const noexcept = 0;
 };
 
 template <typename EntityID, typename T>
@@ -56,7 +55,7 @@ public:
 		return m_dense.size();
 	}
 
-	[[nodiscard]] const std::vector<EntityID>& entities() const noexcept override
+	[[nodiscard]] std::vector<EntityID> entities() const noexcept
 	{
 		return m_denseToID;
 	}
