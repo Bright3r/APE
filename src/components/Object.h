@@ -7,21 +7,20 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <string>
+#include <string_view>
 
 namespace APE {
 
 struct HierarchyComponent {
 	ECS::EntityHandle parent;
+	std::string tag;
 
-	HierarchyComponent(ECS::EntityHandle parent) noexcept
+	HierarchyComponent(ECS::EntityHandle parent, std::string_view tag) noexcept
 		: parent(parent)
+		, tag(tag)
 	{
 
 	}
-};
-
-struct TagComponent {
-	std::string name;
 };
 
 struct TransformComponent {

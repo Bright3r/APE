@@ -16,10 +16,10 @@ struct Scene {
 	Scene() noexcept
 	{
 		root = registry.createEntity();
-		registry.emplaceComponent<TagComponent>(root, "Root Node");
 		registry.emplaceComponent<HierarchyComponent>(
 			root,
-			registry.tombstone()
+			registry.tombstone(),
+			"Root Node"
 		);
 	}
 
@@ -33,8 +33,11 @@ struct Scene {
 	ECS::EntityHandle addModel(Render::Model* model) noexcept
 	{
 		ECS::EntityHandle par = registry.createEntity();
-		registry.emplaceComponent<HierarchyComponent>(par, root);
-		registry.emplaceComponent<TagComponent>(par, "HierarchyNeedsNames");
+		registry.emplaceComponent<HierarchyComponent>(
+			par,
+			root,
+			"HierarchyNeedsName"
+		);
 		registry.emplaceComponent<TransformComponent>(
 			par,
 			model->getTransform()
@@ -43,9 +46,9 @@ struct Scene {
 		size_t child_num = 1;
 		for (auto& mesh : model->getMeshes()) {
 			ECS::EntityHandle ent = registry.createEntity();
-			registry.emplaceComponent<HierarchyComponent>(ent, par);
-			registry.emplaceComponent<TagComponent>(
+			registry.emplaceComponent<HierarchyComponent>(
 				ent,
+				par,
 				std::to_string(child_num++)
 			);
 			registry.emplaceComponent<Render::MeshComponent>(

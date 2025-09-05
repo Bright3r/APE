@@ -301,6 +301,10 @@ public:
 	template <typename Component>
 	[[nodiscard]] bool hasComponent(const EntityHandle& ent) noexcept
 	{
+		if (!isValid(ent)) {
+			return false;
+		}
+
 		auto& real_ent = m_entities.get(ent.id);
 		return (typeBitmask<Component>() & real_ent.component_mask) != 0;
 	}
