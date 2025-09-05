@@ -26,6 +26,16 @@ using CPool = Pool<EntityID, Component>;
 
 struct EntityHandle {
 	EntityID id;
+
+	bool operator==(const EntityHandle& other) const noexcept
+	{
+		return id == other.id;
+	}
+
+	bool operator!=(const EntityHandle& other) const noexcept
+	{
+		return id != other.id;
+	}
 };
 using EntitySet = std::vector<EntityHandle>;
 

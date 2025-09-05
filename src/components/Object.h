@@ -8,11 +8,13 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace APE {
 
 struct HierarchyComponent {
 	ECS::EntityHandle parent;
+	std::vector<ECS::EntityHandle> children;
 	std::string tag;
 
 	HierarchyComponent(ECS::EntityHandle parent, std::string_view tag) noexcept

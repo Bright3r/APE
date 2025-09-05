@@ -74,6 +74,8 @@ public:
 
 	static void draw() noexcept;
 
+	static void drawSceneHierarchyPanel() noexcept;
+
 	static void resizeWindow(const SDL_Event& event) noexcept;
 
 	static void setWindowTitle(std::string_view window_title) noexcept;

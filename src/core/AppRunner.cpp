@@ -10,6 +10,7 @@
 #include <imgui_impl_sdl3.h>
 
 #include <chrono>
+#include <queue>
 #include <vector>
 
 void AppRunner::init(
@@ -86,6 +87,7 @@ void AppRunner::stepGameloop() noexcept
 	draw();
 	s_app->draw();
 	s_app->drawGUI();
+	drawSceneHierarchyPanel();
 	s_renderer->endDrawing();
 }
 
@@ -190,6 +192,30 @@ void AppRunner::draw() noexcept
 	for (auto [ent, mesh, material, transform, hierarchy] : view) {
 		glm::mat4 model_mat = getModelMatrix(ent);
 		s_renderer->draw(mesh, material, s_camera, model_mat);
+	}
+}
+
+void AppRunner::drawSceneHierarchyPanel() noexcept
+{
+	auto hr = s_world.registry.getComponent<APE::HierarchyComponent>(s_world.root);
+	APE_TRACE("{} - {} children", hr.tag, hr.children.size());
+
+	ImGui::Text("Scene Hierarchy Panel");
+
+	// dfs
+	std::vector<APE::ECS::EntityHandle> stack;
+	stack.push_back(s_world.root);
+	while (!stack.empty()) {
+		auto ent = stack.back();
+		stack.pop_back();
+
+		auto hierarchy = 
+			s_world.registry.getComponent<APE::HierarchyComponent>(ent);
+		ImGui::Text(hierarchy.tag.c_str());
+
+		for (auto child : hierarchy.children) {
+			stack.push_back(child);
+		}
 	}
 }
 
