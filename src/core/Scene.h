@@ -20,7 +20,6 @@ struct Scene {
 		root = registry.createEntity();
 		registry.emplaceComponent<HierarchyComponent>(
 			root,
-			registry.tombstone(),
 			"Root Node"
 		);
 		setParent(root, { registry.tombstone() });
@@ -69,8 +68,7 @@ struct Scene {
 		ECS::EntityHandle par = registry.createEntity();
 		registry.emplaceComponent<HierarchyComponent>(
 			par,
-			root,
-			"Model"
+			std::format("Model {}", par.id)
 		);
 		setParent(par, root);
 		registry.emplaceComponent<TransformComponent>(
@@ -83,7 +81,6 @@ struct Scene {
 			ECS::EntityHandle ent = registry.createEntity();
 			registry.emplaceComponent<HierarchyComponent>(
 				ent,
-				par,
 				std::format("Mesh {}", child_num++)
 			);
 			setParent(ent, par);

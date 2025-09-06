@@ -7,10 +7,10 @@
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <cstring>
 #include <imgui_impl_sdl3.h>
 
 #include <chrono>
-#include <queue>
 #include <utility>
 #include <vector>
 
@@ -38,8 +38,11 @@ void AppRunner::init(
 	// Initialize main cam
 	s_camera = std::make_shared<APE::Render::Camera>();
 
-	// Create Renderer
+	// Create renderer
 	s_renderer = std::make_unique<APE::Render::Renderer>(s_context);
+
+	// Select root entity
+	s_selected_ent = s_world.root;
 }
 
 void AppRunner::pollEvents() noexcept
@@ -83,12 +86,18 @@ void AppRunner::stepGameloop() noexcept
 	// Update App Data
 	s_app->update();
 
-	// Draw To Screen
+	// Draw to Screen
 	s_renderer->beginDrawing();
+
+	// 3D Scene
 	draw();
 	s_app->draw();
+
+	// GUI
 	s_app->drawGUI();
 	drawSceneHierarchyPanel();
+	drawManipulatorPanel();
+
 	s_renderer->endDrawing();
 }
 
@@ -136,6 +145,11 @@ void AppRunner::setTabIn(bool is_tabbed_in) noexcept
 APE::Scene& AppRunner::getWorld() noexcept
 {
 	return s_world;
+}
+
+APE::ECS::EntityHandle AppRunner::getSelectedEntity() noexcept
+{
+	return s_selected_ent;
 }
 
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
@@ -198,9 +212,9 @@ void AppRunner::draw() noexcept
 
 void AppRunner::drawSceneHierarchyPanel() noexcept
 {
-	auto& hr = s_world.registry.getComponent<APE::HierarchyComponent>(s_world.root);
-
-	ImGui::Text("Scene Hierarchy Panel");
+	ImGui::Begin("Scene Hierarchy Panel");
+	// ImGui::Text("Scene Hierarchy Panel");
+	APE_TRACE("Selected Entity = {}", s_selected_ent.id);
 
 	// dfs
 	std::vector<std::pair<APE::ECS::EntityHandle, std::string>> stack;
@@ -212,14 +226,54 @@ void AppRunner::drawSceneHierarchyPanel() noexcept
 		auto& hierarchy = 
 			s_world.registry.getComponent<APE::HierarchyComponent>(ent);
 
-		std::string padded_tag = nest_padding + hierarchy.tag.c_str();
-		ImGui::Text("%s", padded_tag.c_str());
+		// Create button to select entity
+		auto imgui_id = std::format("###{}", ent.id);
+		auto padded_tag = std::format(
+			"{}{}{}",
+			nest_padding, 
+			hierarchy.tag.c_str(),
+			imgui_id
+		);
+		if (ImGui::Button(padded_tag.c_str())) {
+			s_selected_ent = ent;
+		}
 
 		std::string child_padding = nest_padding + "     ";
 		for (auto child : hierarchy.children) {
-			stack.push_back({ child, child_padding });
+			if (s_world.registry.hasComponent<APE::HierarchyComponent>(child)) {
+				stack.push_back({ child, child_padding });
+			}
 		}
 	}
+
+	ImGui::End();
+}
+
+void AppRunner::drawManipulatorPanel() noexcept
+{
+	ImGui::Begin("Manipulator Panel");
+
+	auto ent = s_selected_ent;
+	if (s_world.registry.hasComponent<APE::HierarchyComponent>(ent)) {
+		auto& hierarchy = 
+			s_world.registry.getComponent<APE::HierarchyComponent>(ent);
+
+		char buf[128];
+		strncpy(buf, hierarchy.tag.c_str(), sizeof(buf));
+		if (ImGui::InputText("Entity Tag", buf, sizeof(buf))) {
+			hierarchy.tag = buf;
+		}
+	}
+
+	if (s_world.registry.hasComponent<APE::TransformComponent>(ent)) {
+		auto& tran = 
+			s_world.registry.getComponent<APE::TransformComponent>(ent);
+
+		ImGui::SliderFloat3("Position", &tran.position[0], -100.f, 100.f, "%.2f");
+		ImGui::SliderFloat3("Scale", &tran.scale[0], 0.01f, 10.f, "%.2f");
+	}
+
+	ImGui::End();
 }
 
 void AppRunner::resizeWindow(const SDL_Event& event) noexcept

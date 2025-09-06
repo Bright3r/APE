@@ -24,6 +24,7 @@ private:
 	// Scene Hierarchy
 	//
 	static inline APE::Scene s_world;
+	static inline APE::ECS::EntityHandle s_selected_ent;
 
 	// Rendering
 	//
@@ -58,6 +59,8 @@ public:
 
 	static APE::Scene& getWorld() noexcept;
 
+	static APE::ECS::EntityHandle getSelectedEntity() noexcept;
+
 
 	// Graphics Functions
 	[[nodiscard]] static std::unique_ptr<APE::Render::Shader> createShader(
@@ -75,6 +78,8 @@ public:
 	static void draw() noexcept;
 
 	static void drawSceneHierarchyPanel() noexcept;
+
+	static void drawManipulatorPanel() noexcept;
 
 	static void resizeWindow(const SDL_Event& event) noexcept;
 
