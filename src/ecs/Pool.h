@@ -162,7 +162,7 @@ public:
 		return m_dense[dense_idx];
 	}
 
-	[[nodiscard]] T& get(EntityID id) noexcept
+	[[nodiscard]] decltype(auto) get(EntityID id) noexcept
 	{
 		APE_CHECK(contains(id),
 			"Pool::get() Failed: set does not contain entity {}'s component.",
@@ -172,7 +172,7 @@ public:
 		return m_dense[getDenseIdx(id)];
 	}
 
-	[[nodiscard]] const T& get(EntityID id) const noexcept
+	[[nodiscard]] decltype(auto) get(EntityID id) const noexcept
 	{
 		APE_CHECK(contains(id),
 			"Pool::get() Failed: set does not contain entity {}'s component.",

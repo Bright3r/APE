@@ -224,7 +224,7 @@ TEST_F(RegistryTest, BasicReplaceComponent)
 	EXPECT_FALSE(has_any)
 		<< "Entity should not have Physics or Name Components.";
 
-	auto pos = r.getComponent<PosComp>(ent);
+	auto& pos = r.getComponent<PosComp>(ent);
 	EXPECT_TRUE(pos == comp)
 		<< "Entity's Position Component should be equal.";
 }
@@ -252,7 +252,7 @@ TEST_F(RegistryTest, ReplaceComponentFromCopy)
 	EXPECT_FALSE(has_any)
 		<< "Entity should not have Physics or Name Components.";
 
-	auto pos = r.getComponent<PosComp>(ent);
+	auto& pos = r.getComponent<PosComp>(ent);
 	EXPECT_TRUE(pos == comp)
 		<< "Entity's Position Component should be equal.";
 }
@@ -273,7 +273,7 @@ TEST_F(RegistryTest, ReplaceComponentFromMove)
 	EXPECT_FALSE(has_any)
 		<< "Entity should not have Physics or Name Components.";
 
-	auto pos = r.getComponent<PosComp>(ent);
+	auto& pos = r.getComponent<PosComp>(ent);
 	EXPECT_TRUE(pos == comp_copy)
 		<< "Entity's Position Component should be equal.";
 }
@@ -293,7 +293,7 @@ TEST_F(RegistryTest, BasicEmplaceOrReplaceComponent)
 	EXPECT_FALSE(has_any)
 		<< "Entity should not have Physics or Name Components.";
 
-	auto pos = r.getComponent<PosComp>(ent);
+	auto& pos = r.getComponent<PosComp>(ent);
 	EXPECT_TRUE(pos == comp)
 		<< "Entity's Position Component should be equal.";
 }
@@ -343,7 +343,7 @@ TEST_F(RegistryTest, ComponentLifecycle)
 	EXPECT_TRUE(r.hasComponent<PosComp>(ent2))
 		<< "Entity should have Position Component.";
 
-	auto pos = r.getComponent<PosComp>(ent);
+	auto& pos = r.getComponent<PosComp>(ent);
 	EXPECT_TRUE(pos == comp)
 		<< "Entity's Position Component should be equal.";
 
@@ -381,7 +381,7 @@ TEST_F(RegistryTest, BasicGetComponent)
 	auto ent = r.createEntity();
 	r.emplaceComponent<NameComp>(ent, "Hello", "World");
 
-	auto comp = r.getComponent<NameComp>(ent);
+	auto& comp = r.getComponent<NameComp>(ent);
 	NameComp expected { "Hello", "World" };
 	EXPECT_EQ(comp, expected)
 		<< "Name Component should be Hello World.";
@@ -391,7 +391,7 @@ TEST_F(RegistryTest, GetMissingComponent)
 {
 	auto ent = r.createEntity();
 	EXPECT_DEATH({
-		auto comp = r.getComponent<NameComp>(ent);
+		auto& comp = r.getComponent<NameComp>(ent);
 	}, "");
 }
 

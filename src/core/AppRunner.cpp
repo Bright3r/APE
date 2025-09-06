@@ -197,8 +197,7 @@ void AppRunner::draw() noexcept
 
 void AppRunner::drawSceneHierarchyPanel() noexcept
 {
-	auto hr = s_world.registry.getComponent<APE::HierarchyComponent>(s_world.root);
-	APE_TRACE("{} - {} children", hr.tag, hr.children.size());
+	auto& hr = s_world.registry.getComponent<APE::HierarchyComponent>(s_world.root);
 
 	ImGui::Text("Scene Hierarchy Panel");
 
@@ -209,10 +208,10 @@ void AppRunner::drawSceneHierarchyPanel() noexcept
 		auto ent = stack.back();
 		stack.pop_back();
 
-		auto hierarchy = 
+		auto& hierarchy = 
 			s_world.registry.getComponent<APE::HierarchyComponent>(ent);
-		ImGui::Text(hierarchy.tag.c_str());
 
+		ImGui::Text(hierarchy.tag.c_str());
 		for (auto child : hierarchy.children) {
 			stack.push_back(child);
 		}

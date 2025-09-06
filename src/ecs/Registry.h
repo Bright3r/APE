@@ -361,7 +361,7 @@ public:
 	}
 
 	template <typename Component>
-	[[nodiscard]] Component& getComponent(const EntityHandle& ent) noexcept
+	[[nodiscard]] decltype(auto) getComponent(const EntityHandle& ent) noexcept
 	{
 		APE_CHECK(hasComponent<Component>(ent),
 			"Cannot get component that an entity does not have."

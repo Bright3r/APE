@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util/Logger.h"
 #include "components/Object.h"
 #include "ecs/Registry.h"
 #include "render/Model.h"
@@ -26,12 +27,12 @@ struct Scene {
 
 	void setParent(ECS::EntityHandle child, ECS::EntityHandle parent) noexcept
 	{
-		auto h_child = registry.getComponent<HierarchyComponent>(child);
+		auto& h_child = registry.getComponent<HierarchyComponent>(child);
 		
 		// Remove child from old parent
 		auto old_par = h_child.parent;
 		if (registry.hasComponent<HierarchyComponent>(old_par)) {
-			auto h_old_par = 
+			auto& h_old_par = 
 				registry.getComponent<HierarchyComponent>(old_par);
 
 			std::vector<ECS::EntityHandle> rem_children;
@@ -45,7 +46,9 @@ struct Scene {
 
 		// Add child to new parent
 		if (registry.hasComponent<HierarchyComponent>(parent)) {
-			auto h_par = registry.getComponent<HierarchyComponent>(parent);
+			auto& h_par = 
+				registry.getComponent<HierarchyComponent>(parent);
+
 			h_par.children.push_back(child);
 		}
 
