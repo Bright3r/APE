@@ -1,5 +1,6 @@
 #include "core/AppRunner.h"
 #include "components/Object.h"
+#include "ecs/Registry.h"
 #include "render/Shader.h"
 #include "util/Logger.h"
 
@@ -7,6 +8,7 @@
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <algorithm>
 #include <cstring>
 #include <imgui_impl_sdl3.h>
 
@@ -213,36 +215,52 @@ void AppRunner::draw() noexcept
 void AppRunner::drawSceneHierarchyPanel() noexcept
 {
 	ImGui::Begin("Scene Hierarchy Panel");
-	// ImGui::Text("Scene Hierarchy Panel");
-	APE_TRACE("Selected Entity = {}", s_selected_ent.id);
 
-	// dfs
-	std::vector<std::pair<APE::ECS::EntityHandle, std::string>> stack;
-	stack.push_back({ s_world.root, "" });
+	// Draw a button for each entity in the hierarchy
+	// with padding to visualize nesting
+	using EntityWithPad = std::tuple<APE::ECS::EntityHandle, std::string, float>;
+	std::vector<EntityWithPad> draw_list;
+
+	// DFS over world entities
+	std::vector<EntityWithPad> stack;
+	stack.push_back({ s_world.root, "", 0.f });
+	ImVec2 button_sz { 0.f, 0.f };
 	while (!stack.empty()) {
-		auto [ent, nest_padding] = stack.back();
+		auto [ent, x, pad] = stack.back();
 		stack.pop_back();
 
 		auto& hierarchy = 
 			s_world.registry.getComponent<APE::HierarchyComponent>(ent);
 
-		// Create button to select entity
-		auto imgui_id = std::format("###{}", ent.id);
+		// Create a unique tag for each entity, indented past its parent
 		auto padded_tag = std::format(
-			"{}{}{}",
-			nest_padding, 
+			"{}###{}",
 			hierarchy.tag.c_str(),
-			imgui_id
+			ent.id
 		);
-		if (ImGui::Button(padded_tag.c_str())) {
-			s_selected_ent = ent;
-		}
+		ImVec2 pad_sz { ImGui::CalcTextSize(padded_tag.c_str()) };
+		button_sz = { 
+			std::max(button_sz.x, pad_sz.x),
+			std::max(button_sz.y, pad_sz.y) 
+		};
+		draw_list.emplace_back(ent, padded_tag, pad);
 
-		std::string child_padding = nest_padding + "     ";
+		// Add padded children
+		float child_pad = pad + 1;
 		for (auto child : hierarchy.children) {
 			if (s_world.registry.hasComponent<APE::HierarchyComponent>(child)) {
-				stack.push_back({ child, child_padding });
+				stack.push_back({ child, "", child_pad  });
 			}
+		}
+	}
+
+	// Draw a button to select each entity
+	for (auto [ent, padded_tag, pad] : draw_list) {
+		ImVec2 cursor_pos = ImGui::GetCursorPos();
+		float cursor_offset = pad * button_sz.x;
+		ImGui::SetCursorPos({ cursor_pos.x + cursor_offset, cursor_pos.y });
+		if (ImGui::Button(padded_tag.c_str(), { button_sz.x, 2*button_sz.y })) {
+			s_selected_ent = ent;
 		}
 	}
 
