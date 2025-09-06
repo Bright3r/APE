@@ -11,6 +11,7 @@
 
 #include <chrono>
 #include <queue>
+#include <utility>
 #include <vector>
 
 void AppRunner::init(
@@ -202,18 +203,21 @@ void AppRunner::drawSceneHierarchyPanel() noexcept
 	ImGui::Text("Scene Hierarchy Panel");
 
 	// dfs
-	std::vector<APE::ECS::EntityHandle> stack;
-	stack.push_back(s_world.root);
+	std::vector<std::pair<APE::ECS::EntityHandle, std::string>> stack;
+	stack.push_back({ s_world.root, "" });
 	while (!stack.empty()) {
-		auto ent = stack.back();
+		auto [ent, nest_padding] = stack.back();
 		stack.pop_back();
 
 		auto& hierarchy = 
 			s_world.registry.getComponent<APE::HierarchyComponent>(ent);
 
-		ImGui::Text(hierarchy.tag.c_str());
+		std::string padded_tag = nest_padding + hierarchy.tag.c_str();
+		ImGui::Text("%s", padded_tag.c_str());
+
+		std::string child_padding = nest_padding + "     ";
 		for (auto child : hierarchy.children) {
-			stack.push_back(child);
+			stack.push_back({ child, child_padding });
 		}
 	}
 }

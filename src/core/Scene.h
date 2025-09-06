@@ -6,6 +6,7 @@
 #include "render/Model.h"
 
 #include <filesystem>
+#include <format>
 #include <string>
 
 namespace APE {
@@ -83,7 +84,7 @@ struct Scene {
 			registry.emplaceComponent<HierarchyComponent>(
 				ent,
 				par,
-				std::to_string(child_num++)
+				std::format("Mesh {}", child_num++)
 			);
 			setParent(ent, par);
 
