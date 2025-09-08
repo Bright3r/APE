@@ -16,7 +16,8 @@ struct Input
 struct Output
 {
 	float4 Position : SV_Position;
-	float2 UV : TEXCOORD0;
+	float3 Normal : TEXCOORD0;
+	float2 UV : TEXCOORD1;
 };
 
 Output main(Input input)
@@ -26,6 +27,9 @@ Output main(Input input)
 	// Calculate position with MVP matrix
 	float4 worldPosition = float4(input.Position, 1.0f);
 	output.Position = mul(mul(mul(worldPosition, uModel), uView), uProj);
+
+	// Pass normal
+	output.Normal= input.Normal;
 
 	// Pass UV coords
 	output.UV = input.UV;
