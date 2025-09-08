@@ -112,10 +112,10 @@ void AppRunner::stepGameloop() noexcept
 				s_selected_ent
 			);
 
-		auto world_mat = s_world.getModelMatrix(s_selected_ent);
+		auto parent_world_mat = s_world.getModelMatrix(hierarchy.parent);
+		auto world_mat = parent_world_mat * transform.getModelMatrix();
 		s_renderer->drawGizmo(s_camera, world_mat, s_gizmo_op);
 
-		auto parent_world_mat = s_world.getModelMatrix(hierarchy.parent);
 		auto new_loc_mat = glm::inverse(parent_world_mat) * world_mat;
 		auto new_transform = APE::TransformComponent::fromMatrix(new_loc_mat);
 
