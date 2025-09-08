@@ -104,14 +104,20 @@ void AppRunner::stepGameloop() noexcept
 	drawManipulatorPanel();
 
 	// Gizmo
-	if (s_world.registry.hasComponent<APE::TransformComponent>(s_selected_ent)) {
-		auto& transform = s_world.registry.getComponent<
-			APE::TransformComponent>(s_selected_ent);
+	if (s_world.registry.hasAllComponents<
+		APE::TransformComponent, APE::HierarchyComponent>(s_selected_ent)) 
+	{
+		auto [transform, hierarchy] = s_world.registry.getComponents<
+			APE::TransformComponent, APE::HierarchyComponent>(
+				s_selected_ent
+			);
 
-		auto model_mat = transform.getModelMatrix();
-		s_renderer->drawGizmo(s_camera, model_mat, s_gizmo_op);
+		auto world_mat = s_world.getModelMatrix(s_selected_ent);
+		s_renderer->drawGizmo(s_camera, world_mat, s_gizmo_op);
 
-		auto new_transform = APE::TransformComponent::fromMatrix(model_mat);
+		auto parent_world_mat = s_world.getModelMatrix(hierarchy.parent);
+		auto new_loc_mat = glm::inverse(parent_world_mat) * world_mat;
+		auto new_transform = APE::TransformComponent::fromMatrix(new_loc_mat);
 
 		constexpr float epsilon { 0.001f };
 		auto vec_equal = [=](const auto& a, const auto& b) {
@@ -124,6 +130,7 @@ void AppRunner::stepGameloop() noexcept
 			auto dot = glm::abs(glm::dot(a, b));
 			return dot > (1.f - epsilon);
 		};
+
 		bool b_degenerate = 
 			!vec_equal(new_transform.scale, transform.scale) &&
 			(!vec_equal(new_transform.position, transform.position) ||
@@ -213,23 +220,7 @@ void AppRunner::setCamera(std::shared_ptr<APE::Render::Camera> cam) noexcept
 
 glm::mat4 AppRunner::getModelMatrix(APE::ECS::EntityHandle ent) noexcept
 {
-	std::vector<glm::mat4> stack;
-	while (s_world.registry.hasAllComponents<
-		APE::TransformComponent, APE::HierarchyComponent>(ent)) 
-	{
-		auto [transform, hierarchy] = s_world.registry.getComponents<
-			APE::TransformComponent, APE::HierarchyComponent>(ent);
-
-		stack.emplace_back(transform.getModelMatrix());
-		ent = hierarchy.parent;
-	}
-
-	glm::mat4 model_mat(1.f);
-	while (!stack.empty()) {
-		model_mat *= stack.back();
-		stack.pop_back();
-	}
-	return model_mat;
+	return s_world.getModelMatrix(ent);
 }
 
 void AppRunner::draw() noexcept

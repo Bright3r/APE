@@ -54,6 +54,28 @@ struct Scene {
 		h_child.parent = parent;
 	}
 
+	glm::mat4 getModelMatrix(APE::ECS::EntityHandle ent) noexcept
+	{
+		std::vector<glm::mat4> stack;
+		while (registry.hasAllComponents<
+			APE::TransformComponent, APE::HierarchyComponent>(ent)) 
+		{
+			auto [transform, hierarchy] = registry.getComponents<
+				APE::TransformComponent, 
+				APE::HierarchyComponent>(ent);
+
+			stack.emplace_back(transform.getModelMatrix());
+			ent = hierarchy.parent;
+		}
+
+		glm::mat4 model_mat(1.f);
+		while (!stack.empty()) {
+			model_mat *= stack.back();
+			stack.pop_back();
+		}
+		return model_mat;
+	}
+
 	ECS::EntityHandle addModel(std::filesystem::path model_path,
 		const TransformComponent& transform) noexcept
 	{
@@ -69,6 +91,7 @@ struct Scene {
 			std::format("Model {}", par.id)
 		);
 		setParent(par, root);
+
 		registry.emplaceComponent<TransformComponent>(
 			par,
 			model->getTransform()

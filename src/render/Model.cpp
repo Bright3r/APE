@@ -31,7 +31,8 @@ void Model::loadModel(std::filesystem::path model_path) noexcept
 		aiProcess_FixInfacingNormals
 	);
 
-	bool succ_load_model = !(!scene 
+	bool succ_load_model = !(
+		!scene 
 		|| scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE 
 		|| !scene->mRootNode
 	);
