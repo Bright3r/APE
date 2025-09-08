@@ -7,6 +7,8 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlgpu3.h>
+#include "ImGuizmo.h"
+
 #include <utility>
 
 namespace APE::Render {
@@ -60,6 +62,8 @@ void Renderer::reset() noexcept
 	// Ensure previous imgui session is destroyed before creating a new one
 	m_imgui_session = nullptr;
 	m_imgui_session = std::make_unique<ImGuiSession>(m_context.get());
+
+	ImGuizmo::Enable(true);
 }
 
 std::unique_ptr<Shader> Renderer::createShader(
@@ -253,6 +257,8 @@ void Renderer::beginDrawing() noexcept
 	ImGui_ImplSDLGPU3_NewFrame();
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
+	ImGuizmo::BeginFrame();
+	
 
 	// Setup render pass
 	beginRenderPass(true, true);
@@ -371,6 +377,28 @@ void Renderer::draw(MeshComponent& mesh,
 		m_render_pass, 
 		mesh.indices.size(), 
 		1, 0, 0, 0
+	);
+}
+
+void Renderer::drawGizmo(std::weak_ptr<Camera> camera, glm::mat4& matrix) noexcept
+{
+	ImGuizmo::OPERATION gizmo_op { ImGuizmo::TRANSLATE };
+	ImGuizmo::MODE gizmo_mode { ImGuizmo::WORLD };
+
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+
+	auto cam = camera.lock();
+	auto view = cam->getViewMatrix();
+	auto proj = cam->getProjectionMatrix(getAspectRatio());
+	ImGuizmo::Manipulate(
+		&view[0][0],
+		&proj[0][0],
+		gizmo_op,
+		gizmo_mode,
+		&matrix[0][0],
+		NULL,
+		NULL
 	);
 }
 

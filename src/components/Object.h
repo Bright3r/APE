@@ -6,6 +6,9 @@
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_decompose.hpp>
+
 #include <string>
 #include <string_view>
 #include <vector>
@@ -38,6 +41,19 @@ struct TransformComponent {
 		, rotation(rotation)
 	{
 
+	}
+
+	[[nodiscard]] static TransformComponent fromMatrix(glm::mat4 mat) noexcept
+	{
+		glm::vec3 skew;
+		glm::vec4 perspective;
+
+		TransformComponent t;
+		glm::decompose(
+			mat, t.scale, t.rotation, t.position, skew, perspective
+		);
+		t.rotation = glm::conjugate(t.rotation);
+		return t;
 	}
 
 	[[nodiscard]] glm::mat4 getModelMatrix() const noexcept

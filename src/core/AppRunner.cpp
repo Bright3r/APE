@@ -100,6 +100,17 @@ void AppRunner::stepGameloop() noexcept
 	drawSceneHierarchyPanel();
 	drawManipulatorPanel();
 
+	// Gizmo
+	if (s_world.registry.hasComponent<APE::TransformComponent>(s_selected_ent)) {
+		auto& transform = s_world.registry.getComponent<
+			APE::TransformComponent>(s_selected_ent);
+
+		auto model_mat = transform.getModelMatrix();
+		s_renderer->drawGizmo(s_camera, model_mat);
+
+		transform = APE::TransformComponent::fromMatrix(model_mat);
+	}
+
 	s_renderer->endDrawing();
 }
 

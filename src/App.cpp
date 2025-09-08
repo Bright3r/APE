@@ -61,7 +61,7 @@ void App::setup()
 	AppRunner::setCamera(cam);
 	AppRunner::setTabIn(true);
 
-	AppRunner::setFramerate(144);
+	AppRunner::setFramerate(60);
 }
 
 void App::update() 

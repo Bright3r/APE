@@ -1,13 +1,11 @@
 #pragma once
 
-#include "util/Logger.h"
 #include "components/Object.h"
 #include "ecs/Registry.h"
 #include "render/Model.h"
 
 #include <filesystem>
 #include <format>
-#include <string>
 
 namespace APE {
 

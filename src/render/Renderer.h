@@ -95,6 +95,8 @@ public:
 		std::weak_ptr<Camera> camera,
 		const glm::mat4& model_matrix) noexcept;
 
+	void drawGizmo(std::weak_ptr<Camera> camera, glm::mat4& matrix) noexcept;
+
 	void endDrawing() noexcept;
 
 private:

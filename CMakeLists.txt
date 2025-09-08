@@ -15,6 +15,7 @@ find_package(assimp CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
+find_package(imguizmo CONFIG REQUIRED)
 
 # Compile Engine into lib
 add_library(
@@ -41,6 +42,7 @@ target_link_libraries(
 	spdlog::spdlog
 	assimp::assimp
 	imgui::imgui
+	imguizmo::imguizmo
 )
 
 
