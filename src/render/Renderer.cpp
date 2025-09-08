@@ -380,11 +380,11 @@ void Renderer::draw(MeshComponent& mesh,
 	);
 }
 
-void Renderer::drawGizmo(std::weak_ptr<Camera> camera, glm::mat4& matrix) noexcept
+void Renderer::drawGizmo(std::weak_ptr<Camera> camera,
+	glm::mat4& matrix,
+	ImGuizmo::OPERATION gizmo_op,
+	ImGuizmo::MODE gizmo_mode) noexcept
 {
-	ImGuizmo::OPERATION gizmo_op { ImGuizmo::TRANSLATE };
-	ImGuizmo::MODE gizmo_mode { ImGuizmo::WORLD };
-
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
@@ -392,11 +392,11 @@ void Renderer::drawGizmo(std::weak_ptr<Camera> camera, glm::mat4& matrix) noexce
 	auto view = cam->getViewMatrix();
 	auto proj = cam->getProjectionMatrix(getAspectRatio());
 	ImGuizmo::Manipulate(
-		&view[0][0],
-		&proj[0][0],
+		glm::value_ptr(view),
+		glm::value_ptr(proj),
 		gizmo_op,
 		gizmo_mode,
-		&matrix[0][0],
+		glm::value_ptr(matrix),
 		NULL,
 		NULL
 	);

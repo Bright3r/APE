@@ -25,6 +25,7 @@ private:
 	//
 	static inline APE::Scene s_world;
 	static inline APE::ECS::EntityHandle s_selected_ent;
+	static inline ImGuizmo::OPERATION s_gizmo_op;
 
 	// Rendering
 	//

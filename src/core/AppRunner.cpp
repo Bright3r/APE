@@ -4,12 +4,14 @@
 #include "render/Shader.h"
 #include "util/Logger.h"
 
+#include <ImGuizmo.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <algorithm>
 #include <cstring>
+#include <glm/gtc/quaternion.hpp>
 #include <imgui_impl_sdl3.h>
 
 #include <chrono>
@@ -45,6 +47,7 @@ void AppRunner::init(
 
 	// Select root entity
 	s_selected_ent = s_world.root;
+	s_gizmo_op = ImGuizmo::TRANSLATE;
 }
 
 void AppRunner::pollEvents() noexcept
@@ -106,9 +109,29 @@ void AppRunner::stepGameloop() noexcept
 			APE::TransformComponent>(s_selected_ent);
 
 		auto model_mat = transform.getModelMatrix();
-		s_renderer->drawGizmo(s_camera, model_mat);
+		s_renderer->drawGizmo(s_camera, model_mat, s_gizmo_op);
 
-		transform = APE::TransformComponent::fromMatrix(model_mat);
+		auto new_transform = APE::TransformComponent::fromMatrix(model_mat);
+
+		constexpr float epsilon { 0.001f };
+		auto vec_equal = [=](const auto& a, const auto& b) {
+			auto diff = glm::abs(a - b);
+			return diff.x < epsilon &&
+				diff.y < epsilon &&
+				diff.z < epsilon;
+		};
+		auto quat_equal = [&](const auto& a, const auto& b) {
+			auto dot = glm::abs(glm::dot(a, b));
+			return dot > (1.f - epsilon);
+		};
+		bool b_degenerate = 
+			!vec_equal(new_transform.scale, transform.scale) &&
+			(!vec_equal(new_transform.position, transform.position) ||
+    			!quat_equal(new_transform.rotation, transform.rotation));
+		if (!b_degenerate)
+		{
+			transform = new_transform;
+		}
 	}
 
 	s_renderer->endDrawing();
@@ -281,8 +304,9 @@ void AppRunner::drawSceneHierarchyPanel() noexcept
 void AppRunner::drawManipulatorPanel() noexcept
 {
 	ImGui::Begin("Manipulator Panel");
-
 	auto ent = s_selected_ent;
+
+	// Tag
 	if (s_world.registry.hasComponent<APE::HierarchyComponent>(ent)) {
 		auto& hierarchy = 
 			s_world.registry.getComponent<APE::HierarchyComponent>(ent);
@@ -294,12 +318,45 @@ void AppRunner::drawManipulatorPanel() noexcept
 		}
 	}
 
+	// Transform
 	if (s_world.registry.hasComponent<APE::TransformComponent>(ent)) {
-		auto& tran = 
+		auto& transform = 
 			s_world.registry.getComponent<APE::TransformComponent>(ent);
 
-		ImGui::SliderFloat3("Position", &tran.position[0], -100.f, 100.f, "%.2f");
-		ImGui::SliderFloat3("Scale", &tran.scale[0], 0.01f, 10.f, "%.2f");
+		// Select gizmo operation
+		if (ImGui::RadioButton("Translate", s_gizmo_op == ImGuizmo::TRANSLATE)) {
+			s_gizmo_op = ImGuizmo::TRANSLATE;
+		}
+		ImGui::SameLine();
+		if (ImGui::RadioButton("Rotate", s_gizmo_op == ImGuizmo::ROTATE)) {
+			s_gizmo_op = ImGuizmo::ROTATE;
+		}
+		ImGui::SameLine();
+		if (ImGui::RadioButton("Scale", s_gizmo_op == ImGuizmo::SCALE)) {
+			s_gizmo_op = ImGuizmo::SCALE;
+		}
+
+		// Manually edit transform
+		auto matrix = transform.getModelMatrix();
+		glm::vec3 translate, rotate, scale;
+		ImGuizmo::DecomposeMatrixToComponents(
+			&matrix[0][0],
+			&translate[0],
+			&rotate[0],
+			&scale[0]
+		);
+		
+		ImGui::InputFloat3("Translate", &translate[0]);
+		ImGui::InputFloat3("Rotate", &rotate[0]);
+		ImGui::InputFloat3("Scale", &scale[0]);
+
+		ImGuizmo::RecomposeMatrixFromComponents(
+			&translate[0],
+			&rotate[0],
+			&scale[0],
+			&matrix[0][0]
+		);
+		transform = APE::TransformComponent::fromMatrix(matrix);
 	}
 
 	ImGui::End();

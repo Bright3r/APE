@@ -52,7 +52,6 @@ struct TransformComponent {
 		glm::decompose(
 			mat, t.scale, t.rotation, t.position, skew, perspective
 		);
-		t.rotation = glm::conjugate(t.rotation);
 		return t;
 	}
 

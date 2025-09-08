@@ -5,7 +5,6 @@
 #include "render/ImGuiSession.h"
 #include "render/SafeGPU.h"
 #include "render/Shader.h"
-#include "render/Mesh.h"
 #include "render/Model.h"
 #include "render/Image.h"
 
@@ -13,6 +12,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlgpu3.h>
+#include <ImGuizmo.h>
 
 #include <cstddef>
 #include <glm/fwd.hpp>
@@ -95,7 +95,10 @@ public:
 		std::weak_ptr<Camera> camera,
 		const glm::mat4& model_matrix) noexcept;
 
-	void drawGizmo(std::weak_ptr<Camera> camera, glm::mat4& matrix) noexcept;
+	void drawGizmo(std::weak_ptr<Camera> camera,
+		glm::mat4& matrix,
+		ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE,
+		ImGuizmo::MODE gizmo_mode = ImGuizmo::WORLD) noexcept;
 
 	void endDrawing() noexcept;
 
