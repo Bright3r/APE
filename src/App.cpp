@@ -114,27 +114,7 @@ void App::draw()
 
 void App::drawGUI() 
 {
-	ImGui::Text("Camera");
 
-	glm::vec3 pos { cam->getPosition() };
-	ImGui::SliderFloat3("pos", &pos[0], -100.f, 100.f, "%.2f");
-	cam->setPosition(pos);
-
-	float pitch { cam->getPitch() };
-	ImGui::SliderFloat("pitch", &pitch, -90.f, 90.f, "%.2f");
-	cam->setPitch(pitch);
-
-	float yaw { cam->getYaw() };
-	ImGui::SliderFloat("yaw", &yaw, -360.f, 360.f, "%.2f");
-	cam->setYaw(yaw);
-
-	float fov { cam->getFOV() };
-	ImGui::SliderFloat("fov", &fov, 10.f, 120.f, "%.1f");
-	cam->setFOV(fov);
-
-	float sensitivity { cam->getSensitivity() };
-	ImGui::SliderFloat("sensitivity", &sensitivity, 0.01f, 1.f, "%.2f");
-	cam->setSensitivity(sensitivity);
 }
 
 void App::onKeyDown(SDL_KeyboardEvent key) 

@@ -15,8 +15,8 @@ namespace APE::Render {
 
 Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	: m_context(context)
-	, m_wireframe_mode(false) 
-	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
+	, wireframe_mode(false) 
+	, clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
 	, m_shader(nullptr)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
@@ -24,6 +24,8 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	, m_render_pass(nullptr)
 	, m_cmd_buf(nullptr)
 	, m_is_drawing(false)
+	, debug_mode(false)
+	, lighting_parameters({})
 	, m_imgui_session(nullptr)
 {
 	// Construct default shader
@@ -39,8 +41,8 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 Renderer::Renderer(std::shared_ptr<Context> context, 
 		   std::shared_ptr<Shader> shader) noexcept
 	: m_context(context)
-	, m_wireframe_mode(false) 
-	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
+	, wireframe_mode(false) 
+	, clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
 	, m_shader(shader)
 	, m_fill_pipeline(nullptr)
 	, m_line_pipeline(nullptr)
@@ -48,6 +50,8 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	, m_render_pass(nullptr)
 	, m_cmd_buf(nullptr)
 	, m_is_drawing(false)
+	, debug_mode(false)
+	, lighting_parameters({})
 	, m_imgui_session(nullptr)
 {
 	reset();
@@ -200,7 +204,7 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 
 	SDL_GPUColorTargetInfo color_target_info = {
 		.texture = m_swapchain_texture,
-		.clear_color = m_clear_color,
+		.clear_color = clear_color,
 		.load_op = b_clear ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD,
 		.store_op = SDL_GPU_STOREOP_STORE,
 	};
@@ -265,7 +269,7 @@ void Renderer::beginDrawing() noexcept
 
 	// Bind render pipeline
 	SDL_GPUGraphicsPipeline* render_pipeline = 
-		m_wireframe_mode ? m_line_pipeline.get() : m_fill_pipeline.get();
+		wireframe_mode ? m_line_pipeline.get() : m_fill_pipeline.get();
 
 	APE_CHECK((render_pipeline != nullptr),
 		"Renderer::draw Failed: render_pipeline == nullptr"
@@ -369,6 +373,23 @@ void Renderer::draw(MeshComponent& mesh,
 		0,
 		&mvp_uniform,
 		sizeof(mvp_uniform)
+	);
+
+
+	// Bind DebugMode Uniform
+	SDL_PushGPUFragmentUniformData(
+		m_cmd_buf,
+		0,
+		&debug_mode,
+		sizeof(debug_mode)
+	);
+
+	// Bind LightingParameters Uniform
+	SDL_PushGPUFragmentUniformData(
+		m_cmd_buf,
+		1,
+		&lighting_parameters,
+		sizeof(lighting_parameters)
 	);
 
 

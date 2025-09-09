@@ -18,6 +18,7 @@ struct Output
 	float4 Position : SV_Position;
 	float3 Normal : TEXCOORD0;
 	float2 UV : TEXCOORD1;
+	float4 ViewDirection : TEXCOORD2;
 };
 
 Output main(Input input)
@@ -26,7 +27,10 @@ Output main(Input input)
 
 	// Calculate position with MVP matrix
 	float4 worldPosition = float4(input.Position, 1.0f);
-	output.Position = mul(mul(mul(worldPosition, uModel), uView), uProj);
+	float4 viewPosition = mul(mul(worldPosition, uModel), uView);
+
+	output.ViewDirection = normalize(-viewPosition);
+	output.Position = mul(viewPosition, uProj);
 
 	// Pass normal
 	output.Normal= input.Normal;

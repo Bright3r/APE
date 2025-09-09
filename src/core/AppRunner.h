@@ -78,6 +78,8 @@ public:
 
 	static void draw() noexcept;
 
+	static void drawDebugPanel() noexcept;
+
 	static void drawSceneHierarchyPanel() noexcept;
 
 	static void drawManipulatorPanel() noexcept;

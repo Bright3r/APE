@@ -73,9 +73,9 @@ SDL_GPUShader* Shader::loadShader(
 	void *code = SDL_LoadFile(shader_desc.filepath.c_str(), &code_size);
 	if (!code) {
 		APE_ERROR("Failed to load shader code from {} - {}", 
-	    		shader_desc.filepath.c_str(), 
-	    		SDL_GetError()
-	   	);
+			shader_desc.filepath.c_str(), 
+			SDL_GetError()
+		);
 		return nullptr;
 	}
 

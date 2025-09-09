@@ -27,6 +27,18 @@ struct ModelViewProjUniform {
 	glm::mat4 proj;
 };
 
+struct DebugModeUniform {
+	bool show_normals;
+};
+
+struct LightingParametersUniform {
+	float ambient_coefficient = 0.2f;
+	float lambert_coefficient = 0.4f;
+	float specular_coefficient = 0.8f;
+	float shininess = 1.f;
+	glm::vec4 specular_color = glm::vec4(1.f);
+};
+
 static const ShaderDescription default_vert_shader_desc {
 	.filepath = "res/shaders/Default.vert.spv",
 	.num_samplers = 0, 
@@ -39,7 +51,7 @@ static const ShaderDescription default_vert_shader_desc {
 static const ShaderDescription default_frag_shader_desc {
 	.filepath = "res/shaders/Default.frag.spv",
 	.num_samplers = 1, 
-	.num_uniform_buffers = 1, 
+	.num_uniform_buffers = 2, 
 	.num_storage_buffers = 0, 
 	.num_storage_textures = 0,
 	.vertex_format = Model::VertexType::getLayout(),
@@ -49,9 +61,6 @@ static const ShaderDescription default_frag_shader_desc {
 class Renderer {
 private:
 	std::shared_ptr<Context> m_context;
-	bool m_wireframe_mode;
-	SDL_FColor m_clear_color;
-
 	std::shared_ptr<Shader> m_shader;
 	SafeGPU::UniqueGPUGraphicsPipeline m_fill_pipeline;
 	SafeGPU::UniqueGPUGraphicsPipeline m_line_pipeline;
@@ -65,6 +74,11 @@ private:
 	std::unique_ptr<ImGuiSession> m_imgui_session;
 
 public:
+	bool wireframe_mode;
+	SDL_FColor clear_color;
+	DebugModeUniform debug_mode;
+	LightingParametersUniform lighting_parameters;
+
 	// Special Member Functions
 	//
 	Renderer(std::shared_ptr<Context> context) noexcept;

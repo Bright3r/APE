@@ -100,6 +100,7 @@ void AppRunner::stepGameloop() noexcept
 
 	// GUI
 	s_app->drawGUI();
+	drawDebugPanel();
 	drawSceneHierarchyPanel();
 	drawManipulatorPanel();
 
@@ -234,6 +235,65 @@ void AppRunner::draw() noexcept
 	for (auto [ent, mesh, material, transform, hierarchy] : view) {
 		glm::mat4 model_mat = getModelMatrix(ent);
 		s_renderer->draw(mesh, material, s_camera, model_mat);
+	}
+}
+
+void AppRunner::drawDebugPanel() noexcept
+{
+	ImGui::Text("Camera");
+	auto cam = s_camera;
+
+	glm::vec3 pos { cam->getPosition() };
+	ImGui::SliderFloat3("pos", &pos[0], -100.f, 100.f, "%.2f");
+	cam->setPosition(pos);
+
+	float pitch { cam->getPitch() };
+	ImGui::SliderFloat("pitch", &pitch, -90.f, 90.f, "%.2f");
+	cam->setPitch(pitch);
+
+	float yaw { cam->getYaw() };
+	ImGui::SliderFloat("yaw", &yaw, -360.f, 360.f, "%.2f");
+	cam->setYaw(yaw);
+
+	float fov { cam->getFOV() };
+	ImGui::SliderFloat("fov", &fov, 10.f, 120.f, "%.1f");
+	cam->setFOV(fov);
+
+	float sensitivity { cam->getSensitivity() };
+	ImGui::SliderFloat("sensitivity", &sensitivity, 0.01f, 1.f, "%.2f");
+	cam->setSensitivity(sensitivity);
+
+
+	ImGui::Text("Lighting");
+	ImGui::SliderFloat(
+		"ambient coefficient",
+		&s_renderer->lighting_parameters.ambient_coefficient,
+		0.01f, 1.f, "%.2f"
+	);
+	ImGui::SliderFloat(
+		"lambert coefficient",
+		&s_renderer->lighting_parameters.lambert_coefficient,
+		0.01f, 1.f, "%.2f"
+	);
+	ImGui::SliderFloat(
+		"specular coefficient",
+		&s_renderer->lighting_parameters.specular_coefficient,
+		0.01f, 1.f, "%.2f"
+	);
+	ImGui::SliderFloat(
+		"shininess coefficient",
+		&s_renderer->lighting_parameters.shininess,
+		0.1f, 100.f, "%.2f"
+	);
+	ImGui::SliderFloat4(
+		"specular color",
+		glm::value_ptr(s_renderer->lighting_parameters.specular_color),
+		0.01f, 1.f, "%.2f"
+	);
+
+	if (ImGui::RadioButton("show normals", s_renderer->debug_mode.show_normals)) {
+		s_renderer->debug_mode.show_normals = 
+			!s_renderer->debug_mode.show_normals;
 	}
 }
 
