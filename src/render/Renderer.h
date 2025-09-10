@@ -1,5 +1,6 @@
 #pragma once
 
+#include "components/Render.h"
 #include "render/Camera.h"
 #include "render/Context.h"
 #include "render/ImGuiSession.h"
@@ -21,6 +22,10 @@
 
 namespace APE::Render {
 
+struct CameraUniform {
+	glm::vec4 position;
+};
+
 struct ModelViewProjUniform {
 	glm::mat4 model;
 	glm::mat4 view;
@@ -28,21 +33,26 @@ struct ModelViewProjUniform {
 };
 
 struct DebugModeUniform {
-	bool show_normals;
+	int show_normals;
+	float pad[3];
 };
 
-struct LightingParametersUniform {
-	float ambient_coefficient = 0.2f;
-	float lambert_coefficient = 0.4f;
-	float specular_coefficient = 0.8f;
-	float shininess = 1.f;
+struct LightUniform {
+	glm::vec4 position = glm::vec4(0, 20, 0, 0);
+	glm::vec4 attenuation = glm::vec4(1.f, 0.09f, 0.032f, 0.f);
+
+	glm::vec4 ambient_color = glm::vec4(1.f);
+	glm::vec4 diffuse_color = glm::vec4(1.f);
 	glm::vec4 specular_color = glm::vec4(1.f);
+
+	LightType type = LightType::Point;
+	glm::vec3 dir = glm::vec3(0, -1, 0);
 };
 
 static const ShaderDescription default_vert_shader_desc {
 	.filepath = "res/shaders/Default.vert.spv",
 	.num_samplers = 0, 
-	.num_uniform_buffers = 1, 
+	.num_uniform_buffers = 2, 
 	.num_storage_buffers = 0, 
 	.num_storage_textures = 0,
 	.vertex_format = Model::VertexType::getLayout(),
@@ -77,7 +87,7 @@ public:
 	bool wireframe_mode;
 	SDL_FColor clear_color;
 	DebugModeUniform debug_mode;
-	LightingParametersUniform lighting_parameters;
+	LightUniform light;
 
 	// Special Member Functions
 	//

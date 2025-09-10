@@ -43,11 +43,12 @@ struct MaterialComponent {
 	}
 };
 
-enum class LightType {
-	Point,
+enum LightType {
+	Point = 0,
 	Direction,
 	Spot,
-	Area
+	Area,
+	Size
 };
 
 enum class AreaLightShape {

@@ -1,5 +1,10 @@
 
-cbuffer ModelViewProj : register(b0, space1)
+cbuffer Camera : register(b0, space1)
+{
+	float3 uCameraPos;
+};
+
+cbuffer ModelViewProj : register(b1, space1)
 {
 	float4x4 uModel;
 	float4x4 uView;
@@ -18,7 +23,8 @@ struct Output
 	float4 Position : SV_Position;
 	float3 Normal : TEXCOORD0;
 	float2 UV : TEXCOORD1;
-	float4 ViewDirection : TEXCOORD2;
+	float3 ViewDirection : TEXCOORD2;
+	float3 FragPos : TEXCOORD3;
 };
 
 Output main(Input input)
@@ -26,11 +32,12 @@ Output main(Input input)
 	Output output;
 
 	// Calculate position with MVP matrix
-	float4 worldPosition = float4(input.Position, 1.0f);
-	float4 viewPosition = mul(mul(worldPosition, uModel), uView);
+	float4 worldPos = mul(float4(input.Position, 1.0f), uModel);
+	output.FragPos = worldPos.xyz;
+	output.ViewDirection = normalize(uCameraPos.xyz - worldPos.xyz);
 
-	output.ViewDirection = normalize(-viewPosition);
-	output.Position = mul(viewPosition, uProj);
+	float4 viewPos = mul(worldPos, uView);
+	output.Position = mul(viewPos, uProj);
 
 	// Pass normal
 	output.Normal= input.Normal;

@@ -25,7 +25,7 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	, m_cmd_buf(nullptr)
 	, m_is_drawing(false)
 	, debug_mode(false)
-	, lighting_parameters({})
+	, light({})
 	, m_imgui_session(nullptr)
 {
 	// Construct default shader
@@ -51,7 +51,7 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	, m_cmd_buf(nullptr)
 	, m_is_drawing(false)
 	, debug_mode(false)
-	, lighting_parameters({})
+	, light({})
 	, m_imgui_session(nullptr)
 {
 	reset();
@@ -362,6 +362,17 @@ void Renderer::draw(MeshComponent& mesh,
 	);
 
 
+	// Bind Camera Uniform
+	CameraUniform cam_uniform {
+		.position = glm::vec4(cam->getPosition(), 0.f),
+	};
+	SDL_PushGPUVertexUniformData(
+		m_cmd_buf,
+		0,
+		&cam_uniform,
+		sizeof(cam_uniform)
+	);
+
 	// Bind MVP matrix uniform
 	ModelViewProjUniform mvp_uniform { 
 		glm::transpose(model_matrix),
@@ -370,7 +381,7 @@ void Renderer::draw(MeshComponent& mesh,
 	};
 	SDL_PushGPUVertexUniformData(
 		m_cmd_buf,
-		0,
+		1,
 		&mvp_uniform,
 		sizeof(mvp_uniform)
 	);
@@ -384,13 +395,15 @@ void Renderer::draw(MeshComponent& mesh,
 		sizeof(debug_mode)
 	);
 
-	// Bind LightingParameters Uniform
+	// Bind Light Uniform
 	SDL_PushGPUFragmentUniformData(
 		m_cmd_buf,
 		1,
-		&lighting_parameters,
-		sizeof(lighting_parameters)
+		&light,
+		sizeof(light)
 	);
+
+
 
 
 	// Draw mesh

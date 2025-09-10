@@ -1,5 +1,6 @@
 #include "core/AppRunner.h"
 #include "components/Object.h"
+#include "components/Render.h"
 #include "ecs/Registry.h"
 #include "render/Shader.h"
 #include "util/Logger.h"
@@ -263,38 +264,21 @@ void AppRunner::drawDebugPanel() noexcept
 	ImGui::SliderFloat("sensitivity", &sensitivity, 0.01f, 1.f, "%.2f");
 	cam->setSensitivity(sensitivity);
 
-
-	ImGui::Text("Lighting");
-	ImGui::SliderFloat(
-		"ambient coefficient",
-		&s_renderer->lighting_parameters.ambient_coefficient,
-		0.01f, 1.f, "%.2f"
-	);
-	ImGui::SliderFloat(
-		"lambert coefficient",
-		&s_renderer->lighting_parameters.lambert_coefficient,
-		0.01f, 1.f, "%.2f"
-	);
-	ImGui::SliderFloat(
-		"specular coefficient",
-		&s_renderer->lighting_parameters.specular_coefficient,
-		0.01f, 1.f, "%.2f"
-	);
-	ImGui::SliderFloat(
-		"shininess coefficient",
-		&s_renderer->lighting_parameters.shininess,
-		0.1f, 100.f, "%.2f"
-	);
-	ImGui::SliderFloat4(
-		"specular color",
-		glm::value_ptr(s_renderer->lighting_parameters.specular_color),
-		0.01f, 1.f, "%.2f"
-	);
-
 	if (ImGui::RadioButton("show normals", s_renderer->debug_mode.show_normals)) {
 		s_renderer->debug_mode.show_normals = 
 			!s_renderer->debug_mode.show_normals;
 	}
+
+
+	ImGui::Text("Lighting");
+	auto& light = s_renderer->light;
+	ImGui::SliderInt("type", reinterpret_cast<int*>(&light.type), 0, APE::Render::LightType::Size);
+	ImGui::InputFloat3("position", glm::value_ptr(light.position));
+	ImGui::InputFloat3("attenuation", glm::value_ptr(light.attenuation));
+	ImGui::InputFloat3("direction", glm::value_ptr(light.dir));
+	ImGui::ColorPicker4("ambient", glm::value_ptr(light.ambient_color));
+	ImGui::ColorPicker4("diffuse", glm::value_ptr(light.diffuse_color));
+	ImGui::ColorPicker4("specular", glm::value_ptr(light.specular_color));
 }
 
 void AppRunner::drawSceneHierarchyPanel() noexcept
