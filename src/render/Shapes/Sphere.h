@@ -10,8 +10,7 @@ namespace APE::Render {
 
 class Sphere : public Model {
 private:
-	static constexpr std::string_view SPHERE_PATH =
-		"res/models/textured-sphere.obj";
+	static constexpr std::string_view SPHERE_PATH = "res/models/sphere.obj";
 
 public:
 	Sphere(float radius = 1.f) noexcept

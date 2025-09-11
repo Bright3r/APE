@@ -1,0 +1,6 @@
+[submodule "vendor/SDL_shadercross"]
+	path = vendor/SDL_shadercross
+	url = https://github.com/libsdl-org/SDL_shadercross.git
+[submodule "vendor/SPIRV-Cross"]
+	path = vendor/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross.git

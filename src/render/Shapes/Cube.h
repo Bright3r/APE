@@ -9,7 +9,7 @@
 namespace APE::Render {
 
 class Cube : public Model {
-	static constexpr std::string_view CUBE_PATH = "res/models/textured-cube.obj";
+	static constexpr std::string_view CUBE_PATH = "res/models/cube.obj";
 public:
 	Cube(float width = 1.f, float height = 1.f, float depth = 1.f) noexcept
 		: Model(CUBE_PATH)

@@ -10,8 +10,7 @@ namespace APE::Render {
 
 class Cone : public Model {
 private:
-	static constexpr std::string_view CONE_PATH =
-		"res/models/textured-cone.obj";
+	static constexpr std::string_view CONE_PATH = "res/models/cone.obj";
 
 public:
 	Cone(float radius = 0.5f, float height = 1.f) noexcept

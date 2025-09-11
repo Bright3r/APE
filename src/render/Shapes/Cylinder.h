@@ -9,8 +9,7 @@
 namespace APE::Render {
 
 class Cylinder : public Model {
-	static constexpr std::string_view CYLINDER_PATH =
-		"res/models/textured-cylinder.obj";
+	static constexpr std::string_view CYLINDER_PATH = "res/models/cylinder.obj";
 public:
 	Cylinder(float radius = 0.5f, float height = 1.f) noexcept
 		: Model(CYLINDER_PATH)
