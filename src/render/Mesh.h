@@ -1,6 +1,7 @@
 #pragma once
 
 #include "components/Object.h"
+#include "core/AssetManager.h"
 #include "render/Image.h"
 #include "render/SafeGPU.h"
 
@@ -21,7 +22,7 @@ private:
 	std::vector<VertexType> m_vertices;
 	std::vector<IndexType> m_indices;
 	TransformComponent m_transform;
-	std::shared_ptr<Image> m_texture;
+	AssetHandle<Image> m_texture_handle;
 	SafeGPU::UniqueGPUBuffer m_vertex_buffer;
 	SafeGPU::UniqueGPUBuffer m_index_buffer;
 
@@ -31,11 +32,11 @@ public:
 	Mesh(const std::vector<VertexType>& vertices,
 		const std::vector<IndexType>& indices,
 		const TransformComponent& transform,
-		std::shared_ptr<Image> texture) noexcept
+		const AssetHandle<Image>& texture_handle) noexcept
 		: m_vertices(vertices)
 		, m_indices(indices)
 		, m_transform(transform)
-		, m_texture(texture)
+		, m_texture_handle(texture_handle)
 		, m_vertex_buffer(nullptr)
 		, m_index_buffer(nullptr)
 	{
@@ -52,9 +53,14 @@ public:
 		return m_indices;
 	}
 
-	[[nodiscard]] std::shared_ptr<Image> getTexture() const noexcept
+	[[nodiscard]] AssetHandle<Image> getTextureHandle() const noexcept
 	{
-		return m_texture;
+		return m_texture_handle;
+	}
+
+	void setTextureHandle(const AssetHandle<Image>& texture_handle) noexcept
+	{
+		m_texture_handle = texture_handle;
 	}
 
 	[[nodiscard]] TransformComponent& getTransform() noexcept
@@ -82,11 +88,6 @@ public:
 	{
 		m_vertices = vertices;
 		m_indices = indices;
-	}
-
-	void changeTexture(std::shared_ptr<Image> texture) noexcept
-	{
-		m_texture = texture;
 	}
 };
 

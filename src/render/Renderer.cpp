@@ -342,17 +342,19 @@ void Renderer::draw(MeshComponent& mesh,
 
 
 	// Check if mesh texture was uploaded yet
-	if (!material.texture_buffer) {
+	auto& texture = material.texture_handle.data;
+	if (!texture->textureBuffer()) {
+		APE_TRACE("HIT");
 		// Create GPU Texture
 		SafeGPU::UniqueGPUTexture gpu_tex = createTexture(
-			material.texture.get()
+			texture.get()
 		);
-		material.texture_buffer = std::move(gpu_tex);
+		texture->textureBuffer() = std::move(gpu_tex);
 	}
 
 	// Bind texture sampler
 	std::vector<SDL_GPUTextureSamplerBinding> sampler_bindings = {{
-		.texture = material.texture_buffer.get(),
+		.texture = texture->textureBuffer().get(),
 		.sampler = m_sampler.get(),
 	}};
 	SDL_BindGPUFragmentSamplers(

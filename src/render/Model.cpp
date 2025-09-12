@@ -49,22 +49,6 @@ void Model::loadModel(std::filesystem::path model_path) noexcept
 	processNode(scene->mRootNode, scene, model_path);
 }
 
-// AssetHandle<Model> Model::getAssetHandle(std::filesystem::path model_path) noexcept
-// {
-// 	AssetKey model_key = {
-// 		.path = model_path,
-// 		.sub_index = "",
-// 	};
-// 	if (!AssetManager::contains(model_key)) {
-// 		AssetManager::upload<Model>(
-// 			model_key,
-// 			AssetClass::Model,
-// 			std::make_unique<Model>(model_path)
-// 		);
-// 	}
-// 	return AssetManager::get<Model>(model_key);
-// }
-
 TransformComponent Model::convertAiTransform(const aiMatrix4x4 ai_transform) noexcept
 {
 	aiVector3f ai_pos;
@@ -79,7 +63,41 @@ TransformComponent Model::convertAiTransform(const aiMatrix4x4 ai_transform) noe
 	);
 }
 
-std::shared_ptr<Image> Model::convertAiMaterial(
+AssetHandle<Image> Model::defaultImageHandle() noexcept
+{
+	AssetKey key = {
+		.path = Image::DEFAULT_IMG_PATH,
+		.sub_index = "",
+	};
+	if (!AssetManager::contains(key)) {
+		AssetManager::upload<Image>(
+			key,
+			AssetClass::Texture,
+			std::make_unique<Image>()
+		);
+	}
+	return AssetManager::get<Image>(key);
+}
+
+AssetHandle<Image> Model::makeImageHandle(
+	std::unique_ptr<Image> texture,
+	const std::string& handle_index) noexcept
+{
+	AssetKey key = {
+		.path = texture->getPath(),
+		.sub_index = handle_index,
+	};
+	if (!AssetManager::contains(key)) {
+		AssetManager::upload<Image>(
+			key,
+			AssetClass::Texture,
+			std::move(texture)
+		);
+	}
+	return AssetManager::get<Image>(key);
+}
+
+AssetHandle<Image> Model::convertAiMaterial(
 	const aiMaterial* ai_mat,
 	const aiScene* scene,
 	std::filesystem::path model_path) noexcept
@@ -90,7 +108,7 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 		APE_ERROR(
 			"Model::convertAiMaterial Failed - diffuse texture not found."
 		);
-		return std::make_shared<Image>();
+		return defaultImageHandle();
 	}
 
 	// Get diffuse texture path
@@ -101,19 +119,19 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 			int tex_idx = std::atoi(path.C_Str() + 1);
 			aiTexture* ai_tex = scene->mTextures[tex_idx];
 
-			return std::make_shared<Image>(
+			return makeImageHandle(std::make_unique<Image>(
 				model_path,
 				ai_tex->mWidth,
 				ai_tex->mHeight,
 				reinterpret_cast<std::byte*>(ai_tex->pcData)
-			);
+			), ai_mat->GetName().C_Str());
 		}
 		// Otherwise create texture from file
 		else {
 			std::string tex_path { 
 				model_path.parent_path().append(path.C_Str())
 			};
-			return std::make_shared<Image>(tex_path);
+			return makeImageHandle(std::make_unique<Image>(tex_path), "");
 		}
 	}
 
@@ -121,7 +139,7 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 	APE_ERROR(
 		"Model::convertAiMaterial Failed - could not load diffuse texture."
 	);
-	return std::make_shared<Image>();
+	return defaultImageHandle();
 }
 
 void Model::processNode(
@@ -129,8 +147,7 @@ void Model::processNode(
 	const aiScene* scene,
 	std::filesystem::path model_path) noexcept
 {
-	TransformComponent local_transform = 
-		convertAiTransform(node->mTransformation);
+	TransformComponent local_transform = convertAiTransform(node->mTransformation);
 
 	// Convert nodes aiMeshes into our own Meshes
 	for (size_t i = 0; i < node->mNumMeshes; ++i) {
@@ -140,12 +157,12 @@ void Model::processNode(
 
 		// Get texture for current mesh
 		aiMaterial* ai_mat = scene->mMaterials[ai_mesh->mMaterialIndex];
-		std::shared_ptr<Image> texture = 
+		AssetHandle<Image> texture_handle = 
 			convertAiMaterial(ai_mat, scene, model_path);
 
 		m_meshes.emplace_back(processAiMesh(
 			ai_mesh,
-			texture,
+			texture_handle,
 			local_transform
 		));
 	}
@@ -158,7 +175,7 @@ void Model::processNode(
 
 Model::ModelMesh Model::processAiMesh(
 	const aiMesh* ai_mesh,
-	std::shared_ptr<Image> texture,
+	const AssetHandle<Image>& texture_handle,
 	const TransformComponent& transform) const noexcept
 {
 	std::vector<VertexType> vertices;
@@ -205,7 +222,7 @@ Model::ModelMesh Model::processAiMesh(
 		}
 	}
 
-	return ModelMesh(vertices, indices, transform, texture);
+	return ModelMesh(vertices, indices, transform, texture_handle);
 }
 
 [[nodiscard]] std::filesystem::path Model::getPath() const noexcept

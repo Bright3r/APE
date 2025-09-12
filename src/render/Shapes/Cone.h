@@ -40,14 +40,14 @@ public:
 		m_transform.scale.y = height;
 	}
 
-	[[nodiscard]] std::shared_ptr<Image> getTexture() const noexcept
+	[[nodiscard]] AssetHandle<Image> getTexture() const noexcept
 	{
-		return m_meshes[0].getTexture();
+		return m_meshes[0].getTextureHandle();
 	}
 
-	void setTexture(std::shared_ptr<Image> img) noexcept
+	void setTexture(const AssetHandle<Image>& texture_handle) noexcept
 	{
-		m_meshes[0].changeTexture(img);
+		m_meshes[0].setTextureHandle(texture_handle);
 	}
 };
 

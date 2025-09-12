@@ -24,6 +24,7 @@ Image::Image(std::filesystem::path path,
 	int height,
 	const std::byte* data) noexcept
 {
+	m_texture_buffer = nullptr;
 	m_path = path;
 
 	// Assume data is R8G8BA8 format
@@ -69,8 +70,19 @@ Image::Image(std::filesystem::path path,
 	stbi_image_free(decompressed_data);
 }
 
+std::filesystem::path Image::getPath() const noexcept
+{
+	return m_path;
+}
+
+std::filesystem::path Image::getDefaultPath() noexcept
+{
+	return DEFAULT_IMG_PATH;
+}
+
 void Image::loadImage(std::filesystem::path path) noexcept
 {
+	m_texture_buffer = nullptr;
 	m_path = path;
 
 	std::string abs_path = std::filesystem::absolute(path);
@@ -107,6 +119,11 @@ void Image::loadImage(std::filesystem::path path) noexcept
 void Image::loadCheckerboard() noexcept
 {
 	loadImage(DEFAULT_IMG_PATH);
+}
+
+SafeGPU::UniqueGPUTexture& Image::textureBuffer() noexcept
+{
+	return m_texture_buffer;
 }
 
 Uint32 Image::getSizeBytes() const noexcept

@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <memory>
 #include <vector>
+#include <string>
 
 namespace APE::Render {
 
@@ -47,10 +48,16 @@ public:
 	void setTransform(const TransformComponent& transform) noexcept;
 
 private:
+	[[nodiscard]] static AssetHandle<Image> defaultImageHandle() noexcept;
+
+	[[nodiscard]] static AssetHandle<Image> 
+	makeImageHandle(std::unique_ptr<Image> texture,
+		 const std::string& handle_index) noexcept;
+
 	[[nodiscard]] static TransformComponent convertAiTransform(
 		const aiMatrix4x4 ai_transform) noexcept;
 
-	[[nodiscard]] static std::shared_ptr<Image> convertAiMaterial(
+	[[nodiscard]] static AssetHandle<Image> convertAiMaterial(
 		const aiMaterial* ai_mat,
 		const aiScene* scene,
 		std::filesystem::path model_path) noexcept;
@@ -62,7 +69,7 @@ private:
 
 	[[nodiscard]] Model::ModelMesh processAiMesh(
 		const aiMesh* ai_mesh,
-		std::shared_ptr<Image> texture,
+		const AssetHandle<Image>& texture_handle,
 		const TransformComponent& transform) const noexcept;
 };
 

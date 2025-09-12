@@ -109,7 +109,7 @@ struct Scene {
 			);
 			registry.emplaceComponent<Render::MaterialComponent>(
 				ent,
-				mesh.getTexture()
+				mesh.getTextureHandle()
 			);
 			registry.emplaceComponent<TransformComponent>(
 				ent,

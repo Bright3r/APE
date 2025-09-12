@@ -3,7 +3,6 @@
 #include "core/AssetManager.h"
 #include "render/Model.h"
 #include "render/Image.h"
-#include "render/SafeGPU.h"
 
 #include <glm/glm.hpp>
 
@@ -22,12 +21,10 @@ struct MeshComponent {
 };
 
 struct MaterialComponent {
-	std::shared_ptr<Image> texture;
-	SafeGPU::UniqueGPUTexture texture_buffer;
+	AssetHandle<Image> texture_handle;
 
-	MaterialComponent(std::shared_ptr<Image> texture) noexcept
-		: texture(texture)
-		, texture_buffer(nullptr)
+	MaterialComponent(AssetHandle<Image> texture_handle) noexcept
+		: texture_handle(texture_handle)
 	{
 
 	}
