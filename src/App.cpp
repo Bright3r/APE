@@ -25,16 +25,11 @@ void App::setup()
 		.path = "res/models/che/scene.gltf",
 		.sub_index = "",
 	};
-	world.addModel(APE::AssetManager::upload<APE::Render::Model>(
-		car_key,
-		APE::AssetClass::Model,
-		std::make_unique<APE::Render::Model>(car_key.path)
-	));
-
-	// auto ship = std::make_unique<APE::Render::Model>(
-	// 	"res/models/ship/source/full_scene.fbx"
-	// );
-	// world.addModel(ship.get());
+	// world.addModel(APE::AssetManager::upload<APE::Render::Model>(
+	// 	car_key,
+	// 	APE::AssetClass::Model,
+	// 	std::make_unique<APE::Render::Model>(car_key.path)
+	// ));
 
 	std::vector<std::unique_ptr<APE::Render::Model>> models;
 	models.emplace_back(std::make_unique<APE::Render::Cube>());

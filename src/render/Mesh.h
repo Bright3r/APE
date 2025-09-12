@@ -2,6 +2,7 @@
 
 #include "components/Object.h"
 #include "render/Image.h"
+#include "render/SafeGPU.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_stdinc.h>
@@ -21,6 +22,8 @@ private:
 	std::vector<IndexType> m_indices;
 	TransformComponent m_transform;
 	std::shared_ptr<Image> m_texture;
+	SafeGPU::UniqueGPUBuffer m_vertex_buffer;
+	SafeGPU::UniqueGPUBuffer m_index_buffer;
 
 public:
 	Mesh() noexcept = default;
@@ -33,6 +36,8 @@ public:
 		, m_indices(indices)
 		, m_transform(transform)
 		, m_texture(texture)
+		, m_vertex_buffer(nullptr)
+		, m_index_buffer(nullptr)
 	{
 
 	}
@@ -55,6 +60,16 @@ public:
 	[[nodiscard]] TransformComponent& getTransform() noexcept
 	{
 		return m_transform;
+	}
+
+	[[nodiscard]] SafeGPU::UniqueGPUBuffer& vertexBuffer() noexcept
+	{
+		return m_vertex_buffer;
+	}
+
+	[[nodiscard]] SafeGPU::UniqueGPUBuffer& indexBuffer() noexcept
+	{
+		return m_index_buffer;
 	}
 
 	void changeTopology(const std::vector<IndexType> indices) noexcept
