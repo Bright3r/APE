@@ -1,7 +1,6 @@
 #pragma once
 
 #include "components/Object.h"
-#include "components/Render.h"
 #include "render/Image.h"
 
 #include <SDL3/SDL_gpu.h>
@@ -36,11 +35,6 @@ public:
 		, m_texture(texture)
 	{
 
-	}
-
-	[[nodiscard]] MeshComponent toComponent() const noexcept
-	{
-		return MeshComponent(m_vertices, m_indices);
 	}
 
 	[[nodiscard]] std::vector<VertexType> getVertices() const noexcept

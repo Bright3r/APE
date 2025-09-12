@@ -1,29 +1,24 @@
 #pragma once
 
-#include "render/Vertex.h"
+#include "core/AssetManager.h"
+#include "render/Model.h"
 #include "render/Image.h"
 #include "render/SafeGPU.h"
 
 #include <glm/glm.hpp>
 
-#include <vector>
-
 namespace APE::Render {
 
-using VertexType = TextureVertex;
-using IndexType = Uint32;
-
 struct MeshComponent {
-	std::vector<VertexType> vertices;
-	std::vector<IndexType> indices;
+	AssetHandle<Model> model_handle;
+	size_t model_index;
 
 	SafeGPU::UniqueGPUBuffer vertex_buffer;
 	SafeGPU::UniqueGPUBuffer index_buffer;
 
-	MeshComponent(std::vector<VertexType> vertices,
-		std::vector<IndexType> indices) noexcept
-		: vertices(vertices)
-		, indices(indices)
+	MeshComponent(AssetHandle<Model> model_handle, size_t model_index) noexcept
+		: model_handle(model_handle)
+		, model_index(model_index)
 		, vertex_buffer(nullptr)
 		, index_buffer(nullptr)
 	{

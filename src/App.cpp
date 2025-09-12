@@ -1,5 +1,7 @@
 #include "App.h"
+#include "components/Object.h"
 #include "core/AppRunner.h"
+#include "core/AssetManager.h"
 #include "render/Camera.h"
 #include "render/Model.h"
 #include "render/Shapes/Cube.h"
@@ -27,27 +29,23 @@ void App::setup()
 	// );
 	// world.addModel(ship.get());
 
-	auto cube = std::make_unique<APE::Render::Cube>();
-	auto sphere = std::make_unique<APE::Render::Sphere>();
-	auto cone = std::make_unique<APE::Render::Cone>();
-	auto cylinder = std::make_unique<APE::Render::Cylinder>();
+	std::vector<std::unique_ptr<APE::Render::Model>> models;
+	models.emplace_back(std::make_unique<APE::Render::Cube>());
+	models.emplace_back(std::make_unique<APE::Render::Sphere>());
+	models.emplace_back(std::make_unique<APE::Render::Cone>());
+	models.emplace_back(std::make_unique<APE::Render::Cylinder>());
 
-	constexpr int NUM_SHAPE_SETS = 50;
-	std::vector<APE::Render::Model*> models;
-	for (size_t i = 0; i < NUM_SHAPE_SETS; ++i) {
-		models.push_back(cube.get());
-		models.push_back(sphere.get());
-		models.push_back(cone.get());
-		models.push_back(cylinder.get());
-	}
+	constexpr int NUM_SHAPES = 200;
+	int sqrt = std::sqrt(NUM_SHAPES);
+	for (int i = 0; i < NUM_SHAPES; ++i) {
+		auto& model = models[i % models.size()];
+		auto model_handle = model->getAssetHandle();
 
-	int sqrt = std::sqrt(models.size());
-	for (int i = 0; i < models.size(); ++i) {
-		APE::Render::Model* model = models[i];
-		model->getTransform().position.x = ((i % sqrt) - (sqrt / 2.f)) * 5;
-		model->getTransform().position.z = ((i / sqrt) - (sqrt / 2.f)) * 5;
+		APE::TransformComponent transform = model->getTransform();
+		transform.position.x = ((i % sqrt) - (sqrt / 2.f)) * 5;
+		transform.position.z = ((i / sqrt) - (sqrt / 2.f)) * 5;
 
-		world.addModel(models[i]);
+		world.addModel(model_handle, transform);
 	}
 
 

@@ -34,22 +34,31 @@ private:
 	std::unordered_map<std::filesystem::path, InternalAsset> s_assets;
 
 public:
+	[[nodiscard]] static bool 
+	contains(std::filesystem::path asset_path) noexcept
+	{
+		return s_assets.contains(asset_path);
+	}
+
 	template <typename Asset>
 	static AssetHandle<Asset> 
 	upload(std::filesystem::path asset_path,
 		AssetClass asset_class,
-		std::shared_ptr<Asset> data) noexcept
+		std::unique_ptr<Asset> data) noexcept
 	{
-		APE_CHECK((!s_assets.contains(asset_path)),
+		APE_CHECK((!contains(asset_path)),
 			"AssetManager::upload() Failed: Cannot reupload asset {}.",
 			asset_path.c_str()
 		);
 
-		s_assets[asset_path] = {
-			.asset_class = asset_class,
-			.type_id = typeid(Asset),
-			.data = data,
-		};
+		s_assets.emplace(
+			asset_path,
+			InternalAsset { 
+				.asset_class = asset_class,
+				.type_id = typeid(Asset),
+				.data = std::shared_ptr<void>(std::move(data)),
+			}
+		);
 		return makeHandle<Asset>(asset_path);
 	}
 

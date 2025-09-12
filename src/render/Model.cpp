@@ -8,12 +8,14 @@
 #include <cstddef>
 #include <cstdlib>
 #include <vector>
+#include <memory>
 
 namespace APE::Render {
 
 Model::Model(std::filesystem::path model_path,
 	     const TransformComponent& transform) noexcept
 	: m_meshes()
+	, m_model_path(model_path)
 	, m_transform(transform)
 {
 	loadModel(model_path);
@@ -45,6 +47,23 @@ void Model::loadModel(std::filesystem::path model_path) noexcept
 	}
 
 	processNode(scene->mRootNode, scene, model_path);
+}
+
+AssetHandle<Model> Model::getAssetHandle(std::filesystem::path model_path) noexcept
+{
+	if (!AssetManager::contains(model_path)) {
+		AssetManager::upload<Model>(
+			model_path,
+			AssetClass::Model,
+			std::make_unique<Model>(model_path)
+		);
+	}
+	return AssetManager::get<Model>(model_path);
+}
+
+AssetHandle<Model> Model::getAssetHandle() const noexcept
+{
+	return getAssetHandle(m_model_path);
 }
 
 TransformComponent Model::convertAiTransform(const aiMatrix4x4 ai_transform) noexcept

@@ -294,10 +294,11 @@ void Renderer::draw(MeshComponent& mesh,
 	auto cam = camera.lock();
 
 	// Check if gpu vertex buffer was already created
+	auto& raw_mesh = mesh.model_handle.data->getMeshes()[mesh.model_index];
 	if (!mesh.vertex_buffer) {
 		// Create GPU buffer with vertex data
 		SafeGPU::UniqueGPUBuffer vertex_buffer = uploadBuffer(
-			vectorToRawBytes(mesh.vertices),
+			vectorToRawBytes(raw_mesh.getVertices()),
 			SDL_GPU_BUFFERUSAGE_VERTEX
 		);
 
@@ -321,7 +322,7 @@ void Renderer::draw(MeshComponent& mesh,
 	if (!mesh.index_buffer) {
 		// Create GPU buffer with index data
 		SafeGPU::UniqueGPUBuffer index_buffer = uploadBuffer(
-			vectorToRawBytes(mesh.indices),
+			vectorToRawBytes(raw_mesh.getIndices()),
 			SDL_GPU_BUFFERUSAGE_INDEX
 		);
 
@@ -409,7 +410,7 @@ void Renderer::draw(MeshComponent& mesh,
 	// Draw mesh
 	SDL_DrawGPUIndexedPrimitives(
 		m_render_pass, 
-		mesh.indices.size(), 
+		raw_mesh.getIndices().size(), 
 		1, 0, 0, 0
 	);
 }
@@ -419,10 +420,14 @@ void Renderer::drawGizmo(std::weak_ptr<Camera> camera,
 	ImGuizmo::OPERATION gizmo_op,
 	ImGuizmo::MODE gizmo_mode) noexcept
 {
+	APE_CHECK(!camera.expired(),
+	   "Renderer::drawGizmo() Failed: camera is nullptr."
+	);
+	auto cam = camera.lock();
+
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
-	auto cam = camera.lock();
 	auto view = cam->getViewMatrix();
 	auto proj = cam->getProjectionMatrix(getAspectRatio());
 	ImGuizmo::Manipulate(

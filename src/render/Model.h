@@ -1,6 +1,7 @@
 #pragma once
 
 #include "components/Object.h"
+#include "core/AssetManager.h"
 #include "render/Mesh.h"
 #include "render/Vertex.h"
 
@@ -9,6 +10,7 @@
 #include <assimp/postprocess.h>
 
 #include <filesystem>
+#include <memory>
 #include <vector>
 
 namespace APE::Render {
@@ -23,6 +25,7 @@ public:
 protected:
 	// Data members
 	std::vector<ModelMesh> m_meshes;
+	std::filesystem::path m_model_path;
 	TransformComponent m_transform;
 
 public:
@@ -34,6 +37,11 @@ public:
 	virtual ~Model() noexcept { }
 
 	void loadModel(std::filesystem::path model_path) noexcept;
+
+	[[nodiscard]] static AssetHandle<Model> 
+	getAssetHandle(std::filesystem::path model_path) noexcept;
+
+	[[nodiscard]] AssetHandle<Model> getAssetHandle() const noexcept;
 
 	std::vector<ModelMesh>& getMeshes() noexcept;
 

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "components/Object.h"
+#include "components/Render.h"
 #include "ecs/Registry.h"
 #include "render/Model.h"
 
-#include <filesystem>
 #include <format>
 
 namespace APE {
@@ -76,14 +76,8 @@ struct Scene {
 		return model_mat;
 	}
 
-	ECS::EntityHandle addModel(std::filesystem::path model_path,
+	ECS::EntityHandle addModel(AssetHandle<Render::Model> model_handle,
 		const TransformComponent& transform) noexcept
-	{
-		Render::Model model(model_path, transform);
-		return addModel(&model);
-	}
-
-	ECS::EntityHandle addModel(Render::Model* model) noexcept
 	{
 		ECS::EntityHandle par = registry.createEntity();
 		registry.emplaceComponent<HierarchyComponent>(
@@ -94,21 +88,24 @@ struct Scene {
 
 		registry.emplaceComponent<TransformComponent>(
 			par,
-			model->getTransform()
+			transform
 		);
 
-		size_t child_num = 1;
-		for (auto& mesh : model->getMeshes()) {
+		auto& model = model_handle.data;
+		for (size_t idx = 0; idx < model->getMeshes().size(); ++idx) {
+			auto& mesh = model->getMeshes()[idx];
+
 			ECS::EntityHandle ent = registry.createEntity();
 			registry.emplaceComponent<HierarchyComponent>(
 				ent,
-				std::format("Mesh {}", child_num++)
+				std::format("Mesh {}", idx)
 			);
 			setParent(ent, par);
 
 			registry.emplaceComponent<Render::MeshComponent>(
 				ent,
-				mesh.toComponent()
+				model_handle,
+				idx
 			);
 			registry.emplaceComponent<Render::MaterialComponent>(
 				ent,
