@@ -113,7 +113,7 @@ struct Scene {
 			);
 			registry.emplaceComponent<TransformComponent>(
 				ent,
-				mesh.getTransform()
+				mesh.transform()
 			);
 		}
 		return par;

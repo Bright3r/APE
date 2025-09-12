@@ -58,7 +58,7 @@ void App::setup()
 		auto& model_handle = model_handles[i % model_handles.size()];
 		auto& model = model_handle.data;
 
-		APE::TransformComponent transform = model->getTransform();
+		APE::TransformComponent transform = model->transform();
 		transform.position.x = ((i % sqrt) - (sqrt / 2.f)) * 5;
 		transform.position.z = ((i / sqrt) - (sqrt / 2.f)) * 5;
 

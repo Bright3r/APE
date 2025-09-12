@@ -235,16 +235,10 @@ std::vector<Model::ModelMesh>& Model::getMeshes() noexcept
 	return m_meshes;
 }
 
-TransformComponent& Model::getTransform() noexcept
+TransformComponent& Model::transform() noexcept
 {
 	return m_transform;
 }
-
-void Model::setTransform(const TransformComponent& transform) noexcept
-{
-	m_transform = transform;
-}
-
 
 };	// end of namespace
 

@@ -43,7 +43,7 @@ public:
 
 	std::vector<ModelMesh>& getMeshes() noexcept;
 
-	[[nodiscard]] TransformComponent& getTransform() noexcept;
+	[[nodiscard]] TransformComponent& transform() noexcept;
 
 	void setTransform(const TransformComponent& transform) noexcept;
 

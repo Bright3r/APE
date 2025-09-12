@@ -344,7 +344,6 @@ void Renderer::draw(MeshComponent& mesh,
 	// Check if mesh texture was uploaded yet
 	auto& texture = material.texture_handle.data;
 	if (!texture->textureBuffer()) {
-		APE_TRACE("HIT");
 		// Create GPU Texture
 		SafeGPU::UniqueGPUTexture gpu_tex = createTexture(
 			texture.get()

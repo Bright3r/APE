@@ -63,7 +63,7 @@ public:
 		m_texture_handle = texture_handle;
 	}
 
-	[[nodiscard]] TransformComponent& getTransform() noexcept
+	[[nodiscard]] TransformComponent& transform() noexcept
 	{
 		return m_transform;
 	}
