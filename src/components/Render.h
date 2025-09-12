@@ -11,14 +11,14 @@ namespace APE::Render {
 
 struct MeshComponent {
 	AssetHandle<Model> model_handle;
-	size_t model_index;
+	size_t mesh_index;
 
 	SafeGPU::UniqueGPUBuffer vertex_buffer;
 	SafeGPU::UniqueGPUBuffer index_buffer;
 
-	MeshComponent(AssetHandle<Model> model_handle, size_t model_index) noexcept
+	MeshComponent(AssetHandle<Model> model_handle, size_t mesh_index) noexcept
 		: model_handle(model_handle)
-		, model_index(model_index)
+		, mesh_index(mesh_index)
 		, vertex_buffer(nullptr)
 		, index_buffer(nullptr)
 	{

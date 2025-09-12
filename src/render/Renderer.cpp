@@ -294,7 +294,7 @@ void Renderer::draw(MeshComponent& mesh,
 	auto cam = camera.lock();
 
 	// Check if gpu vertex buffer was already created
-	auto& raw_mesh = mesh.model_handle.data->getMeshes()[mesh.model_index];
+	auto& raw_mesh = mesh.model_handle.data->getMeshes()[mesh.mesh_index];
 	if (!mesh.vertex_buffer) {
 		// Create GPU buffer with vertex data
 		SafeGPU::UniqueGPUBuffer vertex_buffer = uploadBuffer(
