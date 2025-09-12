@@ -9,17 +9,25 @@
 
 namespace APE {
 
+enum class AssetClass {
+	None = 0,
+	Model,
+	Texture,
+};
+
 template <typename Asset>
 struct AssetHandle {
-	std::shared_ptr<Asset> data;
+	AssetClass asset_class;
 	std::filesystem::path asset_path;
+	std::shared_ptr<Asset> data;
 };
 
 class AssetManager {
 private:
 	struct InternalAsset {
+		AssetClass asset_class;
+		std::type_index type_id;
 		std::shared_ptr<void> data;
-		std::type_index type;
 	};
 
 	static inline 
@@ -28,7 +36,9 @@ private:
 public:
 	template <typename Asset>
 	static AssetHandle<Asset> 
-	upload(std::shared_ptr<Asset> data, std::filesystem::path asset_path) noexcept
+	upload(std::filesystem::path asset_path,
+		AssetClass asset_class,
+		std::shared_ptr<Asset> data) noexcept
 	{
 		APE_CHECK((!s_assets.contains(asset_path)),
 			"AssetManager::upload() Failed: Cannot reupload asset {}.",
@@ -36,8 +46,9 @@ public:
 		);
 
 		s_assets[asset_path] = {
+			.asset_class = asset_class,
+			.type_id = typeid(Asset),
 			.data = data,
-			.type = typeid(Asset),
 		};
 		return makeHandle<Asset>(asset_path);
 	}
@@ -61,14 +72,15 @@ private:
 		);
 
 		auto& asset = it->second;
-		APE_CHECK((asset.type == typeid(Asset)),
+		APE_CHECK((asset.type_id == typeid(Asset)),
 			"AssetManager::makeHandle() Failed: Type mismatch for {}.",
 			asset_path.c_str()
 		);
 
 		return {
-			.data = std::static_pointer_cast<Asset>(asset.data),
+			.asset_class = asset.asset_class,
 			.asset_path = asset_path,
+			.data = std::static_pointer_cast<Asset>(asset.data),
 		};
 	}
 };

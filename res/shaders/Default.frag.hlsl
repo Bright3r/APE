@@ -114,7 +114,12 @@ float4 main(Input input) : SV_Target0
 	light.specularColor = uLightSpecularColor;
 	light.type = uLightType;
 	light.dir = uLightDir;
-	//return calcPointLight(light, N, input.FragPos, V, mat);
-	return calcDirectionalLight(light, N, V, mat);
+
+	if (light.type == 0) {
+		return calcPointLight(light, N, input.FragPos, V, mat);
+	}
+	else {
+		return calcDirectionalLight(light, N, V, mat);
+	}
 }
 

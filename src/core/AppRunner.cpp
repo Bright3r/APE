@@ -264,6 +264,10 @@ void AppRunner::drawDebugPanel() noexcept
 	ImGui::SliderFloat("sensitivity", &sensitivity, 0.01f, 1.f, "%.2f");
 	cam->setSensitivity(sensitivity);
 
+	if (ImGui::RadioButton("lock camera", cam->isLocked())) {
+		cam->setLocked(!cam->isLocked());
+	}
+
 	if (ImGui::RadioButton("show normals", s_renderer->debug_mode.show_normals)) {
 		s_renderer->debug_mode.show_normals = 
 			!s_renderer->debug_mode.show_normals;

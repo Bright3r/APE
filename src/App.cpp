@@ -80,8 +80,8 @@ void App::update()
 	}
 
 	// Camera Tab In
-	if (AppRunner::keyDown(SDLK_TAB)) {
-		bool is_locked = cam->getLocked();
+	if (AppRunner::keyDown(SDLK_C)) {
+		bool is_locked = cam->isLocked();
 		cam->setLocked(!is_locked);
 		AppRunner::setTabIn(is_locked);
 	}

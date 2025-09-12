@@ -79,7 +79,7 @@ public:
 		m_sensitivity = sensitivity;
 	}
 
-	[[nodiscard]] bool getLocked() const noexcept
+	[[nodiscard]] bool isLocked() const noexcept
 	{
 		return m_is_locked;
 	}
