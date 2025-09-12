@@ -3,6 +3,7 @@
 #include "util/Logger.h"
 
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
@@ -15,12 +16,39 @@ enum class AssetClass {
 	Texture,
 };
 
+struct AssetKey {
+	std::filesystem::path path;
+	std::string sub_index;
+
+	bool operator==(const AssetKey& other) const noexcept
+	{
+		return path == other.path && sub_index == other.sub_index;
+	}
+
+	bool operator!=(const AssetKey& other) const noexcept
+	{
+		return !(*this == other);
+	}
+
+	std::string to_string() const {
+		return path.string() + "::" + sub_index;
+	}
+};
+
+struct AssetKeyHash {
+	size_t operator()(const AssetKey& k) const noexcept
+	{
+		return std::hash<std::string>()(k.to_string());
+	}
+};
+
 template <typename Asset>
 struct AssetHandle {
+	AssetKey key;
 	AssetClass asset_class;
-	std::filesystem::path asset_path;
 	std::shared_ptr<Asset> data;
 };
+
 
 class AssetManager {
 private:
@@ -31,64 +59,64 @@ private:
 	};
 
 	static inline 
-	std::unordered_map<std::filesystem::path, InternalAsset> s_assets;
+	std::unordered_map<AssetKey, InternalAsset, AssetKeyHash> s_assets;
 
 public:
 	[[nodiscard]] static bool 
-	contains(std::filesystem::path asset_path) noexcept
+	contains(const AssetKey& key) noexcept
 	{
-		return s_assets.contains(asset_path);
+		return s_assets.contains(key);
 	}
 
 	template <typename Asset>
 	static AssetHandle<Asset> 
-	upload(std::filesystem::path asset_path,
+	upload(const AssetKey& key,
 		AssetClass asset_class,
 		std::unique_ptr<Asset> data) noexcept
 	{
-		APE_CHECK((!contains(asset_path)),
+		APE_CHECK((!contains(key)),
 			"AssetManager::upload() Failed: Cannot reupload asset {}.",
-			asset_path.c_str()
+			key.to_string()
 		);
 
 		s_assets.emplace(
-			asset_path,
+			key,
 			InternalAsset { 
 				.asset_class = asset_class,
 				.type_id = typeid(Asset),
 				.data = std::shared_ptr<void>(std::move(data)),
 			}
 		);
-		return makeHandle<Asset>(asset_path);
+		return makeHandle<Asset>(key);
 	}
 
 	template <typename Asset>
 	[[nodiscard]] static AssetHandle<Asset> 
-	get(std::filesystem::path asset_path) noexcept
+	get(const AssetKey& key) noexcept
 	{
-		return makeHandle<Asset>(asset_path);
+		return makeHandle<Asset>(key);
 	}
 
 private:
 	template <typename Asset>
 	[[nodiscard]] static AssetHandle<Asset>
-	makeHandle(std::filesystem::path asset_path) noexcept
+	makeHandle(const AssetKey& key) noexcept
 	{
-		auto it = s_assets.find(asset_path);
+		auto it = s_assets.find(key);
 		APE_CHECK((it != s_assets.end()),
 			"AssetManager::get() Failed: Asset {} not yet loaded.",
-			asset_path.c_str()
+			key.to_string()
 		);
 
 		auto& asset = it->second;
 		APE_CHECK((asset.type_id == typeid(Asset)),
 			"AssetManager::makeHandle() Failed: Type mismatch for {}.",
-			asset_path.c_str()
+			key.to_string()
 		);
 
 		return {
+			.key = key,
 			.asset_class = asset.asset_class,
-			.asset_path = asset_path,
 			.data = std::static_pointer_cast<Asset>(asset.data),
 		};
 	}

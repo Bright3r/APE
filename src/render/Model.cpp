@@ -1,4 +1,5 @@
 #include "render/Model.h"
+#include "core/AssetManager.h"
 #include "util/Logger.h"
 
 #include <SDL3/SDL_stdinc.h>
@@ -51,14 +52,18 @@ void Model::loadModel(std::filesystem::path model_path) noexcept
 
 AssetHandle<Model> Model::getAssetHandle(std::filesystem::path model_path) noexcept
 {
-	if (!AssetManager::contains(model_path)) {
+	AssetKey model_key = {
+		.path = model_path,
+		.sub_index = "",
+	};
+	if (!AssetManager::contains(model_key)) {
 		AssetManager::upload<Model>(
-			model_path,
+			model_key,
 			AssetClass::Model,
 			std::make_unique<Model>(model_path)
 		);
 	}
-	return AssetManager::get<Model>(model_path);
+	return AssetManager::get<Model>(model_key);
 }
 
 AssetHandle<Model> Model::getAssetHandle() const noexcept
