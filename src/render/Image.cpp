@@ -19,8 +19,13 @@ Image::Image(std::filesystem::path path) noexcept
 	loadImage(path);
 }
 
-Image::Image(int width, int height, const std::byte* data) noexcept
+Image::Image(std::filesystem::path path, 
+	int width,
+	int height,
+	const std::byte* data) noexcept
 {
+	m_path = path;
+
 	// Assume data is R8G8BA8 format
 	int num_channels = DEFAULT_IMG_CHANNELS;
 	if (height > 0) {
@@ -66,6 +71,8 @@ Image::Image(int width, int height, const std::byte* data) noexcept
 
 void Image::loadImage(std::filesystem::path path) noexcept
 {
+	m_path = path;
+
 	std::string abs_path = std::filesystem::absolute(path);
 	int width, height, num_channels;
 	std::byte* data = reinterpret_cast<std::byte*>(stbi_load(
@@ -99,18 +106,7 @@ void Image::loadImage(std::filesystem::path path) noexcept
 
 void Image::loadCheckerboard() noexcept
 {
-	m_width = 2;
-	m_height = 2;
-	m_num_channels = DEFAULT_IMG_CHANNELS;
-
-	static constexpr std::byte on  { 0xff };
-	static constexpr std::byte off { 0x00 };
-	m_pixels = { 
-		off, off, off,  on,
-		 on, off,  on,  on,
-		 on, off,  on,  on,
-		off, off, off,  on,
-	};
+	loadImage(DEFAULT_IMG_PATH);
 }
 
 Uint32 Image::getSizeBytes() const noexcept

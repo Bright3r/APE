@@ -21,8 +21,15 @@ void App::setup()
 
 	auto& world = AppRunner::getWorld();
 
-	// auto car = std::make_unique<APE::Render::Model>("res/models/che/scene.gltf");
-	// world.addModel(car.get());
+	APE::AssetKey car_key = {
+		.path = "res/models/che/scene.gltf",
+		.sub_index = "",
+	};
+	world.addModel(APE::AssetManager::upload<APE::Render::Model>(
+		car_key,
+		APE::AssetClass::Model,
+		std::make_unique<APE::Render::Model>(car_key.path)
+	));
 
 	// auto ship = std::make_unique<APE::Render::Model>(
 	// 	"res/models/ship/source/full_scene.fbx"

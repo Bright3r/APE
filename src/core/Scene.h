@@ -77,7 +77,7 @@ struct Scene {
 	}
 
 	ECS::EntityHandle addModel(AssetHandle<Render::Model> model_handle,
-		const TransformComponent& transform) noexcept
+		const TransformComponent& transform = {}) noexcept
 	{
 		ECS::EntityHandle par = registry.createEntity();
 		registry.emplaceComponent<HierarchyComponent>(

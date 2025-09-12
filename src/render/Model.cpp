@@ -1,5 +1,4 @@
 #include "render/Model.h"
-#include "core/AssetManager.h"
 #include "util/Logger.h"
 
 #include <SDL3/SDL_stdinc.h>
@@ -103,6 +102,7 @@ std::shared_ptr<Image> Model::convertAiMaterial(
 			aiTexture* ai_tex = scene->mTextures[tex_idx];
 
 			return std::make_shared<Image>(
+				model_path,
 				ai_tex->mWidth,
 				ai_tex->mHeight,
 				reinterpret_cast<std::byte*>(ai_tex->pcData)

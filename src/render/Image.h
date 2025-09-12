@@ -3,6 +3,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <cstddef>
 #include <filesystem>
+#include <string_view>
 #include <vector>
 
 namespace APE::Render {
@@ -10,18 +11,23 @@ namespace APE::Render {
 class Image {
 private:
 	static constexpr int DEFAULT_IMG_CHANNELS = 4;
+	static inline std::string_view DEFAULT_IMG_PATH = "res/textures/checkerboard.png";
 
 	int m_width;
 	int m_height;
 	int m_num_channels;
 	std::vector<std::byte> m_pixels;
+	std::filesystem::path m_path;
 
 public:
 	Image() noexcept;
 
 	Image(std::filesystem::path path) noexcept;
 
-	Image(int width, int height, const std::byte* data) noexcept;
+	Image(std::filesystem::path path, 
+		int width,
+		int height,
+		const std::byte* data) noexcept;
 
 	void loadImage(std::filesystem::path path) noexcept;
 
