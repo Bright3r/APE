@@ -38,10 +38,7 @@ public:
 
 	void loadModel(std::filesystem::path model_path) noexcept;
 
-	[[nodiscard]] static AssetHandle<Model> 
-	getAssetHandle(std::filesystem::path model_path) noexcept;
-
-	[[nodiscard]] AssetHandle<Model> getAssetHandle() const noexcept;
+	[[nodiscard]] std::filesystem::path getPath() const noexcept;
 
 	std::vector<ModelMesh>& getMeshes() noexcept;
 

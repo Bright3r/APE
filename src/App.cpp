@@ -35,11 +35,26 @@ void App::setup()
 	models.emplace_back(std::make_unique<APE::Render::Cone>());
 	models.emplace_back(std::make_unique<APE::Render::Cylinder>());
 
+	std::vector<APE::AssetHandle<APE::Render::Model>> model_handles;
+	for (auto& model : models) {
+		APE::AssetKey key = {
+			.path = model->getPath(),
+			.sub_index = "",
+		};
+		model_handles.emplace_back(
+			APE::AssetManager::upload<APE::Render::Model>(
+				key,
+				APE::AssetClass::Model,
+				std::move(model)
+			)
+		);
+	}
+
 	constexpr int NUM_SHAPES = 200;
 	int sqrt = std::sqrt(NUM_SHAPES);
 	for (int i = 0; i < NUM_SHAPES; ++i) {
-		auto& model = models[i % models.size()];
-		auto model_handle = model->getAssetHandle();
+		auto& model_handle = model_handles[i % model_handles.size()];
+		auto& model = model_handle.data;
 
 		APE::TransformComponent transform = model->getTransform();
 		transform.position.x = ((i % sqrt) - (sqrt / 2.f)) * 5;

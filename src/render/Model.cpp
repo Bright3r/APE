@@ -50,26 +50,21 @@ void Model::loadModel(std::filesystem::path model_path) noexcept
 	processNode(scene->mRootNode, scene, model_path);
 }
 
-AssetHandle<Model> Model::getAssetHandle(std::filesystem::path model_path) noexcept
-{
-	AssetKey model_key = {
-		.path = model_path,
-		.sub_index = "",
-	};
-	if (!AssetManager::contains(model_key)) {
-		AssetManager::upload<Model>(
-			model_key,
-			AssetClass::Model,
-			std::make_unique<Model>(model_path)
-		);
-	}
-	return AssetManager::get<Model>(model_key);
-}
-
-AssetHandle<Model> Model::getAssetHandle() const noexcept
-{
-	return getAssetHandle(m_model_path);
-}
+// AssetHandle<Model> Model::getAssetHandle(std::filesystem::path model_path) noexcept
+// {
+// 	AssetKey model_key = {
+// 		.path = model_path,
+// 		.sub_index = "",
+// 	};
+// 	if (!AssetManager::contains(model_key)) {
+// 		AssetManager::upload<Model>(
+// 			model_key,
+// 			AssetClass::Model,
+// 			std::make_unique<Model>(model_path)
+// 		);
+// 	}
+// 	return AssetManager::get<Model>(model_key);
+// }
 
 TransformComponent Model::convertAiTransform(const aiMatrix4x4 ai_transform) noexcept
 {
@@ -211,6 +206,11 @@ Model::ModelMesh Model::processAiMesh(
 	}
 
 	return ModelMesh(vertices, indices, transform, texture);
+}
+
+[[nodiscard]] std::filesystem::path Model::getPath() const noexcept
+{
+	return m_model_path;
 }
 
 std::vector<Model::ModelMesh>& Model::getMeshes() noexcept
