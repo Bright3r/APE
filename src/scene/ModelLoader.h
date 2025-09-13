@@ -7,8 +7,6 @@
 #include <assimp/material.h>
 #include <assimp/scene.h>
 
-#include <memory>
-
 namespace APE {
 
 class ModelLoader {
@@ -19,14 +17,6 @@ public:
 private:
 	[[nodiscard]] static TransformComponent 
 	convertAiTransform(const aiMatrix4x4 ai_transform) noexcept;
-
-	[[nodiscard]] static AssetHandle<Render::Image> 
-	defaultImageHandle() noexcept;
-
-	[[nodiscard]] static AssetHandle<Render::Image> 
-	makeImageHandle(
-		std::unique_ptr<Render::Image> texture,
-		const std::string& handle_index) noexcept;
 
 	[[nodiscard]] static AssetHandle<Render::Image> 
 	convertAiMaterial(

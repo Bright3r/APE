@@ -1,5 +1,6 @@
 #include "ModelLoader.h"
 #include "AssetManager.h"
+#include "scene/ImageLoader.h"
 
 #include <assimp/postprocess.h>
 
@@ -59,34 +60,6 @@ TransformComponent ModelLoader::convertAiTransform(
 	);
 }
 
-AssetHandle<Render::Image> ModelLoader::defaultImageHandle() noexcept
-{
-	AssetKey key { Render::Image::DEFAULT_IMG_PATH };
-	if (!AssetManager::contains(key)) {
-		AssetManager::upload<Render::Image>(
-			key,
-			AssetClass::Texture,
-			std::make_unique<Render::Image>()
-		);
-	}
-	return AssetManager::get<Render::Image>(key);
-}
-
-AssetHandle<Render::Image> ModelLoader::makeImageHandle(
-	std::unique_ptr<Render::Image> texture,
-	const std::string& handle_index) noexcept
-{
-	AssetKey key = { texture->getPath() };
-	if (!AssetManager::contains(key)) {
-		AssetManager::upload<Render::Image>(
-			key,
-			AssetClass::Texture,
-			std::move(texture)
-		);
-	}
-	return AssetManager::get<Render::Image>(key);
-}
-
 AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 	const aiMaterial* ai_mat,
 	const aiScene* scene,
@@ -98,7 +71,7 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 		APE_ERROR(
 			"ModelLoader::convertAiMaterial() Failed: Diffuse texture not found."
 		);
-		return defaultImageHandle();
+		return ImageLoader::defaultImage();
 	}
 
 	// Get diffuse texture path
@@ -109,19 +82,25 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 			int tex_idx = std::atoi(path.C_Str() + 1);
 			aiTexture* ai_tex = scene->mTextures[tex_idx];
 
-			return makeImageHandle(std::make_unique<Render::Image>(
+			AssetKey key { model_path, ai_mat->GetName().C_Str() };
+			auto img = std::make_unique<Render::Image>(
 				model_path,
 				ai_tex->mWidth,
 				ai_tex->mHeight,
 				reinterpret_cast<std::byte*>(ai_tex->pcData)
-			), ai_mat->GetName().C_Str());
+			);
+			return AssetManager::upload<Render::Image>(
+				key,
+				AssetClass::Texture,
+				std::move(img)
+			);
 		}
 		// Otherwise create texture from file
 		else {
 			std::string tex_path { 
 				model_path.parent_path().append(path.C_Str())
 			};
-			return makeImageHandle(std::make_unique<Render::Image>(tex_path), "");
+			return ImageLoader::load(tex_path);
 		}
 	}
 
@@ -129,7 +108,7 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 	APE_ERROR(
 		"ModelLoader::convertAiMaterial() Failed: Could not load diffuse texture."
 	);
-	return defaultImageHandle();
+	return ImageLoader::defaultImage();
 }
 
 void ModelLoader::processNode(
