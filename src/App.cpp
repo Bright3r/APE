@@ -4,10 +4,7 @@
 #include "scene/AssetManager.h"
 #include "render/Camera.h"
 #include "render/Model.h"
-#include "render/Shapes/Cube.h"
-#include "render/Shapes/Sphere.h"
-#include "render/Shapes/Cone.h"
-#include "render/Shapes/Cylinder.h"
+#include "scene/ModelLoader.h"
 
 #include <glm/fwd.hpp>
 #include <imgui.h>
@@ -31,16 +28,21 @@ void App::setup()
 	// 	std::make_unique<APE::Render::Model>(car_key.path)
 	// ));
 
+	static constexpr std::string_view CUBE_PATH = "res/models/cube.obj";
+	static constexpr std::string_view SPHERE_PATH = "res/models/sphere.obj";
+	static constexpr std::string_view CONE_PATH = "res/models/cone.obj";
+	static constexpr std::string_view CYLINDER_PATH = "res/models/cylinder.obj";
+
 	std::vector<std::unique_ptr<APE::Render::Model>> models;
-	models.emplace_back(std::make_unique<APE::Render::Cube>());
-	models.emplace_back(std::make_unique<APE::Render::Sphere>());
-	models.emplace_back(std::make_unique<APE::Render::Cone>());
-	models.emplace_back(std::make_unique<APE::Render::Cylinder>());
+	models.push_back(APE::ModelLoader::load(CUBE_PATH));
+	models.push_back(APE::ModelLoader::load(SPHERE_PATH));
+	models.push_back(APE::ModelLoader::load(CONE_PATH));
+	models.push_back(APE::ModelLoader::load(CYLINDER_PATH));
 
 	std::vector<APE::AssetHandle<APE::Render::Model>> model_handles;
 	for (auto& model : models) {
 		APE::AssetKey key = {
-			.path = model->getPath(),
+			.path = model->model_path,
 			.sub_index = "",
 		};
 		model_handles.emplace_back(
@@ -58,7 +60,7 @@ void App::setup()
 		auto& model_handle = model_handles[i % model_handles.size()];
 		auto& model = model_handle.data;
 
-		APE::TransformComponent transform = model->transform();
+		APE::TransformComponent transform = model->transform;
 		transform.position.x = ((i % sqrt) - (sqrt / 2.f)) * 5;
 		transform.position.z = ((i / sqrt) - (sqrt / 2.f)) * 5;
 

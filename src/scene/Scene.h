@@ -92,8 +92,8 @@ struct Scene {
 		);
 
 		auto& model = model_handle.data;
-		for (size_t idx = 0; idx < model->getMeshes().size(); ++idx) {
-			auto& mesh = model->getMeshes()[idx];
+		for (size_t idx = 0; idx < model->meshes.size(); ++idx) {
+			auto& mesh = model->meshes[idx];
 
 			ECS::EntityHandle ent = registry.createEntity();
 			registry.emplaceComponent<HierarchyComponent>(
