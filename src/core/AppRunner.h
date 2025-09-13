@@ -1,7 +1,7 @@
 #pragma once
 
 #include "App.h"
-#include "core/Scene.h"
+#include "scene/Scene.h"
 #include "render/Camera.h"
 #include "render/Context.h"
 #include "render/Renderer.h"

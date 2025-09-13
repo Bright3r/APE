@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/AssetManager.h"
+#include "scene/AssetManager.h"
 #include "render/Model.h"
 #include "render/Image.h"
 

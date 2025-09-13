@@ -14,8 +14,9 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(imgui CONFIG REQUIRED)
-find_package(GTest CONFIG REQUIRED)
 find_package(imguizmo CONFIG REQUIRED)
+find_package(cereal CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 
 # Compile Engine into lib
 add_library(
@@ -43,6 +44,7 @@ target_link_libraries(
 	assimp::assimp
 	imgui::imgui
 	imguizmo::imguizmo
+	cereal::cereal
 )
 
 

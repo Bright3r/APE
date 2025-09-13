@@ -1,7 +1,7 @@
 #include "App.h"
 #include "components/Object.h"
 #include "core/AppRunner.h"
-#include "core/AssetManager.h"
+#include "scene/AssetManager.h"
 #include "render/Camera.h"
 #include "render/Model.h"
 #include "render/Shapes/Cube.h"

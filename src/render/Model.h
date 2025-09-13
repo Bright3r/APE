@@ -1,7 +1,7 @@
 #pragma once
 
 #include "components/Object.h"
-#include "core/AssetManager.h"
+#include "scene/AssetManager.h"
 #include "render/Mesh.h"
 #include "render/Vertex.h"
 
