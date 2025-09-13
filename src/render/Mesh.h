@@ -5,10 +5,7 @@
 #include "render/Image.h"
 #include "render/SafeGPU.h"
 
-#include <SDL3/SDL_gpu.h>
-#include <SDL3/SDL_stdinc.h>
 #include <glm/glm.hpp>
-#include <glm/fwd.hpp>
 
 #include <vector>
 

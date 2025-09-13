@@ -1,5 +1,7 @@
 #include "ModelLoader.h"
 
+#include <assimp/postprocess.h>
+
 namespace APE {
 
 std::unique_ptr<Render::Model> ModelLoader::load(

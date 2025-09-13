@@ -3,7 +3,10 @@
 #include "render/Model.h"
 #include "scene/AssetManager.h"
 
-#include <cereal/cereal.hpp>
+#include "assimp/Importer.hpp"
+#include <assimp/material.h>
+#include <assimp/scene.h>
+
 #include <memory>
 
 namespace APE {
