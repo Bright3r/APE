@@ -1,7 +1,7 @@
 #pragma once
 
 #include "render/Model.h"
-#include "scene/AssetManager.h"
+#include "scene/AssetHandle.h"
 
 #include "assimp/Importer.hpp"
 #include <assimp/material.h>
@@ -13,7 +13,7 @@ namespace APE {
 
 class ModelLoader {
 public:
-	[[nodiscard]] static std::unique_ptr<Render::Model> 
+	[[nodiscard]] static AssetHandle<Render::Model> 
 	load(std::filesystem::path model_path) noexcept;
 
 private:

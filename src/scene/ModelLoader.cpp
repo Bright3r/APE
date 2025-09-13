@@ -1,12 +1,20 @@
 #include "ModelLoader.h"
+#include "AssetManager.h"
 
 #include <assimp/postprocess.h>
 
+#include <utility>
+
 namespace APE {
 
-std::unique_ptr<Render::Model> ModelLoader::load(
+AssetHandle<Render::Model> ModelLoader::load(
 	std::filesystem::path model_path) noexcept
 {
+	AssetKey key { model_path };
+	if (AssetManager::contains(key)) {
+		return AssetManager::get<Render::Model>(key);
+	}
+
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
 		model_path,
@@ -27,7 +35,13 @@ std::unique_ptr<Render::Model> ModelLoader::load(
 
 	auto m = std::make_unique<Render::Model>(model_path);
 	processNode(scene->mRootNode, scene, *m, model_path);
-	return m;
+
+	auto handle = AssetManager::upload<Render::Model>(
+		key,
+		AssetClass::Model,
+		std::move(m)
+	);
+	return handle;
 }
 
 TransformComponent ModelLoader::convertAiTransform(
@@ -47,10 +61,7 @@ TransformComponent ModelLoader::convertAiTransform(
 
 AssetHandle<Render::Image> ModelLoader::defaultImageHandle() noexcept
 {
-	AssetKey key = {
-		.path = Render::Image::DEFAULT_IMG_PATH,
-		.sub_index = "",
-	};
+	AssetKey key { Render::Image::DEFAULT_IMG_PATH };
 	if (!AssetManager::contains(key)) {
 		AssetManager::upload<Render::Image>(
 			key,
@@ -65,10 +76,7 @@ AssetHandle<Render::Image> ModelLoader::makeImageHandle(
 	std::unique_ptr<Render::Image> texture,
 	const std::string& handle_index) noexcept
 {
-	AssetKey key = {
-		.path = texture->getPath(),
-		.sub_index = handle_index,
-	};
+	AssetKey key = { texture->getPath() };
 	if (!AssetManager::contains(key)) {
 		AssetManager::upload<Render::Image>(
 			key,
@@ -88,7 +96,7 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 	if (ai_mat->GetTextureCount(aiTextureType_DIFFUSE) <=  0) {
 		// Return default texture on failure
 		APE_ERROR(
-			"Model::convertAiMaterial Failed - diffuse texture not found."
+			"ModelLoader::convertAiMaterial() Failed: Diffuse texture not found."
 		);
 		return defaultImageHandle();
 	}
@@ -119,7 +127,7 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 
 	// Return default texture on failure
 	APE_ERROR(
-		"Model::convertAiMaterial Failed - could not load diffuse texture."
+		"ModelLoader::convertAiMaterial() Failed: Could not load diffuse texture."
 	);
 	return defaultImageHandle();
 }

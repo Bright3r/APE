@@ -1,7 +1,9 @@
 #pragma once
 
 #include "render/SafeGPU.h"
+
 #include <SDL3/SDL_stdinc.h>
+
 #include <cstddef>
 #include <filesystem>
 #include <string_view>

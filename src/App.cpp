@@ -1,7 +1,7 @@
 #include "App.h"
 #include "components/Object.h"
 #include "core/AppRunner.h"
-#include "scene/AssetManager.h"
+#include "scene/AssetHandle.h"
 #include "render/Camera.h"
 #include "render/Model.h"
 #include "scene/ModelLoader.h"
@@ -18,46 +18,25 @@ void App::setup()
 
 	auto& world = AppRunner::getWorld();
 
-	APE::AssetKey car_key = {
-		.path = "res/models/che/scene.gltf",
-		.sub_index = "",
-	};
-	// world.addModel(APE::AssetManager::upload<APE::Render::Model>(
-	// 	car_key,
-	// 	APE::AssetClass::Model,
-	// 	std::make_unique<APE::Render::Model>(car_key.path)
-	// ));
+	static constexpr std::string_view CAR_PATH = "res/models/che/scene.gltf";
+	world.addModel(APE::ModelLoader::load(CAR_PATH));
+
 
 	static constexpr std::string_view CUBE_PATH = "res/models/cube.obj";
 	static constexpr std::string_view SPHERE_PATH = "res/models/sphere.obj";
 	static constexpr std::string_view CONE_PATH = "res/models/cone.obj";
 	static constexpr std::string_view CYLINDER_PATH = "res/models/cylinder.obj";
 
-	std::vector<std::unique_ptr<APE::Render::Model>> models;
+	std::vector<APE::AssetHandle<APE::Render::Model>> models;
 	models.push_back(APE::ModelLoader::load(CUBE_PATH));
 	models.push_back(APE::ModelLoader::load(SPHERE_PATH));
 	models.push_back(APE::ModelLoader::load(CONE_PATH));
 	models.push_back(APE::ModelLoader::load(CYLINDER_PATH));
 
-	std::vector<APE::AssetHandle<APE::Render::Model>> model_handles;
-	for (auto& model : models) {
-		APE::AssetKey key = {
-			.path = model->model_path,
-			.sub_index = "",
-		};
-		model_handles.emplace_back(
-			APE::AssetManager::upload<APE::Render::Model>(
-				key,
-				APE::AssetClass::Model,
-				std::move(model)
-			)
-		);
-	}
-
 	constexpr int NUM_SHAPES = 200;
 	int sqrt = std::sqrt(NUM_SHAPES);
 	for (int i = 0; i < NUM_SHAPES; ++i) {
-		auto& model_handle = model_handles[i % model_handles.size()];
+		auto& model_handle = models[i % models.size()];
 		auto& model = model_handle.data;
 
 		APE::TransformComponent transform = model->transform;

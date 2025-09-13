@@ -1,7 +1,7 @@
 #pragma once
 
 #include "components/Object.h"
-#include "scene/AssetManager.h"
+#include "scene/AssetHandle.h"
 #include "render/Image.h"
 #include "render/SafeGPU.h"
 

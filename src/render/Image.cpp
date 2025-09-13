@@ -1,5 +1,6 @@
 #include "render/Image.h"
 #include "util/Logger.h"
+
 #include <cstring>
 #include <filesystem>
 

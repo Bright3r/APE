@@ -1,7 +1,6 @@
 #pragma once
 
 #include "components/Object.h"
-#include "components/Render.h"
 #include "scene/AssetManager.h"
 #include "ecs/Registry.h"
 #include "scene/Scene.h"

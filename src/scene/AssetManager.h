@@ -1,54 +1,13 @@
 #pragma once
 
 #include "util/Logger.h"
+#include "scene/AssetHandle.h"
 
-#include <filesystem>
 #include <functional>
 #include <memory>
 #include <typeindex>
-#include <unordered_map>
 
 namespace APE {
-
-enum class AssetClass {
-	None = 0,
-	Model,
-	Texture,
-};
-
-struct AssetKey {
-	std::filesystem::path path;
-	std::string sub_index;
-
-	bool operator==(const AssetKey& other) const noexcept
-	{
-		return path == other.path && sub_index == other.sub_index;
-	}
-
-	bool operator!=(const AssetKey& other) const noexcept
-	{
-		return !(*this == other);
-	}
-
-	std::string to_string() const {
-		return path.string() + "::" + sub_index;
-	}
-};
-
-struct AssetKeyHash {
-	size_t operator()(const AssetKey& k) const noexcept
-	{
-		return std::hash<std::string>()(k.to_string());
-	}
-};
-
-template <typename Asset>
-struct AssetHandle {
-	AssetKey key;
-	AssetClass asset_class;
-	std::shared_ptr<Asset> data;
-};
-
 
 class AssetManager {
 private:
@@ -56,6 +15,13 @@ private:
 		AssetClass asset_class;
 		std::type_index type_id;
 		std::shared_ptr<void> data;
+	};
+
+	struct AssetKeyHash {
+		size_t operator()(const AssetKey& k) const noexcept
+		{
+			return std::hash<std::string>()(k.to_string());
+		}
 	};
 
 	static inline 
