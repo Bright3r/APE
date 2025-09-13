@@ -11,6 +11,7 @@
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_events.h>
 
+#include <filesystem>
 #include <memory>
 #include <string_view>
 
@@ -61,6 +62,8 @@ public:
 	static APE::Scene& getWorld() noexcept;
 
 	static APE::ECS::EntityHandle getSelectedEntity() noexcept;
+
+	static void save(std::filesystem::path save_path) noexcept;
 
 
 	// Graphics Functions

@@ -27,6 +27,10 @@ using CPool = Pool<EntityID, Component>;
 struct EntityHandle {
 	EntityID id;
 
+	EntityHandle(EntityID id = calcTombstone<EntityID>()) noexcept
+		: id(id)
+	{ }
+
 	bool operator==(const EntityHandle& other) const noexcept
 	{
 		return id == other.id;
@@ -319,6 +323,13 @@ public:
 		return (typeBitmask<Component>() & real_ent.component_mask) != 0;
 	}
 
+	template <typename Component>
+	[[nodiscard]] bool hasComponent() const noexcept
+	{
+		TypeID type_id = typeID<Component>();
+		return m_pools.contains(type_id);
+	}
+
 	[[nodiscard]] size_t numComponents() const noexcept
 	{
 		return s_type_counter;
@@ -330,7 +341,7 @@ public:
 	}
 
 	[[nodiscard]] EntityHandle tombstone() const noexcept
-{
+	{
 		return { m_entities.tombstone() };
 	}
 
@@ -358,6 +369,26 @@ public:
 			}
 		}
 		return ents;
+	}
+
+	template <typename Component>
+	[[nodiscard]] CPool<Component>& getPool() noexcept
+	{
+		TypeID type_id = typeID<Component>();
+		if (!m_pools.contains(type_id)) {
+			m_pools[type_id] = std::make_unique<CPool<Component>>();
+		}
+		return *static_cast<CPool<Component>*>(m_pools[type_id].get());
+	}
+
+	template <typename Component>
+	[[nodiscard]] const CPool<Component>& getPool() const noexcept
+	{
+		TypeID type_id = typeID<Component>();
+		APE_CHECK((m_pools.contains(type_id)),
+			"Registry::getPool() Failed: const CPool does not exist."
+		);
+		return *static_cast<CPool<Component>*>(m_pools.at(type_id).get());
 	}
 
 	template <typename Component>
@@ -432,16 +463,6 @@ private:
 	{
 		auto& real_ent = m_entities.get(ent.id);
 		real_ent.component_mask &= ~typeBitmask<Component>();
-	}
-
-	template <typename Component>
-	[[nodiscard]] CPool<Component>& getPool() noexcept
-	{
-		TypeID type_id = typeID<Component>();
-		if (!m_pools.contains(type_id)) {
-			m_pools[type_id] = std::make_unique<CPool<Component>>();
-		}
-		return *static_cast<CPool<Component>*>(m_pools[type_id].get());
 	}
 };
 

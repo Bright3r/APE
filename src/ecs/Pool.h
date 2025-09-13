@@ -13,6 +13,17 @@
 namespace APE::ECS {
 
 template <typename EntityID>
+[[nodiscard]] static EntityID calcTombstone() noexcept
+{
+	static_assert(
+		std::is_integral_v<EntityID>, 
+		"EntityID must be an integral type."
+	);
+	return std::numeric_limits<EntityID>::max();
+}
+
+
+template <typename EntityID>
 struct PoolInterface {
 	virtual ~PoolInterface() = default;
 
@@ -38,11 +49,7 @@ private:
 public:
 	Pool() noexcept
 	{
-		static_assert(
-			std::is_integral_v<EntityID>, 
-			"Pool only supports integral EntityID types."
-		);
-		m_tombstone = std::numeric_limits<EntityID>::max();
+		m_tombstone = calcTombstone<EntityID>();
 	}
 
 	[[nodiscard]] EntityID tombstone() const noexcept
@@ -231,6 +238,11 @@ public:
 	struct Entry {
 		EntityID id;
 		T& component;
+
+		Entry(EntityID id, T& comp) noexcept
+			: id(id)
+			, component(comp)
+		{ }
 	};
 
 	/*
@@ -290,6 +302,15 @@ public:
 		}
 	};
 
+	struct ConstEntry {
+		EntityID id;
+		const T& component;
+
+		ConstEntry(EntityID id, const T& comp) noexcept
+			: id(id)
+			, component(comp)
+		{ }
+	};
 
 	class ConstIterator {
 	private:
@@ -297,8 +318,8 @@ public:
 		size_t m_idx;
 
 	public:
-		using value_type = Entry;
-		using reference = Entry;
+		using value_type = ConstEntry;
+		using reference = ConstEntry;
 		using pointer = void;
 		using iterator_category = std::forward_iterator_tag;
 
@@ -309,7 +330,7 @@ public:
 
 		}
 
-		Entry operator*() const 
+		ConstEntry operator*() const 
 		{
 			return {
 				m_set->m_denseToID[m_idx-1],

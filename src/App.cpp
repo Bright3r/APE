@@ -94,6 +94,11 @@ void App::update()
 		AppRunner::setQuit(true);
 	}
 
+	// Save
+	if (AppRunner::keyDown(SDLK_P)) {
+		AppRunner::save("demos/test.json");
+	}
+
 	// Camera Tab In
 	if (AppRunner::keyDown(SDLK_C)) {
 		bool is_locked = cam->isLocked();

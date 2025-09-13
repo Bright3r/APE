@@ -3,6 +3,7 @@
 #include "components/Render.h"
 #include "ecs/Registry.h"
 #include "render/Shader.h"
+#include "scene/Serialize.h"
 #include "util/Logger.h"
 
 #include <ImGuizmo.h>
@@ -195,6 +196,12 @@ APE::Scene& AppRunner::getWorld() noexcept
 APE::ECS::EntityHandle AppRunner::getSelectedEntity() noexcept
 {
 	return s_selected_ent;
+}
+
+void AppRunner::save(std::filesystem::path save_path) noexcept
+{
+	auto am = APE::AssetManager::getInstance();
+	APE::Serialize::saveScene(save_path, s_world, *am);
 }
 
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
