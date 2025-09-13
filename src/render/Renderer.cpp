@@ -295,19 +295,19 @@ void Renderer::draw(MeshComponent& mesh,
 
 	// Check if gpu vertex buffer was already created
 	auto& raw_mesh = mesh.model_handle.data->meshes[mesh.mesh_index];
-	if (!raw_mesh.vertexBuffer()) {
+	if (!raw_mesh.vertex_buffer) {
 		// Create GPU buffer with vertex data
 		SafeGPU::UniqueGPUBuffer vertex_buffer = uploadBuffer(
-			vectorToRawBytes(raw_mesh.getVertices()),
+			vectorToRawBytes(raw_mesh.vertices),
 			SDL_GPU_BUFFERUSAGE_VERTEX
 		);
 
-		raw_mesh.vertexBuffer() = std::move(vertex_buffer);
+		raw_mesh.vertex_buffer = std::move(vertex_buffer);
 	}
 
 	// Bind vertex buffer
 	SDL_GPUBufferBinding vertex_buffer_binding = {
-		.buffer = raw_mesh.vertexBuffer().get(),
+		.buffer = raw_mesh.vertex_buffer.get(),
 		.offset = 0,
 	};
 	SDL_BindGPUVertexBuffers(
@@ -319,19 +319,19 @@ void Renderer::draw(MeshComponent& mesh,
 
 
 	// Check if gpu index buffer was already created
-	if (!raw_mesh.indexBuffer()) {
+	if (!raw_mesh.index_buffer) {
 		// Create GPU buffer with index data
 		SafeGPU::UniqueGPUBuffer index_buffer = uploadBuffer(
-			vectorToRawBytes(raw_mesh.getIndices()),
+			vectorToRawBytes(raw_mesh.indices),
 			SDL_GPU_BUFFERUSAGE_INDEX
 		);
 
-		raw_mesh.indexBuffer() = std::move(index_buffer);
+		raw_mesh.index_buffer = std::move(index_buffer);
 	}
 
 	// Bind index buffer
 	SDL_GPUBufferBinding index_buffer_binding = {
-		.buffer = raw_mesh.indexBuffer().get(),
+		.buffer = raw_mesh.index_buffer.get(),
 		.offset = 0,
 	};
 	SDL_BindGPUIndexBuffer(
@@ -411,7 +411,7 @@ void Renderer::draw(MeshComponent& mesh,
 	// Draw mesh
 	SDL_DrawGPUIndexedPrimitives(
 		m_render_pass, 
-		raw_mesh.getIndices().size(), 
+		raw_mesh.indices.size(), 
 		1, 0, 0, 0
 	);
 }

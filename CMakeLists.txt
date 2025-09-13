@@ -26,7 +26,6 @@ add_library(
 	src/render/Shader.cpp
 	src/render/Context.cpp
 	src/render/Renderer.cpp
-	src/render/Model.cpp
 	src/render/Image.cpp
 	src/scene/ModelLoader.cpp
 )

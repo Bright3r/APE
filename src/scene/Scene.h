@@ -109,11 +109,11 @@ struct Scene {
 			);
 			registry.emplaceComponent<Render::MaterialComponent>(
 				ent,
-				mesh.getTextureHandle()
+				mesh.texture_handle
 			);
 			registry.emplaceComponent<TransformComponent>(
 				ent,
-				mesh.transform()
+				mesh.transform
 			);
 		}
 		return par;

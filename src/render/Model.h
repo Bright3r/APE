@@ -26,9 +26,11 @@ struct Model {
 
 	Model() noexcept = default;
 
-	Model(std::filesystem::path model_path) noexcept;
+	Model(std::filesystem::path model_path) noexcept
+		: model_path(model_path)
+	{
 
-	virtual ~Model() noexcept { }
+	}
 };
 
 };	// end of namespace

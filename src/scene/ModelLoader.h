@@ -1,0 +1,48 @@
+#pragma once
+
+#include "render/Model.h"
+#include "scene/AssetManager.h"
+
+#include <cereal/cereal.hpp>
+#include <memory>
+
+namespace APE {
+
+class ModelLoader {
+public:
+	[[nodiscard]] static std::unique_ptr<Render::Model> 
+	load(std::filesystem::path model_path) noexcept;
+
+private:
+	[[nodiscard]] static TransformComponent 
+	convertAiTransform(const aiMatrix4x4 ai_transform) noexcept;
+
+	[[nodiscard]] static AssetHandle<Render::Image> 
+	defaultImageHandle() noexcept;
+
+	[[nodiscard]] static AssetHandle<Render::Image> 
+	makeImageHandle(
+		std::unique_ptr<Render::Image> texture,
+		const std::string& handle_index) noexcept;
+
+	[[nodiscard]] static AssetHandle<Render::Image> 
+	convertAiMaterial(
+		const aiMaterial* ai_mat,
+		const aiScene* scene,
+		std::filesystem::path model_path) noexcept;
+
+	void static processNode(
+		const aiNode* node,
+		const aiScene* scene,
+		Render::Model& model,
+		std::filesystem::path model_path) noexcept;
+
+	[[nodiscard]] static Render::Model::ModelMesh 
+	processAiMesh(
+		const aiMesh* ai_mesh,
+		const AssetHandle<Render::Image>& texture_handle,
+		const TransformComponent& transform) noexcept;
+};
+
+};	// end of namespace
+

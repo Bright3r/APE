@@ -1,5 +1,6 @@
 {
-    "value0": {
+    "value0": {},
+    "value1": {
         "registry": {
             "ent": 400,
             "component": {
