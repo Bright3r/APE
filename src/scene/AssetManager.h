@@ -65,11 +65,6 @@ public:
 		return makeHandle<Asset>(key);
 	}
 
-	static std::unique_ptr<AssetManager> getInstance() noexcept
-	{
-		return std::make_unique<AssetManager>();
-	}
-
 private:
 	template <typename Asset>
 	[[nodiscard]] static AssetHandle<Asset>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "components/Object.h"
-#include "scene/AssetManager.h"
+#include "scene/AssetLoader.h"
 #include "ecs/Registry.h"
 #include "scene/Scene.h"
 
@@ -60,12 +60,63 @@ void serialize(Archive& ar, glm::quat& q)
 
 
 /*
+* Filepath
+*/
+template <class Archive>
+void save(Archive& ar, const std::filesystem::path& path)
+{
+	ar(cereal::make_nvp("path", path.string()));
+}
+
+template <class Archive>
+void load(Archive& ar, std::filesystem::path& path)
+{
+	std::string s;
+	ar(s);
+	path = std::filesystem::path(s);
+}
+
+
+/*
 * Entity Handle
 */
 template <class Archive>
 void serialize(Archive& ar, APE::ECS::EntityHandle& ent)
 {
 	ar(cereal::make_nvp("id", ent.id));
+}
+
+
+/*
+* Asset Handle
+*/
+template <class Archive>
+void serialize(Archive& ar, APE::AssetKey& key)
+{
+	ar(
+		cereal::make_nvp("path", key.path),
+		cereal::make_nvp("sub_index", key.sub_index)
+	);
+}
+
+template <class Archive, typename Asset>
+void save(Archive& ar, const APE::AssetHandle<Asset>& asset)
+{
+	ar(
+		cereal::make_nvp("asset_key", asset.key),
+		cereal::make_nvp("asset_class", asset.asset_class)
+	);
+}
+
+template <class Archive, typename Asset>
+void load(Archive& ar, APE::AssetHandle<Asset>& asset)
+{
+	ar(
+		cereal::make_nvp("asset_key", asset.key),
+		cereal::make_nvp("asset_class", asset.asset_class)
+	);
+
+	// asset = APE::AssetLoader::load<Asset>(asset.key);
 }
 
 
@@ -96,29 +147,61 @@ void serialize(Archive& ar, APE::HierarchyComponent& h)
 /*
 * Render Components
 */
-// template <class Archive>
-// void serialize(Archive& ar, APE::Render::MeshComponent& m)
-// {
-// 	ar(
-// 		cereal::make_nvp("model_handle", m.model_handle), 
-// 		cereal::make_nvp("mesh_index", m.mesh_index)
-// 	);
-// }
+template <class Archive>
+void serialize(Archive& ar, APE::Render::MeshComponent& m)
+{
+	ar(
+		cereal::make_nvp("model_handle", m.model_handle), 
+		cereal::make_nvp("mesh_index", m.mesh_index)
+	);
+}
 
+template <class Archive>
+void serialize(Archive& ar, APE::Render::MaterialComponent& m)
+{
+	ar(cereal::make_nvp("texture_handle", m.texture_handle));
+}
+
+template <class Archive>
+void serialize(Archive& ar, APE::Render::LightComponent& l)
+{
+	ar(
+		cereal::make_nvp("type", l.type), 
+		cereal::make_nvp("intensity", l.intensity),
+		cereal::make_nvp("color", l.color),
+		cereal::make_nvp("cutoff_angle", l.cutoff_angle),
+		cereal::make_nvp("shape", l.shape),
+		cereal::make_nvp("extent", l.extent)
+	);
+}
 
 /*
 * ECS Component Pool
 */
+template <typename Component>
+struct ECSPair {
+	APE::ECS::EntityHandle ent;
+	Component comp;
+
+	template <class Archive>
+	void serialize(Archive& ar) {
+		ar(
+			cereal::make_nvp("entity", ent),
+			cereal::make_nvp("component", comp)
+		);
+	}
+};
+
 template <class Archive, typename Component>
 void trySerializePool(Archive& ar, APE::ECS::Registry& r) noexcept
 {
 	if (r.hasComponent<Component>()) {
+		std::vector<ECSPair<Component>> entries;
 		for (auto [ent, comp] : r.getPool<Component>()) {
-			ar(
-				cereal::make_nvp("ent", ent),
-				cereal::make_nvp("component", comp)
-			);
+			entries.emplace_back(ent, comp);
 		}
+
+		ar(cereal::make_nvp(Component::Name, entries));
 	}
 }
 
@@ -131,9 +214,9 @@ void serialize(Archive& ar, APE::ECS::Registry& r)
 {
 	trySerializePool<Archive, APE::TransformComponent>(ar, r);
 	trySerializePool<Archive, APE::HierarchyComponent>(ar, r);
-	// trySerializePool<Archive, APE::Render::MeshComponent>(ar, r);
-	// trySerializePool<Archive, APE::Render::MaterialComponent>(ar, r);
-	// trySerializePool<Archive, APE::Render::LightComponent>(ar, r);
+	trySerializePool<Archive, APE::Render::MeshComponent>(ar, r);
+	trySerializePool<Archive, APE::Render::MaterialComponent>(ar, r);
+	trySerializePool<Archive, APE::Render::LightComponent>(ar, r);
 }
 
 
@@ -149,20 +232,7 @@ void serialize(Archive& ar, APE::Scene& scene)
 	);
 }
 
-
-/*
-* Asset Manager
-*/
-template <class Archive>
-void serialize(Archive& ar, APE::AssetManager& am)
-{
-
-}
-
-
 };	// end of namespace
-
-
 
 
 namespace APE {
@@ -170,12 +240,11 @@ namespace APE {
 struct Serialize {
 	static void saveScene(
 		std::filesystem::path save_path,
-		Scene& world,
-		AssetManager& asset_manager)
+		::APE::Scene& world)
 	{
 		std::ofstream os(save_path);
 		cereal::JSONOutputArchive archive(os);
-		archive(asset_manager, world);
+		archive(world);
 	}
 };
 

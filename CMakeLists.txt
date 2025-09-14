@@ -28,6 +28,7 @@ add_library(
 	src/render/Renderer.cpp
 	src/render/Image.cpp
 	src/scene/ModelLoader.cpp
+	src/scene/ImageLoader.cpp
 )
 
 target_include_directories(

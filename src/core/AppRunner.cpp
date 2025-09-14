@@ -200,8 +200,7 @@ APE::ECS::EntityHandle AppRunner::getSelectedEntity() noexcept
 
 void AppRunner::save(std::filesystem::path save_path) noexcept
 {
-	auto am = APE::AssetManager::getInstance();
-	APE::Serialize::saveScene(save_path, s_world, *am);
+	APE::Serialize::saveScene(save_path, s_world);
 }
 
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(

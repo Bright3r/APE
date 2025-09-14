@@ -9,6 +9,7 @@
 namespace APE::Render {
 
 struct MeshComponent {
+	static constexpr const char* Name = "Mesh";
 	AssetHandle<Model> model_handle;
 	size_t mesh_index;
 
@@ -21,6 +22,7 @@ struct MeshComponent {
 };
 
 struct MaterialComponent {
+	static constexpr const char* Name = "Material";
 	AssetHandle<Image> texture_handle;
 
 	MaterialComponent(AssetHandle<Image> texture_handle) noexcept
@@ -44,6 +46,7 @@ enum class AreaLightShape {
 };
 
 struct LightComponent {
+	static constexpr const char* Name = "Light";
 	LightType type;
 	float intensity;
 	glm::vec3 color;

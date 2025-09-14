@@ -12,13 +12,19 @@ AssetHandle<Render::Model> ModelLoader::load(
 	std::filesystem::path model_path) noexcept
 {
 	AssetKey key { model_path };
-	if (AssetManager::contains(key)) {
-		return AssetManager::get<Render::Model>(key);
+	return load(key);
+}
+
+AssetHandle<Render::Model> 
+ModelLoader::load(AssetKey asset_key) noexcept
+{
+	if (AssetManager::contains(asset_key)) {
+		return AssetManager::get<Render::Model>(asset_key);
 	}
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(
-		model_path,
+		asset_key.path,
 		aiProcess_Triangulate | 
 		aiProcess_FlipUVs | 
 		aiProcess_FixInfacingNormals
@@ -34,11 +40,11 @@ AssetHandle<Render::Model> ModelLoader::load(
 		importer.GetErrorString()
 	);
 
-	auto m = std::make_unique<Render::Model>(model_path);
-	processNode(scene->mRootNode, scene, *m, model_path);
+	auto m = std::make_unique<Render::Model>(asset_key.path);
+	processNode(scene->mRootNode, scene, *m, asset_key.path);
 
 	auto handle = AssetManager::upload<Render::Model>(
-		key,
+		asset_key,
 		AssetClass::Model,
 		std::move(m)
 	);

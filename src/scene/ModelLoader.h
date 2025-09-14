@@ -14,6 +14,9 @@ public:
 	[[nodiscard]] static AssetHandle<Render::Model> 
 	load(std::filesystem::path model_path) noexcept;
 
+	[[nodiscard]] static AssetHandle<Render::Model> 
+	load(AssetKey asset_key) noexcept;
+
 private:
 	[[nodiscard]] static TransformComponent 
 	convertAiTransform(const aiMatrix4x4 ai_transform) noexcept;

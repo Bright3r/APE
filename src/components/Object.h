@@ -16,6 +16,7 @@
 namespace APE {
 
 struct HierarchyComponent {
+	static constexpr const char* Name = "Hierarchy";
 	ECS::EntityHandle parent;
 	std::vector<ECS::EntityHandle> children;
 	std::string tag;
@@ -29,6 +30,7 @@ struct HierarchyComponent {
 };
 
 struct TransformComponent {
+	static constexpr const char* Name = "Transform";
 	glm::vec3 position;
 	glm::vec3 scale;
 	glm::quat rotation;
