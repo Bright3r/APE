@@ -3,6 +3,7 @@
 #include "components/Render.h"
 #include "ecs/Registry.h"
 #include "render/Shader.h"
+#include "scene/ImageLoader.h"
 #include "scene/Serialize.h"
 #include "util/Files.h"
 #include "util/Logger.h"
@@ -455,6 +456,22 @@ void AppRunner::drawManipulatorPanel() noexcept
 			&matrix[0][0]
 		);
 		transform = APE::TransformComponent::fromMatrix(matrix);
+	}
+
+	// Material
+	if (s_world.registry.hasComponent<APE::Render::MaterialComponent>(ent)) {
+		if (ImGui::Button("Change Texture")) {
+			std::filesystem::path tex_path;
+			auto status = APE::Files::openDialog(tex_path);
+			if (status == APE::Files::Status::Sucess) {
+				auto tex_handle = APE::ImageLoader::load(tex_path);
+				s_world.registry.replaceComponent<
+					APE::Render::MaterialComponent>(
+						ent,
+						tex_handle
+					);
+			}
+		}
 	}
 
 	ImGui::End();
