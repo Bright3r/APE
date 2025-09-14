@@ -253,7 +253,7 @@ void save(Archive& ar, const APE::ECS::Registry& r)
 	serializePool<Archive, APE::HierarchyComponent>(ar, r);
 	serializePool<Archive, APE::Render::MeshComponent>(ar, r);
 	serializePool<Archive, APE::Render::MaterialComponent>(ar, r);
-	// serializePool<Archive, APE::Render::LightComponent>(ar, r);
+	serializePool<Archive, APE::Render::LightComponent>(ar, r);
 }
 
 template <class Archive>
@@ -270,7 +270,7 @@ void load(Archive& ar, APE::ECS::Registry& r)
 	deserializePool<Archive, APE::HierarchyComponent>(ar, r);
 	deserializePool<Archive, APE::Render::MeshComponent>(ar, r);
 	deserializePool<Archive, APE::Render::MaterialComponent>(ar, r);
-	// deserializePool<Archive, APE::Render::LightComponent>(ar, r);
+	deserializePool<Archive, APE::Render::LightComponent>(ar, r);
 }
 
 
