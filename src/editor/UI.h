@@ -1,10 +1,11 @@
 #pragma once
 
-#include "core/AppRunner.h"
+#include "core/Engine.h"
 #include "core/components/Object.h"
 #include "core/components/Render.h"
 #include "core/ecs/Registry.h"
 #include "core/scene/ImageLoader.h"
+#include "core/scene/Scene.h"
 #include "util/Files.h"
 
 #include <SDL3/SDL_mouse.h>
@@ -23,7 +24,7 @@
 
 namespace APE::Editor {
 
-static inline void drawDebugPanel() noexcept
+static inline void drawDebugPanel(APE::Scene& world) noexcept
 {
 	ImGui::Begin("Debug", nullptr, ImGuiWindowFlags_MenuBar);
 
@@ -34,19 +35,19 @@ static inline void drawDebugPanel() noexcept
 			if (ImGui::MenuItem("Open")) 
 			{
 				std::filesystem::path path;
-				APE::Files::Status status = 
-					APE::Files::openDialog(path);
-				if (status == APE::Files::Status::Sucess) {
-					AppRunner::loadScene(path);
+				Files::Status status = 
+					Files::openDialog(path);
+				if (status == Files::Status::Sucess) {
+					Engine::loadScene(path, world);
 				}
 			}
 			if (ImGui::MenuItem("Save As")) 
 			{
 				std::filesystem::path path;
-				APE::Files::Status status = 
-					APE::Files::openDialog(path);
-				if (status == APE::Files::Status::Sucess) {
-					AppRunner::saveScene(path);
+				Files::Status status = 
+					Files::openDialog(path);
+				if (status == Files::Status::Sucess) {
+					Engine::saveScene(path, world);
 				}
 			}
 
@@ -58,7 +59,7 @@ static inline void drawDebugPanel() noexcept
 
 
 	ImGui::Text("Camera");
-	auto cam = AppRunner::getCamera().lock();
+	auto cam = Engine::getCamera().lock();
 
 	glm::vec3 pos { cam->getPosition() };
 	ImGui::SliderFloat3("pos", &pos[0], -100.f, 100.f, "%.2f");
@@ -84,7 +85,7 @@ static inline void drawDebugPanel() noexcept
 		cam->setLocked(!cam->isLocked());
 	}
 
-	auto renderer = AppRunner::getRenderer();
+	auto renderer = Engine::getRenderer();
 	if (ImGui::RadioButton("show normals", renderer->debug_mode.show_normals)) {
 		renderer->debug_mode.show_normals = !renderer->debug_mode.show_normals;
 	}
@@ -92,7 +93,7 @@ static inline void drawDebugPanel() noexcept
 
 	ImGui::Text("Lighting");
 	auto& light = renderer->light;
-	ImGui::SliderInt("type", reinterpret_cast<int*>(&light.type), 0, APE::Render::LightType::Size);
+	ImGui::SliderInt("type", reinterpret_cast<int*>(&light.type), 0, Render::LightType::Size);
 	ImGui::InputFloat3("position", glm::value_ptr(light.position));
 	ImGui::InputFloat3("attenuation", glm::value_ptr(light.attenuation));
 	ImGui::InputFloat3("direction", glm::value_ptr(light.dir));
@@ -103,18 +104,19 @@ static inline void drawDebugPanel() noexcept
 	ImGui::End();
 }
 
-static inline void drawSceneHierarchyPanel() noexcept
+static inline void drawSceneHierarchyPanel(
+	Scene& world,
+	ECS::EntityHandle& selected_ent) noexcept
 {
 	ImGui::Begin("Scene Hierarchy Panel");
 
 	// Draw a button for each entity in the hierarchy
 	// with padding to visualize nesting
-	using EntityWithPad = std::tuple<APE::ECS::EntityHandle, std::string, float>;
+	using EntityWithPad = std::tuple<ECS::EntityHandle, std::string, float>;
 	std::vector<EntityWithPad> draw_list;
 
 	// DFS over world entities
 	std::vector<EntityWithPad> stack;
-	auto& world = AppRunner::getWorld();
 	stack.push_back({ world.root, "", 0.f });
 	ImVec2 button_sz { 0.f, 0.f };
 	while (!stack.empty()) {
@@ -122,7 +124,7 @@ static inline void drawSceneHierarchyPanel() noexcept
 		stack.pop_back();
 
 		auto& hierarchy = 
-			world.registry.getComponent<APE::HierarchyComponent>(ent);
+			world.registry.getComponent<HierarchyComponent>(ent);
 
 		// Create a unique tag for each entity, indented past its parent
 		auto padded_tag = std::format(
@@ -140,7 +142,7 @@ static inline void drawSceneHierarchyPanel() noexcept
 		// Add padded children
 		float child_pad = pad + 1;
 		for (auto child : hierarchy.children) {
-			if (world.registry.hasComponent<APE::HierarchyComponent>(child)) {
+			if (world.registry.hasComponent<HierarchyComponent>(child)) {
 				stack.push_back({ child, "", child_pad  });
 			}
 		}
@@ -152,23 +154,24 @@ static inline void drawSceneHierarchyPanel() noexcept
 		float cursor_offset = pad * button_sz.x;
 		ImGui::SetCursorPos({ cursor_pos.x + cursor_offset, cursor_pos.y });
 		if (ImGui::Button(padded_tag.c_str(), { button_sz.x, 2*button_sz.y })) {
-			AppRunner::setSelectedEntity(ent);
+			selected_ent = ent;
 		}
 	}
 
 	ImGui::End();
 }
 
-static inline void drawManipulatorPanel(ImGuizmo::OPERATION& gizmo_op) noexcept
+static inline void drawManipulatorPanel(
+	Scene& world,
+	const ECS::EntityHandle& ent,
+	ImGuizmo::OPERATION& gizmo_op) noexcept
 {
 	ImGui::Begin("Manipulator Panel");
-	auto ent = AppRunner::getSelectedEntity();
-	auto& world = AppRunner::getWorld();
 
 	// Tag
-	if (world.registry.hasComponent<APE::HierarchyComponent>(ent)) {
+	if (world.registry.hasComponent<HierarchyComponent>(ent)) {
 		auto& hierarchy = 
-			world.registry.getComponent<APE::HierarchyComponent>(ent);
+			world.registry.getComponent<HierarchyComponent>(ent);
 
 		char buf[128];
 		strncpy(buf, hierarchy.tag.c_str(), sizeof(buf));
@@ -178,13 +181,13 @@ static inline void drawManipulatorPanel(ImGuizmo::OPERATION& gizmo_op) noexcept
 
 		std::string children = 
 			std::format("Num Children: {}", hierarchy.children.size());
-		ImGui::Text(children.c_str());
+		ImGui::Text("%s", children.c_str());
 	}
 
 	// Transform
-	if (world.registry.hasComponent<APE::TransformComponent>(ent)) {
+	if (world.registry.hasComponent<TransformComponent>(ent)) {
 		auto& transform = 
-			world.registry.getComponent<APE::TransformComponent>(ent);
+			world.registry.getComponent<TransformComponent>(ent);
 
 		// Select gizmo operation
 		if (ImGui::RadioButton("Translate", gizmo_op == ImGuizmo::TRANSLATE)) {
@@ -219,18 +222,18 @@ static inline void drawManipulatorPanel(ImGuizmo::OPERATION& gizmo_op) noexcept
 			&scale[0],
 			&matrix[0][0]
 		);
-		transform = APE::TransformComponent::fromMatrix(matrix);
+		transform = TransformComponent::fromMatrix(matrix);
 	}
 
 	// Material
-	if (world.registry.hasComponent<APE::Render::MaterialComponent>(ent)) {
+	if (world.registry.hasComponent<Render::MaterialComponent>(ent)) {
 		if (ImGui::Button("Change Texture")) {
 			std::filesystem::path tex_path;
-			auto status = APE::Files::openDialog(tex_path);
-			if (status == APE::Files::Status::Sucess) {
-				auto tex_handle = APE::ImageLoader::load(tex_path);
+			auto status = Files::openDialog(tex_path);
+			if (status == Files::Status::Sucess) {
+				auto tex_handle = ImageLoader::load(tex_path);
 				world.registry.replaceComponent<
-					APE::Render::MaterialComponent>(
+					Render::MaterialComponent>(
 						ent,
 						tex_handle
 					);
@@ -241,22 +244,24 @@ static inline void drawManipulatorPanel(ImGuizmo::OPERATION& gizmo_op) noexcept
 	ImGui::End();
 }
 
-static inline void drawGizmo(ImGuizmo::OPERATION gizmo_op) noexcept {
-	auto& world = AppRunner::getWorld();
-	auto ent = AppRunner::getSelectedEntity();
+static inline void drawGizmo(
+	Scene& world,
+	const ECS::EntityHandle& ent,
+	ImGuizmo::OPERATION gizmo_op) noexcept 
+{
 	if (world.registry.hasAllComponents<
-		APE::TransformComponent, APE::HierarchyComponent>(ent)) 
+		TransformComponent, HierarchyComponent>(ent)) 
 	{
 		auto [transform, hierarchy] = world.registry.getComponents<
-			APE::TransformComponent, APE::HierarchyComponent>(ent);
+			TransformComponent, HierarchyComponent>(ent);
 
 		auto parent_world_mat = world.getModelMatrix(hierarchy.parent);
 		auto world_mat = parent_world_mat * transform.getModelMatrix();
-		auto renderer = AppRunner::getRenderer();
-		renderer->drawGizmo(AppRunner::getCamera(), world_mat, gizmo_op);
+		auto renderer = Engine::getRenderer();
+		renderer->drawGizmo(Engine::getCamera(), world_mat, gizmo_op);
 
 		auto new_loc_mat = glm::inverse(parent_world_mat) * world_mat;
-		auto new_transform = APE::TransformComponent::fromMatrix(new_loc_mat);
+		auto new_transform = TransformComponent::fromMatrix(new_loc_mat);
 
 		constexpr float epsilon { 0.001f };
 		auto vec_equal = [=](const auto& a, const auto& b) {

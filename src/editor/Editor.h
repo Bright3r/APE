@@ -1,6 +1,7 @@
 #pragma once
 
-#include "App.h"
+#include "Application.h"
+#include "core/ecs/Registry.h"
 #include "core/render/Camera.h"
 
 #include <imgui.h>
@@ -10,12 +11,17 @@
 
 namespace APE::Editor {
 
-class EditorApp : public App {
+void run() noexcept;
+
+class EditorApplication : public Application {
 private:
 	std::shared_ptr<Render::Camera> cam;
+	ECS::EntityHandle selected_ent;
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;
 
 public:
+	static void run() noexcept;
+
 	void setup() noexcept override;
 	void update() noexcept override;
 	void drawGUI() noexcept override;

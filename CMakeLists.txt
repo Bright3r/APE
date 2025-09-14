@@ -22,8 +22,8 @@ find_package(GTest CONFIG REQUIRED)
 # Compile Engine into lib
 add_library(
 	ape_lib
-	src/editor/EditorApp.cpp
-	src/core/AppRunner.cpp
+	src/editor/Editor.cpp
+	src/core/Engine.cpp
 	src/core/render/Shader.cpp
 	src/core/render/Context.cpp
 	src/core/render/Renderer.cpp

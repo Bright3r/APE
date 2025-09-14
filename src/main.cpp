@@ -1,11 +1,8 @@
-#include "editor/EditorApp.h"
-#include "core/AppRunner.h"
+#include "editor/Editor.h"
 
 int main() 
 {
-	auto editor = std::make_unique<APE::Editor::EditorApp>();
-	AppRunner::init(std::move(editor), "APE Physics Engine", 1200, 800);
-	AppRunner::run();
+	APE::Editor::run();
 
 	return 0; 
 }

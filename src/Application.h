@@ -1,11 +1,16 @@
 #pragma once
 
+#include "core/scene/Scene.h"
+
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_gpu.h>
 
-class App {
-public:
-	virtual ~App() = default;
+namespace APE {
+
+struct Application {
+	Scene world;
+
+	virtual ~Application() = default;
 
 	virtual void setup() = 0;
 	virtual void update() = 0;
@@ -17,3 +22,4 @@ public:
 	virtual void onMouseMove(SDL_MouseMotionEvent mEvent) = 0;
 };
 
+};	// end of namespace
