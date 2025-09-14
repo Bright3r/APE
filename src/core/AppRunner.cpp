@@ -200,14 +200,18 @@ APE::ECS::EntityHandle AppRunner::getSelectedEntity() noexcept
 	return s_selected_ent;
 }
 
-void AppRunner::save(std::filesystem::path save_path) noexcept
+void AppRunner::saveScene(std::filesystem::path save_path) noexcept
 {
 	APE::Serialize::saveScene(save_path, s_world);
 }
 
-void AppRunner::load(std::filesystem::path load_path) noexcept
+bool AppRunner::loadScene(std::filesystem::path load_path) noexcept
 {
-	s_world = APE::Serialize::loadScene(load_path);
+	if (load_path.extension() == ".json") {
+		s_world = APE::Serialize::loadScene(load_path);
+		return true;
+	}
+	return false;
 }
 
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
@@ -269,6 +273,18 @@ void AppRunner::drawDebugPanel() noexcept
 				std::filesystem::path path;
 				APE::Files::Status status = 
 					APE::Files::openDialog(path);
+				if (status == APE::Files::Status::Sucess) {
+					loadScene(path);
+				}
+			}
+			if (ImGui::MenuItem("Save As")) 
+			{
+				std::filesystem::path path;
+				APE::Files::Status status = 
+					APE::Files::openDialog(path);
+				if (status == APE::Files::Status::Sucess) {
+					saveScene(path);
+				}
 			}
 
 			ImGui::EndMenu();

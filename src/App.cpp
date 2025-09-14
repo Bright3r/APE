@@ -76,11 +76,11 @@ void App::update()
 
 	// Save
 	if (AppRunner::keyDown(SDLK_P)) {
-		AppRunner::save("demos/test.json");
+		AppRunner::saveScene("demos/test.json");
 	}
 	// Load
 	if (AppRunner::keyDown(SDLK_L)) {
-		AppRunner::load("demos/test.json");
+		AppRunner::loadScene("demos/test.json");
 	}
 
 	// Camera Tab In
