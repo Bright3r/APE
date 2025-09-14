@@ -139,13 +139,28 @@ void serialize(Archive& ar, APE::TransformComponent& t)
 }
 
 template <class Archive>
-void serialize(Archive& ar, APE::HierarchyComponent& h)
+void save(Archive& ar, const APE::HierarchyComponent& h)
 {
 	ar(
 		cereal::make_nvp("parent", h.parent), 
 		cereal::make_nvp("children", h.children),
 		cereal::make_nvp("tag", h.tag)
 	);
+}
+
+template <class Archive>
+void load(Archive& ar, APE::HierarchyComponent& h)
+{
+	ar(
+		cereal::make_nvp("parent", h.parent), 
+		cereal::make_nvp("children", h.children),
+		cereal::make_nvp("tag", h.tag)
+	);
+
+	h.parent = s_old_to_new.at(h.parent.id);
+	for (size_t i = 0; i < h.children.size(); ++i) {
+		h.children[i] = s_old_to_new.at(h.children[i].id);
+	}
 }
 
 
@@ -275,6 +290,8 @@ template <class Archive>
 void load(Archive& ar, APE::Scene& scene)
 {
 	s_old_to_new.clear();
+	APE::ECS::EntityHandle tombstone = scene.registry.tombstone();
+	s_old_to_new[tombstone.id] = tombstone;
 
 	ar(
 		cereal::make_nvp("registry", scene.registry),

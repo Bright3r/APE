@@ -3,46 +3,52 @@
         "registry": {
             "entities": [
                 {
-                    "id": 0
+                    "id": 451
                 },
                 {
-                    "id": 1
+                    "id": 452
                 },
                 {
-                    "id": 2
+                    "id": 453
                 },
                 {
-                    "id": 3
+                    "id": 454
                 },
                 {
-                    "id": 4
+                    "id": 455
                 },
                 {
-                    "id": 5
+                    "id": 456
                 },
                 {
-                    "id": 6
+                    "id": 457
                 },
                 {
-                    "id": 7
+                    "id": 458
                 },
                 {
-                    "id": 8
+                    "id": 459
                 },
                 {
-                    "id": 9
+                    "id": 460
                 },
                 {
-                    "id": 10
+                    "id": 461
                 },
                 {
-                    "id": 11
+                    "id": 462
+                },
+                {
+                    "id": 463
+                },
+                {
+                    "id": 464
                 }
             ],
             "Transform": [
                 {
                     "entity": {
-                        "id": 11
+                        "id": 464
                     },
                     "component": {
                         "position": {
@@ -65,13 +71,13 @@
                 },
                 {
                     "entity": {
-                        "id": 10
+                        "id": 463
                     },
                     "component": {
                         "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": -5.4968342781066898,
+                            "y": 0.514678955078125,
+                            "z": -0.514678955078125
                         },
                         "scale": {
                             "x": 1.0,
@@ -88,13 +94,13 @@
                 },
                 {
                     "entity": {
-                        "id": 9
+                        "id": 462
                     },
                     "component": {
                         "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": -3.45827579498291,
+                            "y": 4.196010589599609,
+                            "z": -4.196014404296875
                         },
                         "scale": {
                             "x": 1.0,
@@ -111,13 +117,13 @@
                 },
                 {
                     "entity": {
-                        "id": 8
+                        "id": 461
                     },
                     "component": {
                         "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": -1.0920839309692383,
+                            "y": -4.4274749755859379,
+                            "z": 4.427471160888672
                         },
                         "scale": {
                             "x": 1.0,
@@ -134,13 +140,13 @@
                 },
                 {
                     "entity": {
-                        "id": 7
+                        "id": 460
                     },
                     "component": {
                         "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": -6.80733585357666,
+                            "y": -3.1146316528320314,
+                            "z": 3.1146278381347658
                         },
                         "scale": {
                             "x": 1.0,
@@ -157,13 +163,13 @@
                 },
                 {
                     "entity": {
-                        "id": 6
+                        "id": 459
                     },
                     "component": {
                         "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": 4.65956974029541,
+                            "y": -5.045146942138672,
+                            "z": 5.045139312744141
                         },
                         "scale": {
                             "x": 1.0,
@@ -180,13 +186,13 @@
                 },
                 {
                     "entity": {
-                        "id": 5
+                        "id": 458
                     },
                     "component": {
                         "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": -3.385468006134033,
+                            "y": 4.324485778808594,
+                            "z": -4.324481964111328
                         },
                         "scale": {
                             "x": 1.0,
@@ -203,13 +209,13 @@
                 },
                 {
                     "entity": {
-                        "id": 4
+                        "id": 457
                     },
                     "component": {
                         "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": -4.259134292602539,
+                            "y": -8.67470932006836,
+                            "z": 8.67471694946289
                         },
                         "scale": {
                             "x": 1.0,
@@ -226,13 +232,13 @@
                 },
                 {
                     "entity": {
-                        "id": 3
+                        "id": 456
                     },
                     "component": {
                         "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": 1.2012925148010255,
+                            "y": -0.15447992086410523,
+                            "z": 0.15448379516601563
                         },
                         "scale": {
                             "x": 1.0,
@@ -249,13 +255,13 @@
                 },
                 {
                     "entity": {
-                        "id": 2
+                        "id": 455
                     },
                     "component": {
                         "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "x": 2.91223406791687,
+                            "y": -2.728412628173828,
+                            "z": 2.7284164428710939
                         },
                         "scale": {
                             "x": 1.0,
@@ -272,13 +278,13 @@
                 },
                 {
                     "entity": {
-                        "id": 1
+                        "id": 454
                     },
                     "component": {
                         "position": {
-                            "x": 6.916290283203125,
-                            "y": 0.05196761712431908,
-                            "z": 3.2044944763183595
+                            "x": 2.657409906387329,
+                            "y": 0.7464026808738709,
+                            "z": -0.7464064359664917
                         },
                         "scale": {
                             "x": 1.0,
@@ -297,11 +303,23 @@
             "Hierarchy": [
                 {
                     "entity": {
-                        "id": 11
+                        "id": 452
                     },
                     "component": {
                         "parent": {
-                            "id": 10
+                            "id": 18446744073709551615
+                        },
+                        "children": [],
+                        "tag": "Root Node"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 464
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 463
                         },
                         "children": [],
                         "tag": "Mesh 0"
@@ -309,15 +327,15 @@
                 },
                 {
                     "entity": {
-                        "id": 10
+                        "id": 463
                     },
                     "component": {
                         "parent": {
-                            "id": 0
+                            "id": 453
                         },
                         "children": [
                             {
-                                "id": 11
+                                "id": 464
                             }
                         ],
                         "tag": "Model 10"
@@ -325,11 +343,11 @@
                 },
                 {
                     "entity": {
-                        "id": 9
+                        "id": 462
                     },
                     "component": {
                         "parent": {
-                            "id": 1
+                            "id": 454
                         },
                         "children": [],
                         "tag": "Mesh 7"
@@ -337,11 +355,11 @@
                 },
                 {
                     "entity": {
-                        "id": 8
+                        "id": 461
                     },
                     "component": {
                         "parent": {
-                            "id": 1
+                            "id": 454
                         },
                         "children": [],
                         "tag": "Mesh 6"
@@ -349,11 +367,11 @@
                 },
                 {
                     "entity": {
-                        "id": 7
+                        "id": 460
                     },
                     "component": {
                         "parent": {
-                            "id": 1
+                            "id": 454
                         },
                         "children": [],
                         "tag": "Mesh 5"
@@ -361,11 +379,11 @@
                 },
                 {
                     "entity": {
-                        "id": 6
+                        "id": 459
                     },
                     "component": {
                         "parent": {
-                            "id": 1
+                            "id": 454
                         },
                         "children": [],
                         "tag": "Mesh 4"
@@ -373,11 +391,11 @@
                 },
                 {
                     "entity": {
-                        "id": 5
+                        "id": 458
                     },
                     "component": {
                         "parent": {
-                            "id": 1
+                            "id": 454
                         },
                         "children": [],
                         "tag": "Mesh 3"
@@ -385,11 +403,11 @@
                 },
                 {
                     "entity": {
-                        "id": 4
+                        "id": 457
                     },
                     "component": {
                         "parent": {
-                            "id": 1
+                            "id": 454
                         },
                         "children": [],
                         "tag": "Mesh 2"
@@ -397,11 +415,11 @@
                 },
                 {
                     "entity": {
-                        "id": 3
+                        "id": 456
                     },
                     "component": {
                         "parent": {
-                            "id": 1
+                            "id": 454
                         },
                         "children": [],
                         "tag": "Mesh 1"
@@ -409,11 +427,11 @@
                 },
                 {
                     "entity": {
-                        "id": 2
+                        "id": 455
                     },
                     "component": {
                         "parent": {
-                            "id": 1
+                            "id": 454
                         },
                         "children": [],
                         "tag": "Mesh 0"
@@ -421,36 +439,36 @@
                 },
                 {
                     "entity": {
-                        "id": 1
+                        "id": 454
                     },
                     "component": {
                         "parent": {
-                            "id": 0
+                            "id": 453
                         },
                         "children": [
                             {
-                                "id": 2
+                                "id": 455
                             },
                             {
-                                "id": 3
+                                "id": 456
                             },
                             {
-                                "id": 4
+                                "id": 457
                             },
                             {
-                                "id": 5
+                                "id": 458
                             },
                             {
-                                "id": 6
+                                "id": 459
                             },
                             {
-                                "id": 7
+                                "id": 460
                             },
                             {
-                                "id": 8
+                                "id": 461
                             },
                             {
-                                "id": 9
+                                "id": 462
                             }
                         ],
                         "tag": "Model 1"
@@ -458,7 +476,7 @@
                 },
                 {
                     "entity": {
-                        "id": 0
+                        "id": 453
                     },
                     "component": {
                         "parent": {
@@ -466,12 +484,24 @@
                         },
                         "children": [
                             {
-                                "id": 1
+                                "id": 454
                             },
                             {
-                                "id": 10
+                                "id": 463
                             }
                         ],
+                        "tag": "Root Node"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 451
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 18446744073709551615
+                        },
+                        "children": [],
                         "tag": "Root Node"
                     }
                 }
@@ -479,7 +509,7 @@
             "Mesh": [
                 {
                     "entity": {
-                        "id": 11
+                        "id": 464
                     },
                     "component": {
                         "model_handle": {
@@ -496,7 +526,7 @@
                 },
                 {
                     "entity": {
-                        "id": 9
+                        "id": 462
                     },
                     "component": {
                         "model_handle": {
@@ -513,7 +543,7 @@
                 },
                 {
                     "entity": {
-                        "id": 8
+                        "id": 461
                     },
                     "component": {
                         "model_handle": {
@@ -530,7 +560,7 @@
                 },
                 {
                     "entity": {
-                        "id": 7
+                        "id": 460
                     },
                     "component": {
                         "model_handle": {
@@ -547,7 +577,7 @@
                 },
                 {
                     "entity": {
-                        "id": 6
+                        "id": 459
                     },
                     "component": {
                         "model_handle": {
@@ -564,7 +594,7 @@
                 },
                 {
                     "entity": {
-                        "id": 5
+                        "id": 458
                     },
                     "component": {
                         "model_handle": {
@@ -581,7 +611,7 @@
                 },
                 {
                     "entity": {
-                        "id": 4
+                        "id": 457
                     },
                     "component": {
                         "model_handle": {
@@ -598,7 +628,7 @@
                 },
                 {
                     "entity": {
-                        "id": 3
+                        "id": 456
                     },
                     "component": {
                         "model_handle": {
@@ -615,7 +645,7 @@
                 },
                 {
                     "entity": {
-                        "id": 2
+                        "id": 455
                     },
                     "component": {
                         "model_handle": {
@@ -634,7 +664,7 @@
             "Material": [
                 {
                     "entity": {
-                        "id": 11
+                        "id": 464
                     },
                     "component": {
                         "texture_handle": {
@@ -650,7 +680,7 @@
                 },
                 {
                     "entity": {
-                        "id": 9
+                        "id": 462
                     },
                     "component": {
                         "texture_handle": {
@@ -666,7 +696,7 @@
                 },
                 {
                     "entity": {
-                        "id": 8
+                        "id": 461
                     },
                     "component": {
                         "texture_handle": {
@@ -682,7 +712,7 @@
                 },
                 {
                     "entity": {
-                        "id": 7
+                        "id": 460
                     },
                     "component": {
                         "texture_handle": {
@@ -698,7 +728,7 @@
                 },
                 {
                     "entity": {
-                        "id": 6
+                        "id": 459
                     },
                     "component": {
                         "texture_handle": {
@@ -714,7 +744,7 @@
                 },
                 {
                     "entity": {
-                        "id": 5
+                        "id": 458
                     },
                     "component": {
                         "texture_handle": {
@@ -730,7 +760,7 @@
                 },
                 {
                     "entity": {
-                        "id": 4
+                        "id": 457
                     },
                     "component": {
                         "texture_handle": {
@@ -746,7 +776,7 @@
                 },
                 {
                     "entity": {
-                        "id": 3
+                        "id": 456
                     },
                     "component": {
                         "texture_handle": {
@@ -762,7 +792,7 @@
                 },
                 {
                     "entity": {
-                        "id": 2
+                        "id": 455
                     },
                     "component": {
                         "texture_handle": {
@@ -779,7 +809,7 @@
             ]
         },
         "root": {
-            "id": 0
+            "id": 453
         }
     }
 }
