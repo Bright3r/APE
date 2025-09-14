@@ -1,9 +1,9 @@
 #pragma once
 
-#include "components/Object.h"
-#include "scene/AssetLoader.h"
-#include "ecs/Registry.h"
-#include "scene/Scene.h"
+#include "core/components/Object.h"
+#include "core/scene/AssetLoader.h"
+#include "core/ecs/Registry.h"
+#include "core/scene/Scene.h"
 #include "util/Logger.h"
 
 #include <cereal/cereal.hpp>

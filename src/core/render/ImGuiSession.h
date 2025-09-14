@@ -1,6 +1,6 @@
 #pragma once
 
-#include "render/Context.h"
+#include "core/render/Context.h"
 
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>

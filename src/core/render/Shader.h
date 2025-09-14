@@ -1,12 +1,13 @@
 #pragma once
 
-#include "render/Vertex.h"
+#include "core/render/Vertex.h"
 
 #include <SDL3/SDL_gpu.h>
-#include <filesystem>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <filesystem>
 
 namespace APE::Render {
 

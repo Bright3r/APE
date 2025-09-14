@@ -1,13 +1,13 @@
 #pragma once
 
-#include "components/Render.h"
-#include "render/Camera.h"
-#include "render/Context.h"
-#include "render/ImGuiSession.h"
-#include "render/SafeGPU.h"
-#include "render/Shader.h"
-#include "render/Model.h"
-#include "render/Image.h"
+#include "core/components/Render.h"
+#include "core/render/Camera.h"
+#include "core/render/Context.h"
+#include "core/render/ImGuiSession.h"
+#include "core/render/SafeGPU.h"
+#include "core/render/Shader.h"
+#include "core/render/Model.h"
+#include "core/render/Image.h"
 
 #include <SDL3/SDL_gpu.h>
 #include <imgui.h>
@@ -16,7 +16,6 @@
 #include <ImGuizmo.h>
 
 #include <cstddef>
-#include <glm/fwd.hpp>
 #include <memory>
 #include <vector>
 

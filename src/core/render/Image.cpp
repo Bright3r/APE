@@ -1,4 +1,4 @@
-#include "render/Image.h"
+#include "core/render/Image.h"
 #include "util/Logger.h"
 
 #include <cstring>

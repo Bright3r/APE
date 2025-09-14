@@ -1,7 +1,7 @@
 #pragma once
 
-#include "render/Image.h"
-#include "scene/AssetHandle.h"
+#include "core/render/Image.h"
+#include "core/scene/AssetHandle.h"
 
 #include <filesystem>
 

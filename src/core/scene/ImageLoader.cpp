@@ -1,5 +1,5 @@
-#include "ImageLoader.h"
-#include "AssetManager.h"
+#include "core/scene/ImageLoader.h"
+#include "core/scene/AssetManager.h"
 
 namespace APE {
 

@@ -1,4 +1,4 @@
-#include "render/Shader.h"
+#include "core/render/Shader.h"
 #include "util/Logger.h"
 
 #include <SDL3/SDL_gpu.h>

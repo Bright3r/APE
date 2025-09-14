@@ -1,8 +1,8 @@
 #pragma once
 
-#include "components/Object.h"
-#include "render/Mesh.h"
-#include "render/Vertex.h"
+#include "core/components/Object.h"
+#include "core/render/Mesh.h"
+#include "core/render/Vertex.h"
 
 #include <filesystem>
 #include <vector>

@@ -22,14 +22,14 @@ find_package(GTest CONFIG REQUIRED)
 # Compile Engine into lib
 add_library(
 	ape_lib
-	src/App.cpp
+	src/editor/EditorApp.cpp
 	src/core/AppRunner.cpp
-	src/render/Shader.cpp
-	src/render/Context.cpp
-	src/render/Renderer.cpp
-	src/render/Image.cpp
-	src/scene/ModelLoader.cpp
-	src/scene/ImageLoader.cpp
+	src/core/render/Shader.cpp
+	src/core/render/Context.cpp
+	src/core/render/Renderer.cpp
+	src/core/render/Image.cpp
+	src/core/scene/ModelLoader.cpp
+	src/core/scene/ImageLoader.cpp
 )
 
 target_include_directories(

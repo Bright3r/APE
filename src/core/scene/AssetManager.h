@@ -1,7 +1,7 @@
 #pragma once
 
 #include "util/Logger.h"
-#include "scene/AssetHandle.h"
+#include "core/scene/AssetHandle.h"
 
 #include <functional>
 #include <memory>

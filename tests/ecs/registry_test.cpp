@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "ecs/Registry.h"
+#include "core/ecs/Registry.h"
 
 #include <glm/glm.hpp>
 #include <string>

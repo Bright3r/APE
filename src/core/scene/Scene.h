@@ -1,9 +1,9 @@
 #pragma once
 
-#include "components/Object.h"
-#include "components/Render.h"
-#include "ecs/Registry.h"
-#include "render/Model.h"
+#include "core/components/Object.h"
+#include "core/components/Render.h"
+#include "core/ecs/Registry.h"
+#include "core/render/Model.h"
 
 #include <format>
 

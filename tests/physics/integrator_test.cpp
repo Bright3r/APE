@@ -1,6 +1,4 @@
 #include "gtest/gtest.h"
-#include <format>
-#include <string>
 
 #include "physics/Integrator.h"
 
@@ -10,6 +8,8 @@
 
 #include <memory>
 #include <vector>
+#include <format>
+#include <string>
 
 using namespace APE::Physics;
 

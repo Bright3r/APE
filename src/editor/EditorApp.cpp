@@ -1,18 +1,22 @@
-#include "App.h"
-#include "components/Object.h"
-#include "core/AppRunner.h"
-#include "scene/AssetHandle.h"
-#include "render/Camera.h"
-#include "render/Model.h"
-#include "scene/ModelLoader.h"
+#include "editor/EditorApp.h"
 
-#include <glm/fwd.hpp>
+#include "core/AppRunner.h"
+#include "core/components/Object.h"
+#include "core/scene/AssetHandle.h"
+#include "core/render/Camera.h"
+#include "core/render/Model.h"
+#include "core/scene/ModelLoader.h"
+#include "editor/UI.h"
+
+#include <glm/glm.hpp>
 #include <imgui.h>
 
 #include <cmath>
 #include <vector>
 
-void App::setup() 
+namespace APE::Editor {
+
+void EditorApp::setup() noexcept
 {
 	AppRunner::setWindowTitle("APE Engine");;
 
@@ -59,7 +63,7 @@ void App::setup()
 	AppRunner::setFramerate(60);
 }
 
-void App::update() 
+void EditorApp::update() noexcept
 {
 	std::string window_title = "FPS: " + 
 		std::to_string(1000.0 / AppRunner::getLastFrameTimeMS().count());
@@ -111,38 +115,38 @@ void App::update()
 	}
 }
 
-void App::draw() 
+void EditorApp::drawGUI() noexcept
+{
+	Editor::drawDebugPanel();
+	Editor::drawSceneHierarchyPanel();
+	Editor::drawManipulatorPanel(gizmo_op);
+	Editor::drawGizmo(gizmo_op);
+}
+
+void EditorApp::onKeyDown(SDL_KeyboardEvent key) noexcept
 {
 
 }
 
-void App::drawGUI() 
+void EditorApp::onKeyUp(SDL_KeyboardEvent key) noexcept
 {
 
 }
 
-void App::onKeyDown(SDL_KeyboardEvent key) 
+void EditorApp::onMouseDown(SDL_MouseButtonEvent mButton) noexcept
 {
 
 }
 
-void App::onKeyUp(SDL_KeyboardEvent key) 
+void EditorApp::onMouseUp(SDL_MouseButtonEvent mButton) noexcept
 {
 
 }
 
-void App::onMouseDown(SDL_MouseButtonEvent mButton) 
-{
-
-}
-
-void App::onMouseUp(SDL_MouseButtonEvent mButton) 
-{
-
-}
-
-void App::onMouseMove(SDL_MouseMotionEvent mEvent) 
+void EditorApp::onMouseMove(SDL_MouseMotionEvent mEvent) noexcept
 {
 	cam->rotate(mEvent.xrel, mEvent.yrel);
 }
+
+};	// end of namespace
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "render/SafeGPU.h"
+#include "core/render/SafeGPU.h"
 
 #include <SDL3/SDL_stdinc.h>
 

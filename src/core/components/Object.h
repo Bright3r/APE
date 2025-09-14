@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ecs/Registry.h"
+#include "core/ecs/Registry.h"
 
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>

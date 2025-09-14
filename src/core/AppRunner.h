@@ -1,11 +1,11 @@
 #pragma once
 
 #include "App.h"
-#include "scene/Scene.h"
-#include "render/Camera.h"
-#include "render/Context.h"
-#include "render/Renderer.h"
-#include "render/Shader.h"
+#include "core/scene/Scene.h"
+#include "core/render/Camera.h"
+#include "core/render/Context.h"
+#include "core/render/Renderer.h"
+#include "core/render/Shader.h"
 #include "util/Timing.h"
 
 #include <SDL3/SDL_gpu.h>
@@ -26,7 +26,6 @@ private:
 	//
 	static inline APE::Scene s_world;
 	static inline APE::ECS::EntityHandle s_selected_ent;
-	static inline ImGuizmo::OPERATION s_gizmo_op;
 
 	// Rendering
 	//
@@ -45,6 +44,7 @@ public:
 	// Main Functions
 	//
 	static void init(
+		std::unique_ptr<App> app,
 		std::string_view window_title,
 		int window_width,
 		int window_height) noexcept;
@@ -61,6 +61,8 @@ public:
 
 	static APE::Scene& getWorld() noexcept;
 
+	static void setSelectedEntity(const APE::ECS::EntityHandle& ent) noexcept;
+
 	static APE::ECS::EntityHandle getSelectedEntity() noexcept;
 
 	static void saveScene(std::filesystem::path save_path) noexcept;
@@ -69,25 +71,21 @@ public:
 
 
 	// Graphics Functions
+	[[nodiscard]] static APE::Render::Renderer* getRenderer() noexcept;
+
 	[[nodiscard]] static std::unique_ptr<APE::Render::Shader> createShader(
 		const APE::Render::ShaderDescription& vert_shader_desc, 
 		const APE::Render::ShaderDescription& frag_shader_desc) noexcept;
 
 	static void useShader(std::shared_ptr<APE::Render::Shader> shader) noexcept;
 
-	[[nodiscard]] static APE::Render::Camera* getCamera() noexcept;
+	[[nodiscard]] static std::weak_ptr<APE::Render::Camera> getCamera() noexcept;
 
 	static void setCamera(std::shared_ptr<APE::Render::Camera> cam) noexcept;
 
 	static glm::mat4 getModelMatrix(APE::ECS::EntityHandle ent) noexcept;
 
 	static void draw() noexcept;
-
-	static void drawDebugPanel() noexcept;
-
-	static void drawSceneHierarchyPanel() noexcept;
-
-	static void drawManipulatorPanel() noexcept;
 
 	static void resizeWindow(const SDL_Event& event) noexcept;
 

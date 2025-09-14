@@ -1,7 +1,7 @@
-#include "ModelLoader.h"
-#include "AssetManager.h"
-#include "render/Model.h"
-#include "scene/ImageLoader.h"
+#include "core/scene/ModelLoader.h"
+#include "core/scene/AssetManager.h"
+#include "core/render/Model.h"
+#include "core/scene/ImageLoader.h"
 
 #include <assimp/postprocess.h>
 

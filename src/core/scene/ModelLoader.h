@@ -1,7 +1,7 @@
 #pragma once
 
-#include "render/Model.h"
-#include "scene/AssetHandle.h"
+#include "core/render/Model.h"
+#include "core/scene/AssetHandle.h"
 
 #include "assimp/Importer.hpp"
 #include <assimp/material.h>

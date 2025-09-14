@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ecs/Pool.h"
+#include "core/ecs/Pool.h"
 
 #include <bitset>
 #include <cstdint>

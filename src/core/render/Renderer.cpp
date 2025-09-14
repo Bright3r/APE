@@ -1,6 +1,6 @@
-#include "render/Renderer.h"
-#include "render/SafeGPU.h"
-#include "render/Vertex.h"
+#include "core/render/Renderer.h"
+#include "core/render/SafeGPU.h"
+#include "core/render/Vertex.h"
 #include "util/Logger.h"
 
 #include <SDL3/SDL_gpu.h>

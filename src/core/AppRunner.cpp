@@ -1,11 +1,9 @@
 #include "core/AppRunner.h"
-#include "components/Object.h"
-#include "components/Render.h"
-#include "ecs/Registry.h"
-#include "render/Shader.h"
-#include "scene/ImageLoader.h"
-#include "scene/Serialize.h"
-#include "util/Files.h"
+#include "core/components/Object.h"
+#include "core/components/Render.h"
+#include "core/ecs/Registry.h"
+#include "core/render/Shader.h"
+#include "core/scene/Serialize.h"
 #include "util/Logger.h"
 
 #include <SDL3/SDL_mouse.h>
@@ -17,13 +15,12 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <filesystem>
-#include <algorithm>
 #include <cstring>
 #include <chrono>
 #include <utility>
-#include <vector>
 
 void AppRunner::init(
+	std::unique_ptr<App> app,
 	std::string_view window_title,
 	int window_width,
 	int window_height) noexcept 
@@ -34,7 +31,7 @@ void AppRunner::init(
 	s_last_frame_time = std::chrono::milliseconds(0);
 
 	// Create app state
-	s_app = std::make_unique<App>();
+	s_app = std::move(app);
 
 	// Initialize renderer w/ default shader
 	s_context = std::make_shared<APE::Render::Context>(
@@ -52,7 +49,6 @@ void AppRunner::init(
 
 	// Select root entity
 	s_selected_ent = s_world.root;
-	s_gizmo_op = ImGuizmo::TRANSLATE;
 }
 
 void AppRunner::pollEvents() noexcept
@@ -101,51 +97,9 @@ void AppRunner::stepGameloop() noexcept
 
 	// 3D Scene
 	draw();
-	s_app->draw();
 
 	// GUI
 	s_app->drawGUI();
-	drawDebugPanel();
-	drawSceneHierarchyPanel();
-	drawManipulatorPanel();
-
-	// Gizmo
-	if (s_world.registry.hasAllComponents<
-		APE::TransformComponent, APE::HierarchyComponent>(s_selected_ent)) 
-	{
-		auto [transform, hierarchy] = s_world.registry.getComponents<
-			APE::TransformComponent, APE::HierarchyComponent>(
-				s_selected_ent
-			);
-
-		auto parent_world_mat = s_world.getModelMatrix(hierarchy.parent);
-		auto world_mat = parent_world_mat * transform.getModelMatrix();
-		s_renderer->drawGizmo(s_camera, world_mat, s_gizmo_op);
-
-		auto new_loc_mat = glm::inverse(parent_world_mat) * world_mat;
-		auto new_transform = APE::TransformComponent::fromMatrix(new_loc_mat);
-
-		constexpr float epsilon { 0.001f };
-		auto vec_equal = [=](const auto& a, const auto& b) {
-			auto diff = glm::abs(a - b);
-			return diff.x < epsilon &&
-				diff.y < epsilon &&
-				diff.z < epsilon;
-		};
-		auto quat_equal = [&](const auto& a, const auto& b) {
-			auto dot = glm::abs(glm::dot(a, b));
-			return dot > (1.f - epsilon);
-		};
-
-		bool b_degenerate = 
-			!vec_equal(new_transform.scale, transform.scale) &&
-			(!vec_equal(new_transform.position, transform.position) ||
-    			!quat_equal(new_transform.rotation, transform.rotation));
-		if (!b_degenerate)
-		{
-			transform = new_transform;
-		}
-	}
 
 	s_renderer->endDrawing();
 }
@@ -196,6 +150,11 @@ APE::Scene& AppRunner::getWorld() noexcept
 	return s_world;
 }
 
+void AppRunner::setSelectedEntity(const APE::ECS::EntityHandle& ent) noexcept
+{
+	s_selected_ent = ent;
+}
+
 APE::ECS::EntityHandle AppRunner::getSelectedEntity() noexcept
 {
 	return s_selected_ent;
@@ -215,6 +174,11 @@ bool AppRunner::loadScene(std::filesystem::path load_path) noexcept
 	return false;
 }
 
+APE::Render::Renderer* AppRunner::getRenderer() noexcept
+{
+	return s_renderer.get();
+}
+
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
 	const APE::Render::ShaderDescription& vert_shader_desc, 
 	const APE::Render::ShaderDescription& frag_shader_desc) noexcept 
@@ -228,19 +192,14 @@ void AppRunner::useShader(std::shared_ptr<APE::Render::Shader> shader) noexcept
 	s_renderer->useShader(shader.get());
 }
 
-APE::Render::Camera* AppRunner::getCamera() noexcept 
+std::weak_ptr<APE::Render::Camera> AppRunner::getCamera() noexcept 
 {
-	return s_camera.get();
+	return s_camera;
 }
 
 void AppRunner::setCamera(std::shared_ptr<APE::Render::Camera> cam) noexcept
 {
 	s_camera = cam;
-}
-
-glm::mat4 AppRunner::getModelMatrix(APE::ECS::EntityHandle ent) noexcept
-{
-	return s_world.getModelMatrix(ent);
 }
 
 void AppRunner::draw() noexcept
@@ -253,228 +212,12 @@ void AppRunner::draw() noexcept
 
 	size_t num_objs { 0 };
 	for (auto [ent, mesh, material, transform, hierarchy] : view) {
-		glm::mat4 model_mat = getModelMatrix(ent);
+		glm::mat4 model_mat = s_world.getModelMatrix(ent);
 		s_renderer->draw(mesh, material, s_camera, model_mat);
 		
 		++num_objs;
 	}
 	APE_TRACE("Drew {} objects.", num_objs);
-}
-
-void AppRunner::drawDebugPanel() noexcept
-{
-	ImGui::Begin("Debug", nullptr, ImGuiWindowFlags_MenuBar);
-
-	if (ImGui::BeginMenuBar()) 
-	{
-		if (ImGui::BeginMenu("File")) 
-		{
-			if (ImGui::MenuItem("Open")) 
-			{
-				std::filesystem::path path;
-				APE::Files::Status status = 
-					APE::Files::openDialog(path);
-				if (status == APE::Files::Status::Sucess) {
-					loadScene(path);
-				}
-			}
-			if (ImGui::MenuItem("Save As")) 
-			{
-				std::filesystem::path path;
-				APE::Files::Status status = 
-					APE::Files::openDialog(path);
-				if (status == APE::Files::Status::Sucess) {
-					saveScene(path);
-				}
-			}
-
-			ImGui::EndMenu();
-		}
-
-		ImGui::EndMenuBar();
-	}
-
-
-	ImGui::Text("Camera");
-	auto cam = s_camera;
-
-	glm::vec3 pos { cam->getPosition() };
-	ImGui::SliderFloat3("pos", &pos[0], -100.f, 100.f, "%.2f");
-	cam->setPosition(pos);
-
-	float pitch { cam->getPitch() };
-	ImGui::SliderFloat("pitch", &pitch, -90.f, 90.f, "%.2f");
-	cam->setPitch(pitch);
-
-	float yaw { cam->getYaw() };
-	ImGui::SliderFloat("yaw", &yaw, -360.f, 360.f, "%.2f");
-	cam->setYaw(yaw);
-
-	float fov { cam->getFOV() };
-	ImGui::SliderFloat("fov", &fov, 10.f, 120.f, "%.1f");
-	cam->setFOV(fov);
-
-	float sensitivity { cam->getSensitivity() };
-	ImGui::SliderFloat("sensitivity", &sensitivity, 0.01f, 1.f, "%.2f");
-	cam->setSensitivity(sensitivity);
-
-	if (ImGui::RadioButton("lock camera", cam->isLocked())) {
-		cam->setLocked(!cam->isLocked());
-	}
-
-	if (ImGui::RadioButton("show normals", s_renderer->debug_mode.show_normals)) {
-		s_renderer->debug_mode.show_normals = 
-			!s_renderer->debug_mode.show_normals;
-	}
-
-
-	ImGui::Text("Lighting");
-	auto& light = s_renderer->light;
-	ImGui::SliderInt("type", reinterpret_cast<int*>(&light.type), 0, APE::Render::LightType::Size);
-	ImGui::InputFloat3("position", glm::value_ptr(light.position));
-	ImGui::InputFloat3("attenuation", glm::value_ptr(light.attenuation));
-	ImGui::InputFloat3("direction", glm::value_ptr(light.dir));
-	ImGui::ColorPicker4("ambient", glm::value_ptr(light.ambient_color));
-	ImGui::ColorPicker4("diffuse", glm::value_ptr(light.diffuse_color));
-	ImGui::ColorPicker4("specular", glm::value_ptr(light.specular_color));
-
-	ImGui::End();
-}
-
-void AppRunner::drawSceneHierarchyPanel() noexcept
-{
-	ImGui::Begin("Scene Hierarchy Panel");
-
-	// Draw a button for each entity in the hierarchy
-	// with padding to visualize nesting
-	using EntityWithPad = std::tuple<APE::ECS::EntityHandle, std::string, float>;
-	std::vector<EntityWithPad> draw_list;
-
-	// DFS over world entities
-	std::vector<EntityWithPad> stack;
-	stack.push_back({ s_world.root, "", 0.f });
-	ImVec2 button_sz { 0.f, 0.f };
-	while (!stack.empty()) {
-		auto [ent, x, pad] = stack.back();
-		stack.pop_back();
-
-		auto& hierarchy = 
-			s_world.registry.getComponent<APE::HierarchyComponent>(ent);
-
-		// Create a unique tag for each entity, indented past its parent
-		auto padded_tag = std::format(
-			"{}###{}",
-			hierarchy.tag.c_str(),
-			ent.id
-		);
-		ImVec2 pad_sz { ImGui::CalcTextSize(padded_tag.c_str()) };
-		button_sz = { 
-			std::max(button_sz.x, pad_sz.x),
-			std::max(button_sz.y, pad_sz.y) 
-		};
-		draw_list.emplace_back(ent, padded_tag, pad);
-
-		// Add padded children
-		float child_pad = pad + 1;
-		for (auto child : hierarchy.children) {
-			if (s_world.registry.hasComponent<APE::HierarchyComponent>(child)) {
-				stack.push_back({ child, "", child_pad  });
-			}
-		}
-	}
-
-	// Draw a button to select each entity
-	for (auto [ent, padded_tag, pad] : draw_list) {
-		ImVec2 cursor_pos = ImGui::GetCursorPos();
-		float cursor_offset = pad * button_sz.x;
-		ImGui::SetCursorPos({ cursor_pos.x + cursor_offset, cursor_pos.y });
-		if (ImGui::Button(padded_tag.c_str(), { button_sz.x, 2*button_sz.y })) {
-			s_selected_ent = ent;
-		}
-	}
-
-	ImGui::End();
-}
-
-void AppRunner::drawManipulatorPanel() noexcept
-{
-	ImGui::Begin("Manipulator Panel");
-	auto ent = s_selected_ent;
-
-	// Tag
-	if (s_world.registry.hasComponent<APE::HierarchyComponent>(ent)) {
-		auto& hierarchy = 
-			s_world.registry.getComponent<APE::HierarchyComponent>(ent);
-
-		char buf[128];
-		strncpy(buf, hierarchy.tag.c_str(), sizeof(buf));
-		if (ImGui::InputText("Entity Tag", buf, sizeof(buf))) {
-			hierarchy.tag = buf;
-		}
-
-		std::string children = 
-			std::format("Num Children: {}", hierarchy.children.size());
-		ImGui::Text(children.c_str());
-	}
-
-	// Transform
-	if (s_world.registry.hasComponent<APE::TransformComponent>(ent)) {
-		auto& transform = 
-			s_world.registry.getComponent<APE::TransformComponent>(ent);
-
-		// Select gizmo operation
-		if (ImGui::RadioButton("Translate", s_gizmo_op == ImGuizmo::TRANSLATE)) {
-			s_gizmo_op = ImGuizmo::TRANSLATE;
-		}
-		ImGui::SameLine();
-		if (ImGui::RadioButton("Rotate", s_gizmo_op == ImGuizmo::ROTATE)) {
-			s_gizmo_op = ImGuizmo::ROTATE;
-		}
-		ImGui::SameLine();
-		if (ImGui::RadioButton("Scale", s_gizmo_op == ImGuizmo::SCALE)) {
-			s_gizmo_op = ImGuizmo::SCALE;
-		}
-
-		// Manually edit transform
-		auto matrix = transform.getModelMatrix();
-		glm::vec3 translate, rotate, scale;
-		ImGuizmo::DecomposeMatrixToComponents(
-			&matrix[0][0],
-			&translate[0],
-			&rotate[0],
-			&scale[0]
-		);
-		
-		ImGui::InputFloat3("Translate", &translate[0]);
-		ImGui::InputFloat3("Rotate", &rotate[0]);
-		ImGui::InputFloat3("Scale", &scale[0]);
-
-		ImGuizmo::RecomposeMatrixFromComponents(
-			&translate[0],
-			&rotate[0],
-			&scale[0],
-			&matrix[0][0]
-		);
-		transform = APE::TransformComponent::fromMatrix(matrix);
-	}
-
-	// Material
-	if (s_world.registry.hasComponent<APE::Render::MaterialComponent>(ent)) {
-		if (ImGui::Button("Change Texture")) {
-			std::filesystem::path tex_path;
-			auto status = APE::Files::openDialog(tex_path);
-			if (status == APE::Files::Status::Sucess) {
-				auto tex_handle = APE::ImageLoader::load(tex_path);
-				s_world.registry.replaceComponent<
-					APE::Render::MaterialComponent>(
-						ent,
-						tex_handle
-					);
-			}
-		}
-	}
-
-	ImGui::End();
 }
 
 void AppRunner::resizeWindow(const SDL_Event& event) noexcept

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "render/Model.h"
-#include "scene/ImageLoader.h"
-#include "scene/ModelLoader.h"
+#include "core/render/Model.h"
+#include "core/scene/ImageLoader.h"
+#include "core/scene/ModelLoader.h"
+
 #include <type_traits>
 
 namespace APE {

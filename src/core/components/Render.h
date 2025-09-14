@@ -1,9 +1,9 @@
 #pragma once
 
-#include "scene/AssetHandle.h"
-#include "render/Model.h"
-#include "render/Image.h"
-#include "scene/ImageLoader.h"
+#include "core/scene/AssetHandle.h"
+#include "core/render/Model.h"
+#include "core/render/Image.h"
+#include "core/scene/ImageLoader.h"
 
 #include <glm/glm.hpp>
 
