@@ -473,8 +473,6 @@ void Renderer::endDrawing() noexcept
 	m_swapchain_texture = nullptr;
 }
 
-
-
 SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	const std::vector<std::byte>& data,
 	Uint32 usage) noexcept

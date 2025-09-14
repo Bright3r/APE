@@ -16,6 +16,7 @@ find_package(Stb REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(imguizmo CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
+find_package(nfd CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
 # Compile Engine into lib
@@ -46,6 +47,7 @@ target_link_libraries(
 	imgui::imgui
 	imguizmo::imguizmo
 	cereal::cereal
+	nfd::nfd
 )
 
 

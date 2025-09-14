@@ -4,6 +4,7 @@
 #include "ecs/Registry.h"
 #include "render/Shader.h"
 #include "scene/Serialize.h"
+#include "util/Files.h"
 #include "util/Logger.h"
 
 #include <SDL3/SDL_mouse.h>
@@ -14,6 +15,7 @@
 #include <ImGuizmo.h>
 #include <glm/gtc/quaternion.hpp>
 
+#include <filesystem>
 #include <algorithm>
 #include <cstring>
 #include <chrono>
@@ -256,6 +258,26 @@ void AppRunner::draw() noexcept
 
 void AppRunner::drawDebugPanel() noexcept
 {
+	ImGui::Begin("Debug", nullptr, ImGuiWindowFlags_MenuBar);
+
+	if (ImGui::BeginMenuBar()) 
+	{
+		if (ImGui::BeginMenu("File")) 
+		{
+			if (ImGui::MenuItem("Open")) 
+			{
+				std::filesystem::path path;
+				APE::Files::Status status = 
+					APE::Files::openDialog(path);
+			}
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMenuBar();
+	}
+
+
 	ImGui::Text("Camera");
 	auto cam = s_camera;
 
@@ -298,6 +320,8 @@ void AppRunner::drawDebugPanel() noexcept
 	ImGui::ColorPicker4("ambient", glm::value_ptr(light.ambient_color));
 	ImGui::ColorPicker4("diffuse", glm::value_ptr(light.diffuse_color));
 	ImGui::ColorPicker4("specular", glm::value_ptr(light.specular_color));
+
+	ImGui::End();
 }
 
 void AppRunner::drawSceneHierarchyPanel() noexcept
