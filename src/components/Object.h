@@ -21,7 +21,7 @@ struct HierarchyComponent {
 	std::vector<ECS::EntityHandle> children;
 	std::string tag;
 
-	HierarchyComponent(std::string_view tag) noexcept
+	HierarchyComponent(std::string_view tag = "") noexcept
 		: parent(-1)
 		, tag(tag)
 	{

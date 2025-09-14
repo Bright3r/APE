@@ -1,5 +1,6 @@
 #include "ModelLoader.h"
 #include "AssetManager.h"
+#include "render/Model.h"
 #include "scene/ImageLoader.h"
 
 #include <assimp/postprocess.h>
@@ -49,6 +50,11 @@ ModelLoader::load(AssetKey asset_key) noexcept
 		std::move(m)
 	);
 	return handle;
+}
+
+AssetHandle<Render::Model> ModelLoader::defaultModel() noexcept
+{
+	return load(Render::Model::DEFAULT_MODEL_PATH);
 }
 
 TransformComponent ModelLoader::convertAiTransform(

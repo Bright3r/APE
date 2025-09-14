@@ -371,6 +371,16 @@ public:
 		return ents;
 	}
 
+	[[nodiscard]] std::vector<EntityHandle> entities() const noexcept
+	{
+		std::vector<EntityID> ids = m_entities.entities();
+		std::vector<EntityHandle> res;
+		for (auto id : ids) {
+			res.emplace_back(id);
+		}
+		return res;
+	}
+
 	template <typename Component>
 	[[nodiscard]] CPool<Component>& getPool() noexcept
 	{

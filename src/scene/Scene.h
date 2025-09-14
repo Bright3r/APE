@@ -79,6 +79,10 @@ struct Scene {
 	ECS::EntityHandle addModel(AssetHandle<Render::Model> model_handle,
 		const TransformComponent& transform = {}) noexcept
 	{
+		APE_CHECK((model_handle.data != nullptr),
+			"Scene::addModel() Failed: model_handle data is null."
+		);
+
 		ECS::EntityHandle par = registry.createEntity();
 		registry.emplaceComponent<HierarchyComponent>(
 			par,

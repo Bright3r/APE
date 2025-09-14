@@ -33,7 +33,8 @@ public:
 	[[nodiscard]] static bool 
 	contains(const AssetKey& key) noexcept
 	{
-		return s_assets.contains(key);
+		if (!s_assets.contains(key)) return false;
+		return s_assets.at(key).data != nullptr;
 	}
 
 	template <typename Asset>
@@ -82,11 +83,11 @@ private:
 			key.to_string()
 		);
 
-		return {
-			.key = key,
-			.asset_class = asset.asset_class,
-			.data = std::static_pointer_cast<Asset>(asset.data),
-		};
+		return AssetHandle<Asset>(
+			key, 
+			asset.asset_class, 
+			std::static_pointer_cast<Asset>(asset.data)
+		);
 	}
 };
 

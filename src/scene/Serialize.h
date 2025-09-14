@@ -4,6 +4,7 @@
 #include "scene/AssetLoader.h"
 #include "ecs/Registry.h"
 #include "scene/Scene.h"
+#include "util/Logger.h"
 
 #include <cereal/cereal.hpp>
 #include <cereal/archives/json.hpp>
@@ -11,8 +12,12 @@
 
 #include <filesystem>
 #include <fstream>
+#include <unordered_map>
 
 namespace cereal {
+
+static inline
+std::unordered_map<APE::ECS::EntityID, APE::ECS::EntityHandle> s_old_to_new;
 
 /*
 * GLM
@@ -116,7 +121,7 @@ void load(Archive& ar, APE::AssetHandle<Asset>& asset)
 		cereal::make_nvp("asset_class", asset.asset_class)
 	);
 
-	// asset = APE::AssetLoader::load<Asset>(asset.key);
+	asset = APE::AssetLoader::load<Asset>(asset.key, asset.asset_class);
 }
 
 
@@ -193,16 +198,31 @@ struct ECSPair {
 };
 
 template <class Archive, typename Component>
-void trySerializePool(Archive& ar, APE::ECS::Registry& r) noexcept
+void serializePool(Archive& ar, const APE::ECS::Registry& r) noexcept
 {
+	std::vector<ECSPair<Component>> entries;
 	if (r.hasComponent<Component>()) {
-		std::vector<ECSPair<Component>> entries;
 		for (auto [ent, comp] : r.getPool<Component>()) {
 			entries.emplace_back(ent, comp);
 		}
-
-		ar(cereal::make_nvp(Component::Name, entries));
 	}
+
+	APE_TRACE("Serialized {}", Component::Name);
+	ar(cereal::make_nvp(Component::Name, entries));
+}
+
+template <class Archive, typename Component>
+void deserializePool(Archive& ar, APE::ECS::Registry& r) noexcept
+{
+	std::vector<ECSPair<Component>> entries;
+	ar(cereal::make_nvp(Component::Name, entries));
+
+	for (auto& [ent, comp] : entries) {
+		APE::ECS::EntityHandle new_ent = s_old_to_new.at(ent.id);
+		r.emplaceComponent<Component>(new_ent, comp);
+	}
+
+	APE_TRACE("Deserialized {}", Component::Name);
 }
 
 
@@ -210,13 +230,32 @@ void trySerializePool(Archive& ar, APE::ECS::Registry& r) noexcept
 * ECS Registry
 */
 template <class Archive>
-void serialize(Archive& ar, APE::ECS::Registry& r)
+void save(Archive& ar, const APE::ECS::Registry& r)
 {
-	trySerializePool<Archive, APE::TransformComponent>(ar, r);
-	trySerializePool<Archive, APE::HierarchyComponent>(ar, r);
-	trySerializePool<Archive, APE::Render::MeshComponent>(ar, r);
-	trySerializePool<Archive, APE::Render::MaterialComponent>(ar, r);
-	trySerializePool<Archive, APE::Render::LightComponent>(ar, r);
+	ar(cereal::make_nvp("entities", r.entities()));
+
+	serializePool<Archive, APE::TransformComponent>(ar, r);
+	serializePool<Archive, APE::HierarchyComponent>(ar, r);
+	serializePool<Archive, APE::Render::MeshComponent>(ar, r);
+	serializePool<Archive, APE::Render::MaterialComponent>(ar, r);
+	// serializePool<Archive, APE::Render::LightComponent>(ar, r);
+}
+
+template <class Archive>
+void load(Archive& ar, APE::ECS::Registry& r)
+{
+	std::vector<APE::ECS::EntityHandle> old_ents;
+	ar(cereal::make_nvp("entities", old_ents));
+
+	for (auto old_ent : old_ents) {
+		s_old_to_new[old_ent.id] = r.createEntity();
+	}
+
+	deserializePool<Archive, APE::TransformComponent>(ar, r);
+	deserializePool<Archive, APE::HierarchyComponent>(ar, r);
+	deserializePool<Archive, APE::Render::MeshComponent>(ar, r);
+	deserializePool<Archive, APE::Render::MaterialComponent>(ar, r);
+	// deserializePool<Archive, APE::Render::LightComponent>(ar, r);
 }
 
 
@@ -224,12 +263,25 @@ void serialize(Archive& ar, APE::ECS::Registry& r)
 * Scene
 */
 template <class Archive>
-void serialize(Archive& ar, APE::Scene& scene)
+void save(Archive& ar, const APE::Scene& scene)
 {
 	ar(
 		cereal::make_nvp("registry", scene.registry), 
 		cereal::make_nvp("root", scene.root)
 	);
+}
+
+template <class Archive>
+void load(Archive& ar, APE::Scene& scene)
+{
+	s_old_to_new.clear();
+
+	ar(
+		cereal::make_nvp("registry", scene.registry),
+		cereal::make_nvp("root", scene.root)
+	);
+
+	scene.root = s_old_to_new.at(scene.root.id);
 }
 
 };	// end of namespace
@@ -240,11 +292,25 @@ namespace APE {
 struct Serialize {
 	static void saveScene(
 		std::filesystem::path save_path,
-		::APE::Scene& world)
+		::APE::Scene& world) noexcept
 	{
 		std::ofstream os(save_path);
 		cereal::JSONOutputArchive archive(os);
 		archive(world);
+	}
+
+	static Scene loadScene(std::filesystem::path load_path)
+	{
+		std::ifstream is(load_path);
+		cereal::JSONInputArchive archive(is);
+		
+		Scene world;
+		archive(world);
+
+		APE_TRACE("New scene entity count: {}",
+			world.registry.numEntities()
+		);
+		return world;
 	}
 };
 

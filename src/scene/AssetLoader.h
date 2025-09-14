@@ -1,7 +1,9 @@
 #pragma once
 
+#include "render/Model.h"
 #include "scene/ImageLoader.h"
 #include "scene/ModelLoader.h"
+#include <type_traits>
 
 namespace APE {
 
@@ -10,18 +12,17 @@ struct AssetLoader {
 	[[nodiscard]] static AssetHandle<Asset>
 	load(AssetKey key, AssetClass asset_class) noexcept
 	{
-		switch (asset_class) {
-		case APE::AssetClass::Model:
+		if constexpr (std::is_same_v<Asset, Render::Model>) {
 			return ModelLoader::load(key);
-			break;
-		case APE::AssetClass::Texture:
+		}
+		else if constexpr (std::is_same_v<Asset, Render::Image>) {
 			return ImageLoader::load(key);
-			break;
-		default:
+		}
+		else {
 			APE_ABORT(
 				"AssetLoader::load() Failed: Cannot load classless asset."
 			);
-		};
+		}
 	}
 };
 

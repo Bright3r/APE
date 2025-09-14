@@ -27,24 +27,25 @@ void App::setup()
 	static constexpr std::string_view CONE_PATH = "res/models/cone.obj";
 	static constexpr std::string_view CYLINDER_PATH = "res/models/cylinder.obj";
 
-	std::vector<APE::AssetHandle<APE::Render::Model>> models;
-	models.push_back(APE::ModelLoader::load(CUBE_PATH));
-	models.push_back(APE::ModelLoader::load(SPHERE_PATH));
-	models.push_back(APE::ModelLoader::load(CONE_PATH));
-	models.push_back(APE::ModelLoader::load(CYLINDER_PATH));
+	world.addModel(APE::ModelLoader::load(CUBE_PATH));
 
-	constexpr int NUM_SHAPES = 200;
-	int sqrt = std::sqrt(NUM_SHAPES);
-	for (int i = 0; i < NUM_SHAPES; ++i) {
-		auto& model_handle = models[i % models.size()];
-		auto& model = model_handle.data;
-
-		APE::TransformComponent transform = model->transform;
-		transform.position.x = ((i % sqrt) - (sqrt / 2.f)) * 5;
-		transform.position.z = ((i / sqrt) - (sqrt / 2.f)) * 5;
-
-		world.addModel(model_handle, transform);
-	}
+	// std::vector<APE::AssetHandle<APE::Render::Model>> models;
+	// models.push_back(APE::ModelLoader::load(CUBE_PATH));
+	// models.push_back(APE::ModelLoader::load(SPHERE_PATH));
+	// models.push_back(APE::ModelLoader::load(CONE_PATH));
+	// models.push_back(APE::ModelLoader::load(CYLINDER_PATH));
+	//
+	// constexpr int NUM_SHAPES = 200;
+	// int sqrt = std::sqrt(NUM_SHAPES);
+	// for (int i = 0; i < NUM_SHAPES; ++i) {
+	// 	auto& model_handle = models[i % models.size()];
+	//
+	// 	APE::TransformComponent transform {};
+	// 	transform.position.x = ((i % sqrt) - (sqrt / 2.f)) * 5;
+	// 	transform.position.z = ((i / sqrt) - (sqrt / 2.f)) * 5;
+	//
+	// 	world.addModel(model_handle, transform);
+	// }
 
 
 	cam = std::make_shared<APE::Render::Camera>(
@@ -78,6 +79,10 @@ void App::update()
 	// Save
 	if (AppRunner::keyDown(SDLK_P)) {
 		AppRunner::save("demos/test.json");
+	}
+	// Load
+	if (AppRunner::keyDown(SDLK_L)) {
+		AppRunner::load("demos/test.json");
 	}
 
 	// Camera Tab In

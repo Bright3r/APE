@@ -203,6 +203,11 @@ void AppRunner::save(std::filesystem::path save_path) noexcept
 	APE::Serialize::saveScene(save_path, s_world);
 }
 
+void AppRunner::load(std::filesystem::path load_path) noexcept
+{
+	s_world = APE::Serialize::loadScene(load_path);
+}
+
 std::unique_ptr<APE::Render::Shader> AppRunner::createShader(
 	const APE::Render::ShaderDescription& vert_shader_desc, 
 	const APE::Render::ShaderDescription& frag_shader_desc) noexcept 
@@ -239,10 +244,14 @@ void AppRunner::draw() noexcept
 		APE::TransformComponent,
 		APE::HierarchyComponent>();
 
+	size_t num_objs { 0 };
 	for (auto [ent, mesh, material, transform, hierarchy] : view) {
 		glm::mat4 model_mat = getModelMatrix(ent);
 		s_renderer->draw(mesh, material, s_camera, model_mat);
+		
+		++num_objs;
 	}
+	APE_TRACE("Drew {} objects.", num_objs);
 }
 
 void AppRunner::drawDebugPanel() noexcept
@@ -361,6 +370,10 @@ void AppRunner::drawManipulatorPanel() noexcept
 		if (ImGui::InputText("Entity Tag", buf, sizeof(buf))) {
 			hierarchy.tag = buf;
 		}
+
+		std::string children = 
+			std::format("Num Children: {}", hierarchy.children.size());
+		ImGui::Text(children.c_str());
 	}
 
 	// Transform

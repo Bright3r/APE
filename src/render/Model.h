@@ -6,10 +6,13 @@
 
 #include <filesystem>
 #include <vector>
+#include <string_view>
 
 namespace APE::Render {
 
 struct Model {
+	static inline std::string_view DEFAULT_MODEL_PATH = "res/models/cube.obj";
+
 	// Type aliases
 	using VertexType = TextureVertex;
 	using IndexType = Uint32;

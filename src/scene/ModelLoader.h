@@ -17,6 +17,9 @@ public:
 	[[nodiscard]] static AssetHandle<Render::Model> 
 	load(AssetKey asset_key) noexcept;
 
+	[[nodiscard]] static AssetHandle<Render::Model> 
+	defaultModel() noexcept;
+
 private:
 	[[nodiscard]] static TransformComponent 
 	convertAiTransform(const aiMatrix4x4 ai_transform) noexcept;

@@ -65,6 +65,8 @@ public:
 
 	static void save(std::filesystem::path save_path) noexcept;
 
+	static void load(std::filesystem::path load_path) noexcept;
+
 
 	// Graphics Functions
 	[[nodiscard]] static std::unique_ptr<APE::Render::Shader> createShader(

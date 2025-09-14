@@ -3,6 +3,7 @@
 #include "scene/AssetHandle.h"
 #include "render/Model.h"
 #include "render/Image.h"
+#include "scene/ImageLoader.h"
 
 #include <glm/glm.hpp>
 
@@ -13,7 +14,9 @@ struct MeshComponent {
 	AssetHandle<Model> model_handle;
 	size_t mesh_index;
 
-	MeshComponent(AssetHandle<Model> model_handle, size_t mesh_index) noexcept
+	MeshComponent(
+		AssetHandle<Model> model_handle = {}, 
+		size_t mesh_index = 0) noexcept
 		: model_handle(model_handle)
 		, mesh_index(mesh_index)
 	{
@@ -25,7 +28,8 @@ struct MaterialComponent {
 	static constexpr const char* Name = "Material";
 	AssetHandle<Image> texture_handle;
 
-	MaterialComponent(AssetHandle<Image> texture_handle) noexcept
+	MaterialComponent(
+		AssetHandle<Image> texture_handle = ImageLoader::defaultImage()) noexcept
 		: texture_handle(texture_handle)
 	{
 
@@ -58,33 +62,18 @@ struct LightComponent {
 	AreaLightShape shape;
 	glm::vec2 extent;
 
-	// Point/Spot/Directional light
 	LightComponent(LightType type = LightType::Point,
 		float intensity = 10.f,
 		glm::vec3 color = glm::vec3(1.f),
-		float cutoff_angle = 45.f) noexcept
-		: type(type)
-		, intensity(intensity)
-		, color(color)
-		, cutoff_angle(cutoff_angle)
-		, shape(AreaLightShape::Rectangle)
-		, extent(glm::vec2(5.f))
-	{
-
-	}
-
-	// Area light
-	LightComponent(LightType type = LightType::Point,
-		float intensity = 10.f,
-		glm::vec3 color = glm::vec3(1.f),
+		float cutoff_angle = 45.f,
 		AreaLightShape shape = AreaLightShape::Rectangle,
 		glm::vec2 extent = glm::vec2(5.f)) noexcept
 		: type(type)
 		, intensity(intensity)
 		, color(color)
+		, cutoff_angle(cutoff_angle)
 		, shape(shape)
 		, extent(extent)
-		, cutoff_angle(45.f)
 	{
 
 	}

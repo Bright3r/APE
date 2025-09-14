@@ -15,9 +15,8 @@ struct AssetKey {
 	std::filesystem::path path;
 	std::string sub_index;
 
-	AssetKey() noexcept = default;
 	AssetKey(
-		std::filesystem::path path,
+		std::filesystem::path path = "",
 		std::string sub_index = "") noexcept
 		: path(path)
 		, sub_index(sub_index)
@@ -43,6 +42,15 @@ struct AssetHandle {
 	AssetKey key;
 	AssetClass asset_class;
 	std::shared_ptr<Asset> data;
+
+	AssetHandle(
+		AssetKey asset_key = {},
+		AssetClass asset_class = AssetClass::None,
+		std::shared_ptr<Asset> data = nullptr) noexcept
+		: key(asset_key)
+		, asset_class(asset_class)
+		, data(data)
+	{ }
 };
 
 };	// end of namespace
