@@ -74,6 +74,7 @@ public:
 	template <typename... Components>
 	class View {
 		using PoolsTuple = std::tuple<CPool<Components>*...>;
+		using ViewEntry = std::tuple<EntityHandle, Components&...>;
 
 		Registry* m_registry;
 		PoolsTuple m_pools;
@@ -94,6 +95,15 @@ public:
 		View& operator=(const View& other) = default;
 		View(View&& other) = default;
 		View& operator=(View&& other) = default;
+
+		std::vector<ViewEntry> each() noexcept
+		{
+			std::vector<ViewEntry> res;
+			for (auto tup : *this) {
+				res.push_back(tup);
+			}
+			return res;
+		}
 
 	private:
 		[[nodiscard]] static decltype(auto) 
@@ -118,7 +128,7 @@ public:
 		}
 
 		class Iterator {
-			using Entry = std::tuple<EntityHandle, Components&...>;
+			using Entry = ViewEntry;
 
 			View* m_view;
 			size_t m_idx;

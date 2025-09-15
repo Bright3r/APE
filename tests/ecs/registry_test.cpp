@@ -636,3 +636,65 @@ TEST_F(RegistryTest, MultiComponentView)
 		<< "View should have 1 entity.";
 }
 
+TEST_F(RegistryTest, RemoveEntityFromViewEach)
+{
+	auto e1 = r.createEntity();
+	auto e2 = r.createEntity();
+	r.emplaceComponent<PosComp>(e1);
+	r.emplaceComponent<PosComp>(e2);
+
+	auto ent_view = r.view<PosComp>();
+	EXPECT_EQ(viewSize(ent_view), 2)
+		<< "EntityView should be have 2 entities.";
+
+	for (auto [e, PosComp] : ent_view.each()) {
+		r.destroyEntity(e);
+	}
+
+	EXPECT_EQ(r.numEntities(), 0)
+		<< "r should have no remaining entities.";
+}
+
+TEST_F(RegistryTest, RemoveComponentFromViewEach)
+{
+	auto e1 = r.createEntity();
+	auto e2 = r.createEntity();
+	r.emplaceComponent<PosComp>(e1);
+	r.emplaceComponent<PosComp>(e2);
+
+	auto ent_view = r.view<PosComp>();
+	EXPECT_EQ(viewSize(ent_view), 2)
+		<< "EntityView should be have 2 entities.";
+
+	for (auto [e, pos] : ent_view.each()) {
+		r.removeComponent<PosComp>(e);
+	}
+
+	EXPECT_FALSE(r.hasComponent<PosComp>(e1))
+		<< "Entity e1 should not have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PosComp>(e2))
+		<< "Entity e2 should not have Position Component.";
+
+	ent_view = r.view<PosComp>();
+	EXPECT_EQ(viewSize(ent_view), 0)
+		<< "EntityView should be empty.";
+}
+
+TEST_F(RegistryTest, ModifyComponentFromViewEach)
+{
+	auto e1 = r.createEntity();
+	auto e2 = r.createEntity();
+	r.emplaceComponent<PosComp>(e1);
+	r.emplaceComponent<PosComp>(e2);
+
+	auto ent_view = r.view<PosComp>();
+	for (auto [e, pos] : ent_view.each()) {
+		pos.x = 5;
+	}
+
+	EXPECT_EQ(r.getComponent<PosComp>(e1).x, 5)
+		<< "Entity e1 should have Position x-coord of 5.";
+	EXPECT_EQ(r.getComponent<PosComp>(e2).x, 5)
+		<< "Entity e1 should have Position x-coord of 5.";
+}
+
