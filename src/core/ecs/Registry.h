@@ -4,6 +4,7 @@
 
 #include <bitset>
 #include <cstdint>
+#include <limits>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -13,16 +14,10 @@ namespace APE::ECS {
 /*
  * Aliases + Constants
 */
+constexpr int MAX_NUM_COMPONENTS = 64;
+
 using EntityID = uint64_t;
 using TypeID = size_t;
-
-constexpr int MAX_NUM_COMPONENTS = 64;
-using Bitmask = std::bitset<MAX_NUM_COMPONENTS>;
-
-using IPool = PoolInterface<EntityID>;
-
-template <typename Component>
-using CPool = Pool<EntityID, Component>;
 
 struct EntityHandle {
 	EntityID id;
@@ -41,13 +36,20 @@ struct EntityHandle {
 		return id != other.id;
 	}
 };
+
 using EntitySet = std::vector<EntityHandle>;
 
 /*
  * Registry
 */
 class Registry {
-private:
+	using Bitmask = std::bitset<MAX_NUM_COMPONENTS>;
+
+	using IPool = PoolInterface<EntityID>;
+
+	template <typename Component>
+	using CPool = Pool<EntityID, Component>;
+
 	struct Entity {
 		EntityID id;
 		Bitmask component_mask;
@@ -82,10 +84,10 @@ public:
 		View(Registry* registry, PoolsTuple pools)
 			: m_registry(registry)
 			, m_pools(pools)
-			, m_driver_ents(std::get<0>(pools)->entities())
 			, m_size(m_driver_ents.size())
 		{
-
+			m_driver_ents = getMinPoolEnts(pools);
+			m_size = m_driver_ents.size();
 		}
 
 		View(const View& other) = default;
@@ -94,6 +96,22 @@ public:
 		View& operator=(View&& other) = default;
 
 	private:
+		[[nodiscard]] static decltype(auto) 
+		getMinPoolEnts(const PoolsTuple& pools) noexcept
+		{
+			const auto* min_ents = &std::get<0>(pools)->constEntities();
+			std::apply([&](auto&... pool) {
+				(([&] {
+					const auto& ents = pool->constEntities();
+					if (ents.size() < min_ents->size()) {
+						min_ents = &ents;
+					}
+				}()), ...);
+			}, pools);
+
+			return *min_ents;
+		}
+
 		[[nodiscard]] bool isViewMember(EntityID id) const noexcept
 		{
 			return m_registry->hasAllComponents<Components...>({ id });
@@ -141,7 +159,9 @@ public:
 				}
 
 				EntityID id { m_view->m_driver_ents[m_idx] };
-				while (m_idx < m_view->m_size && !m_view->isViewMember(m_view->m_driver_ents[m_idx])) {
+				while (m_idx < m_view->m_size && 
+					!m_view->isViewMember(m_view->m_driver_ents[m_idx])) 
+				{
 					++m_idx;
 				}
 				return *this;

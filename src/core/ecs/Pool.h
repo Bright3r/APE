@@ -62,6 +62,11 @@ public:
 		return m_dense.size();
 	}
 
+	[[nodiscard]] const std::vector<EntityID>& constEntities() const noexcept
+	{
+		return m_denseToID;
+	}
+
 	[[nodiscard]] std::vector<EntityID> entities() const noexcept
 	{
 		return m_denseToID;
