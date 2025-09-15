@@ -179,7 +179,7 @@ void Engine::draw(Scene& world) noexcept
 		HierarchyComponent>();
 
 	size_t num_objs { 0 };
-	for (auto [ent, mesh, material, transform, hierarchy] : view) {
+	for (auto [ent, mesh, material, transform, hierarchy] : view.each()) {
 		glm::mat4 model_mat = world.getModelMatrix(ent);
 		s_renderer->draw(mesh, material, s_camera, model_mat);
 		
