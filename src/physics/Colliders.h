@@ -17,6 +17,16 @@ struct Ray {
 struct AABB {
 	glm::vec3 min;
 	glm::vec3 max;
+
+	[[nodiscard]] glm::vec3 center() const noexcept 
+	{
+		return (min + max) * 0.5f;
+	}
+
+	[[nodiscard]] glm::vec3 extents() const noexcept 
+	{
+		return (max - min) * 0.5f;
+	}
 };
 
 struct Triangle {
