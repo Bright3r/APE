@@ -85,7 +85,7 @@ static inline void drawDebugPanel(APE::Scene& world) noexcept
 		cam->setLocked(!cam->isLocked());
 	}
 
-	auto renderer = Engine::getRenderer();
+	auto renderer = Engine::renderer();
 	if (ImGui::RadioButton("show normals", renderer->debug_mode.show_normals)) {
 		renderer->debug_mode.show_normals = !renderer->debug_mode.show_normals;
 	}
@@ -257,7 +257,7 @@ static inline void drawGizmo(
 
 		auto parent_world_mat = world.getModelMatrix(hierarchy.parent);
 		auto world_mat = parent_world_mat * transform.getModelMatrix();
-		auto renderer = Engine::getRenderer();
+		auto renderer = Engine::renderer();
 		renderer->drawGizmo(Engine::getCamera(), world_mat, gizmo_op);
 
 		auto new_loc_mat = glm::inverse(parent_world_mat) * world_mat;

@@ -35,6 +35,20 @@ struct Mesh {
 	{
 
 	}
+
+	using Triangle = std::tuple<glm::vec3, glm::vec3, glm::vec3>;
+	[[nodiscard]] std::vector<Triangle> triangles() const noexcept
+	{
+		std::vector<Triangle> tris;
+		for (size_t i = 0; i < (indices.size() / 3); i += 3) {
+			tris.push_back({ 
+       				vertices[indices[i]].pos,
+				vertices[indices[i+1]].pos,
+				vertices[indices[i+2]].pos
+			});
+		}
+		return tris;
+	}
 };
 
 };	// end of namespace

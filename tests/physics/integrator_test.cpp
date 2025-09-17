@@ -35,13 +35,12 @@ protected:
 
 	void fillScenarios()
 	{
+		RigidBody start;
+		start.pos = { 0, 100, 0 };
+		start.mass = 1.f;
+		start.forces = { 0, -9.8f, 0 };
 		Scenario freefall {
-			.start = {
-				.pos = { 0, 100, 0 },
-				.vel_linear = { 0, 0, 0 },
-				.mass = 1.f,
-				.forces = { 0, -9.8f, 0 },
-			},
+			.start = start,
 			.expected_per_sec = { 
 				{ 0, 95.1, 0 },
 				{ 0, 80.4, 0 },

@@ -94,6 +94,7 @@ void Engine::stepGameloop() noexcept
 
 	// 3D Scene
 	draw(s_app->world);
+	s_app->draw();
 
 	// GUI
 	s_app->drawGUI();
@@ -155,7 +156,7 @@ bool Engine::loadScene(std::filesystem::path load_path, Scene& world) noexcept
 	return false;
 }
 
-Render::Renderer* Engine::getRenderer() noexcept
+Render::Renderer* Engine::renderer() noexcept
 {
 	return s_renderer.get();
 }

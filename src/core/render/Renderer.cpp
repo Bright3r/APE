@@ -4,6 +4,7 @@
 #include "util/Logger.h"
 
 #include <SDL3/SDL_gpu.h>
+#include <array>
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlgpu3.h>
@@ -18,8 +19,9 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	, wireframe_mode(false) 
 	, clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
 	, m_shader(nullptr)
-	, m_fill_pipeline(nullptr)
-	, m_line_pipeline(nullptr)
+	, m_pipeline({})
+	, m_debug_shader(nullptr)
+	, m_debug_pipeline({})
 	, m_swapchain_texture(nullptr)
 	, m_render_pass(nullptr)
 	, m_cmd_buf(nullptr)
@@ -35,6 +37,12 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 		context->device
 	);
 
+	m_debug_shader = std::make_unique<Shader>(
+		debug_vert_shader_desc,
+		debug_frag_shader_desc,
+		context->device
+	);
+
 	reset();
 }
 
@@ -44,8 +52,9 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	, wireframe_mode(false) 
 	, clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
 	, m_shader(shader)
-	, m_fill_pipeline(nullptr)
-	, m_line_pipeline(nullptr)
+	, m_pipeline({})
+	, m_debug_shader(nullptr)
+	, m_debug_pipeline({})
 	, m_swapchain_texture(nullptr)
 	, m_render_pass(nullptr)
 	, m_cmd_buf(nullptr)
@@ -54,12 +63,37 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	, light({})
 	, m_imgui_session(nullptr)
 {
+	m_debug_shader = std::make_unique<Shader>(
+		debug_vert_shader_desc,
+		debug_frag_shader_desc,
+		context->device
+	);
+
 	reset();
 }
 
 void Renderer::reset() noexcept
 {
-	useShader(m_shader.get());
+	// Rebuild debug pipeline
+	auto debug_pipeline = shaderToPipeline(
+		m_debug_shader.get(),
+		SDL_GPU_PRIMITIVETYPE_LINELIST
+	);
+	if (!debug_pipeline.fill || !debug_pipeline.line) {
+		return;
+	}
+	m_debug_pipeline = std::move(debug_pipeline);
+
+	// Rebuild pipeline for user shader
+	auto pipeline = shaderToPipeline(
+		m_shader.get(),
+		SDL_GPU_PRIMITIVETYPE_TRIANGLELIST
+	);
+	if (!pipeline.fill || !pipeline.line) {
+		return;
+	}
+	m_pipeline = std::move(pipeline);
+
 	createSampler();
 	createDepthTexture();
 
@@ -101,12 +135,14 @@ SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
 	);
 }
 
-void Renderer::useShader(Shader* shader) noexcept {
+SafePipeline Renderer::shaderToPipeline(
+	Shader* shader,
+	SDL_GPUPrimitiveType primitive_type) noexcept {
 	if (!shader) {
 		APE_ERROR(
-			"Renderer::useShader Failed: shader == nullptr"
+			"Renderer::shaderToPipeline Failed: shader == nullptr"
 		);
-		return;
+		return {};
 	}
 
 	std::vector<SDL_GPUColorTargetDescription> color_target_descriptions = {{
@@ -146,19 +182,23 @@ void Renderer::useShader(Shader* shader) noexcept {
 		.vertex_shader = shader->getVertexShader(),
 		.fragment_shader = shader->getFragmentShader(),
 		.vertex_input_state = vertex_input_state,
-		.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
+		.primitive_type = primitive_type,
 		.rasterizer_state = rasterizer_state,
 		.depth_stencil_state = depth_stencil_state,
 		.target_info = target_info
 	};
 
+	SafePipeline res;
+
 	// Create fill pipeline
 	pipeline_create_info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
-	m_fill_pipeline = createPipeline(pipeline_create_info);
+	res.fill = createPipeline(pipeline_create_info);
 
 	// Create wireframe pipeline
 	pipeline_create_info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_LINE;
-	m_line_pipeline = createPipeline(pipeline_create_info);
+	res.line = createPipeline(pipeline_create_info);
+
+	return res;
 }
 
 void Renderer::createDepthTexture() noexcept
@@ -227,6 +267,18 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 	);
 }
 
+void Renderer::bindPipeline(SafePipeline* pipeline) noexcept
+{
+	// Bind render pipeline
+	SDL_GPUGraphicsPipeline* render_pipeline = 
+		wireframe_mode ? pipeline->line.get() : pipeline->fill.get();
+
+	APE_CHECK((render_pipeline != nullptr),
+		"Renderer::draw Failed: render_pipeline == nullptr"
+	);
+	SDL_BindGPUGraphicsPipeline(m_render_pass, render_pipeline);
+}
+
 void Renderer::beginDrawing() noexcept
 {
 	// Check that we are not already drawing
@@ -268,19 +320,14 @@ void Renderer::beginDrawing() noexcept
 	beginRenderPass(true, true);
 
 	// Bind render pipeline
-	SDL_GPUGraphicsPipeline* render_pipeline = 
-		wireframe_mode ? m_line_pipeline.get() : m_fill_pipeline.get();
-
-	APE_CHECK((render_pipeline != nullptr),
-		"Renderer::draw Failed: render_pipeline == nullptr"
-	);
-	SDL_BindGPUGraphicsPipeline(m_render_pass, render_pipeline);
+	bindPipeline(&m_pipeline);
 }
 
-void Renderer::draw(MeshComponent& mesh,
-		MaterialComponent& material,
-		std::weak_ptr<Camera> camera,
-		const glm::mat4& model_matrix) noexcept
+void Renderer::draw(
+	MeshComponent& mesh,
+	MaterialComponent& material,
+	std::weak_ptr<Camera> camera,
+	const glm::mat4& model_matrix) noexcept
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
@@ -416,7 +463,8 @@ void Renderer::draw(MeshComponent& mesh,
 	);
 }
 
-void Renderer::drawGizmo(std::weak_ptr<Camera> camera,
+void Renderer::drawGizmo(
+	std::weak_ptr<Camera> camera,
 	glm::mat4& matrix,
 	ImGuizmo::OPERATION gizmo_op,
 	ImGuizmo::MODE gizmo_mode) noexcept
@@ -442,6 +490,93 @@ void Renderer::drawGizmo(std::weak_ptr<Camera> camera,
 	);
 }
 
+void Renderer::drawLine(
+	const glm::vec3& p0,
+	const glm::vec3& p1,
+	std::array<Uint8, 4> color,
+	Camera* cam) noexcept
+{
+	// Draw in screen space if no camera is provided
+	if (!cam) {
+		m_debug_verts.emplace_back(p0, color[0], color[1], color[2], color[3]);
+		m_debug_verts.emplace_back(p1, color[0], color[1], color[2], color[3]);
+		return;
+	}
+
+	// Transform line to eye space
+	glm::vec4 ep0 = cam->getViewMatrix() * glm::vec4(p0, 1.f);
+	glm::vec4 ep1 = cam->getViewMatrix() * glm::vec4(p1, 1.f);
+	float near_plane = cam->getNearPlane();
+
+	auto clip_line = [&](glm::vec4& a, glm::vec4& b) {
+		bool a_behind = a.z > -near_plane;
+		bool b_behind = b.z > -near_plane;
+
+		if (a_behind && b_behind) return false;
+		if (a_behind) {
+			float t = (-near_plane - a.z) / (b.z - a.z);
+			a = a + t * (b - a);
+		}
+		else if (b_behind) {
+			float t = (-near_plane - a.z) / (b.z - a.z);
+			b = a + t * (b - a);
+		}
+		return true;
+	};
+
+	// Cull line if clipped by camera
+	if (!clip_line(ep0, ep1)) return;
+
+	// Transform to clip space
+	glm::mat4 proj = cam->getProjectionMatrix(getAspectRatio());
+	glm::vec4 cp0 = proj * ep0;
+	glm::vec4 cp1 = proj * ep1;
+
+	// Transform to screen space (perspective divide manually)
+	glm::vec3 ndc0 = glm::vec3(cp0) / cp0.w;
+	glm::vec3 ndc1 = glm::vec3(cp1) / cp1.w;
+
+	m_debug_verts.emplace_back(ndc0, color[0], color[1], color[2], color[3]);
+	m_debug_verts.emplace_back(ndc1, color[0], color[1], color[2], color[3]);
+}
+
+
+void Renderer::drawDebug() noexcept
+{
+	if (m_debug_verts.empty()) return;
+
+	// Switch to debug pipeline
+	bindPipeline(&m_debug_pipeline);
+
+	// Create GPU Buffer for debug lines
+	SafeGPU::UniqueGPUBuffer debug_line_buffer = uploadBuffer(
+		vectorToRawBytes(m_debug_verts),
+		SDL_GPU_BUFFERUSAGE_VERTEX
+	);
+
+	// Bind gpu buffer
+	SDL_GPUBufferBinding line_buffer_binding = {
+		.buffer = debug_line_buffer.get(),
+		.offset = 0,
+	};
+	SDL_BindGPUVertexBuffers(
+		m_render_pass,
+		0,
+		&line_buffer_binding,
+		1
+	);
+
+	// Draw
+	SDL_DrawGPUPrimitives(
+		m_render_pass,
+		m_debug_verts.size(),
+		1,
+		0,
+		0
+	);
+	m_debug_verts.clear();
+}
+
 void Renderer::endDrawing() noexcept
 {
 	// Check that we are already drawing
@@ -449,6 +584,9 @@ void Renderer::endDrawing() noexcept
 	   "Renderer::endDrawing() Failed: beginDrawing() not yet called"
 	);
 	m_is_drawing = false;
+
+	// Draw debug visuals
+	drawDebug();
 
 	// Finish scene render pass
 	SDL_EndGPURenderPass(m_render_pass);

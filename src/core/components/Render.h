@@ -62,7 +62,7 @@ struct LightComponent {
 	AreaLightShape shape;
 	glm::vec2 extent;
 
-	LightComponent(LightType type = LightType::Point,
+	LightComponent(LightType type = LightType::Direction,
 		float intensity = 10.f,
 		glm::vec3 color = glm::vec3(1.f),
 		float cutoff_angle = 45.f,

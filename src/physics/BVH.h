@@ -11,7 +11,6 @@
 
 namespace APE::Physics::Collider {
 
-namespace {
 struct BVHNode {
 	std::vector<BVHNode> children;
 	std::vector<Triangle> triangles;
@@ -198,18 +197,12 @@ struct BVHNode {
 		return b_collision;
 	}
 };
-};	// end of namespace
+
 
 // Container class for BVH tree
 // Acts as an interface for BVH root
 struct BVH {
 	BVHNode root;
-
-	BVH() noexcept
-		: root(BVHNode()) 
-	{
-
-	}
 
 	BVH(const std::vector<Triangle>& triangles, int max_depth = 3) noexcept 
 	{

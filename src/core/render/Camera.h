@@ -14,6 +14,7 @@ private:
 	float m_yaw;		// rotation around y-axis
 	float m_fov;		// field of view in degrees
 	float m_sensitivity;
+	float m_near_plane;
 	bool m_is_locked;
 
 public:
@@ -21,12 +22,14 @@ public:
 		float pitch = 0.f,
 		float yaw = -90.f,
 		float fov = 45.f,
-		float sensitivity = .3f) noexcept
+		float sensitivity = 0.3f,
+		float near_clip = 0.1f) noexcept
 		: m_position(pos)
 		, m_pitch(pitch)
 		, m_yaw(yaw)
 		, m_fov(fov)
 		, m_sensitivity(sensitivity)
+		, m_near_plane(near_clip)
 		, m_is_locked(false)
 	{ }
 
@@ -78,6 +81,16 @@ public:
 	void setSensitivity(float sensitivity) noexcept
 	{
 		m_sensitivity = sensitivity;
+	}
+
+	[[nodiscard]] float getNearPlane() const noexcept
+	{
+		return m_near_plane;
+	}
+
+	void setNearPlane(float near_clip) noexcept
+	{
+		m_near_plane = near_clip;
 	}
 
 	[[nodiscard]] bool isLocked() const noexcept

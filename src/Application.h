@@ -14,6 +14,7 @@ struct Application {
 
 	virtual void setup() = 0;
 	virtual void update() = 0;
+	virtual void draw() = 0;
 	virtual void drawGUI() = 0;
 	virtual void onKeyDown(SDL_KeyboardEvent key) = 0;
 	virtual void onKeyUp(SDL_KeyboardEvent key) = 0;

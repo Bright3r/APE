@@ -22,6 +22,7 @@ private:
 public:
 	static void run() noexcept;
 
+	void draw() noexcept override;
 	void setup() noexcept override;
 	void update() noexcept override;
 	void drawGUI() noexcept override;

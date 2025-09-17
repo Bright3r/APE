@@ -33,26 +33,32 @@ void EditorApplication::setup() noexcept
 	static constexpr std::string_view CONE_PATH = "res/models/cone.obj";
 	static constexpr std::string_view CYLINDER_PATH = "res/models/cylinder.obj";
 
-	world.addModel(ModelLoader::load(CAR_PATH));
+	// world.addModel(ModelLoader::load(CAR_PATH));
+	
+	auto cube_model_handle = ModelLoader::load(CUBE_PATH);
+	auto cube = world.addModel(cube_model_handle);
+	world.addRigidBody(cube, cube_model_handle);
 
 	std::vector<AssetHandle<Render::Model>> models;
-	models.push_back(ModelLoader::load(CUBE_PATH));
-	models.push_back(ModelLoader::load(SPHERE_PATH));
-	models.push_back(ModelLoader::load(CONE_PATH));
-	models.push_back(ModelLoader::load(CYLINDER_PATH));
+	// models.push_back(ModelLoader::load(CUBE_PATH));
+	// models.push_back(ModelLoader::load(SPHERE_PATH));
+	// models.push_back(ModelLoader::load(CONE_PATH));
+	// models.push_back(ModelLoader::load(CYLINDER_PATH));
 
 	constexpr int NUM_SHAPES = 200;
 	int sqrt = std::sqrt(NUM_SHAPES);
-	for (int i = 0; i < NUM_SHAPES; ++i) {
-		auto& model_handle = models[i % models.size()];
+	if (!models.empty()) {
+		for (int i = 0; i < NUM_SHAPES; ++i) {
+			auto& model_handle = models[i % models.size()];
 
-		int row = i % sqrt;
-		int col = i / sqrt;
-		TransformComponent transform {};
-		transform.position.x = (row - (sqrt / 2.f)) * 5;
-		transform.position.z = (col - (sqrt / 2.f)) * 5;
+			int row = i % sqrt;
+			int col = i / sqrt;
+			TransformComponent transform {};
+			transform.position.x = (row - (sqrt / 2.f)) * 5;
+			transform.position.z = (col - (sqrt / 2.f)) * 5;
 
-		world.addModel(model_handle, transform);
+			world.addModel(model_handle, transform);
+		}
 	}
 
 
@@ -117,6 +123,16 @@ void EditorApplication::update() noexcept
 	if (Engine::keyDown(SDLK_S)) {
 		cam->moveBackward(speed, dt);
 	}
+}
+
+void EditorApplication::draw() noexcept
+{
+	Engine::renderer()->drawLine(
+		glm::vec3(0),
+		glm::vec3(0, 100, 0),
+		{ 255, 0, 0, 255 },
+		cam.get()
+	);
 }
 
 void EditorApplication::drawGUI() noexcept

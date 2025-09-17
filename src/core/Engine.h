@@ -64,7 +64,7 @@ public:
 
 
 	// Graphics Functions
-	[[nodiscard]] static Render::Renderer* getRenderer() noexcept;
+	[[nodiscard]] static Render::Renderer* renderer() noexcept;
 
 	[[nodiscard]] static std::weak_ptr<Render::Camera> getCamera() noexcept;
 
