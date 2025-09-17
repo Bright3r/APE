@@ -244,22 +244,47 @@ static inline void drawManipulatorPanel(
 	ImGui::End();
 }
 
+static inline void imguizmo() noexcept
+{
+
+}
+
 static inline void drawGizmo(
 	Scene& world,
 	const ECS::EntityHandle& ent,
 	ImGuizmo::OPERATION gizmo_op) noexcept 
 {
-	if (world.registry.hasAllComponents<
-		TransformComponent, HierarchyComponent>(ent)) 
-	{
+	if (world.registry.hasAllComponents<TransformComponent, HierarchyComponent>(ent)) {
+		// Get transform
 		auto [transform, hierarchy] = world.registry.getComponents<
 			TransformComponent, HierarchyComponent>(ent);
 
 		auto parent_world_mat = world.getModelMatrix(hierarchy.parent);
 		auto world_mat = parent_world_mat * transform.getModelMatrix();
-		auto renderer = Engine::renderer();
-		renderer->drawGizmo(Engine::getCamera(), world_mat, gizmo_op);
 
+		// Draw gizmo
+		ImGuiIO& io = ImGui::GetIO();
+		ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+
+		auto camera = Engine::getCamera();
+		APE_CHECK(!camera.expired(),
+		   "UI::drawGizmo() Failed: camera is nullptr."
+		);
+		auto cam = camera.lock();
+
+		auto view = cam->getViewMatrix();
+		auto proj = cam->getProjectionMatrix(Engine::renderer()->getAspectRatio());
+		ImGuizmo::Manipulate(
+			glm::value_ptr(view),
+			glm::value_ptr(proj),
+			gizmo_op,
+			ImGuizmo::MODE::WORLD,
+			glm::value_ptr(world_mat),
+			NULL,
+			NULL
+		);
+
+		// Update transform with gizmo changes
 		auto new_loc_mat = glm::inverse(parent_world_mat) * world_mat;
 		auto new_transform = TransformComponent::fromMatrix(new_loc_mat);
 

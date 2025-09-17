@@ -463,33 +463,6 @@ void Renderer::draw(
 	);
 }
 
-void Renderer::drawGizmo(
-	std::weak_ptr<Camera> camera,
-	glm::mat4& matrix,
-	ImGuizmo::OPERATION gizmo_op,
-	ImGuizmo::MODE gizmo_mode) noexcept
-{
-	APE_CHECK(!camera.expired(),
-	   "Renderer::drawGizmo() Failed: camera is nullptr."
-	);
-	auto cam = camera.lock();
-
-	ImGuiIO& io = ImGui::GetIO();
-	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-
-	auto view = cam->getViewMatrix();
-	auto proj = cam->getProjectionMatrix(getAspectRatio());
-	ImGuizmo::Manipulate(
-		glm::value_ptr(view),
-		glm::value_ptr(proj),
-		gizmo_op,
-		gizmo_mode,
-		glm::value_ptr(matrix),
-		NULL,
-		NULL
-	);
-}
-
 void Renderer::drawLine(
 	const glm::vec3& p0,
 	const glm::vec3& p1,
