@@ -20,7 +20,6 @@ private:
 	std::shared_ptr<Render::Camera> cam;
 	ECS::EntityHandle selected_ent;
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;
-	Physics::RigidBodyComponent* rbd;
 
 public:
 	static void run() noexcept;

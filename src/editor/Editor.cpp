@@ -38,17 +38,17 @@ void EditorApplication::setup() noexcept
 
 	auto car_model_handle = ModelLoader::load(CAR_PATH);
 	auto car = world.addModel(car_model_handle);
-	rbd = &world.addRigidBody(car, car_model_handle);
+	world.addRigidBody(car, car_model_handle);
 	
 	auto cube_model_handle = ModelLoader::load(CUBE_PATH);
 	auto cube = world.addModel(cube_model_handle);
-	rbd = &world.addRigidBody(cube, cube_model_handle);
+	world.addRigidBody(cube, cube_model_handle);
 
 	std::vector<AssetHandle<Render::Model>> models;
-	// models.push_back(ModelLoader::load(CUBE_PATH));
-	// models.push_back(ModelLoader::load(SPHERE_PATH));
-	// models.push_back(ModelLoader::load(CONE_PATH));
-	// models.push_back(ModelLoader::load(CYLINDER_PATH));
+	models.push_back(ModelLoader::load(CUBE_PATH));
+	models.push_back(ModelLoader::load(SPHERE_PATH));
+	models.push_back(ModelLoader::load(CONE_PATH));
+	models.push_back(ModelLoader::load(CYLINDER_PATH));
 
 	constexpr int NUM_SHAPES = 200;
 	int sqrt = std::sqrt(NUM_SHAPES);
@@ -183,6 +183,7 @@ void EditorApplication::onMouseDown(SDL_MouseButtonEvent mButton) noexcept
 			APE_TRACE("HIT");
 			if (t < t_best) {
 				selected_ent = ent;
+				t_best = t;
 			}
 		}
 	}
