@@ -24,7 +24,7 @@
 
 namespace APE::Editor {
 
-static inline void drawDebugPanel(APE::Scene& world) noexcept
+static inline void drawDebugPanel(APE::Scene& world, bool& b_lock_selection) noexcept
 {
 	ImGui::Begin("Debug", nullptr, ImGuiWindowFlags_MenuBar);
 
@@ -83,6 +83,9 @@ static inline void drawDebugPanel(APE::Scene& world) noexcept
 
 	if (ImGui::RadioButton("lock camera", cam->isLocked())) {
 		cam->setLocked(!cam->isLocked());
+	}
+	if (ImGui::RadioButton("lock selection", b_lock_selection)) {
+		b_lock_selection = !b_lock_selection;
 	}
 
 	auto renderer = Engine::renderer();

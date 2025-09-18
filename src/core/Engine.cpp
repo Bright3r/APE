@@ -1,6 +1,4 @@
 #include "core/Engine.h"
-#include "core/components/Object.h"
-#include "core/components/Render.h"
 #include "core/scene/Serialize.h"
 #include "util/Logger.h"
 
@@ -13,7 +11,6 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <filesystem>
-#include <cstring>
 #include <chrono>
 
 namespace APE {
@@ -93,7 +90,6 @@ void Engine::stepGameloop() noexcept
 	s_renderer->beginDrawing();
 
 	// 3D Scene
-	draw(s_world);
 	for (auto& app : s_layers) {
 		app->draw();
 	}
@@ -133,12 +129,6 @@ void Engine::run() noexcept
 	}
 
 	std::terminate();
-}
-
-
-void Engine::setTabIn(bool is_tabbed_in) noexcept
-{
-	SDL_SetWindowRelativeMouseMode(s_context->window, is_tabbed_in);
 }
 
 void Engine::saveScene(std::filesystem::path save_path, Scene& world) noexcept
@@ -185,21 +175,9 @@ void Engine::setCamera(std::shared_ptr<Render::Camera> cam) noexcept
 	s_camera = cam;
 }
 
-void Engine::draw(Scene& world) noexcept
+void Engine::setTabIn(bool is_tabbed_in) noexcept
 {
-	auto view = world.registry.view<
-		Render::MeshComponent,
-		Render::MaterialComponent,
-		TransformComponent,
-		HierarchyComponent>();
-
-	size_t num_objs { 0 };
-	for (auto [ent, mesh, material, transform, hierarchy] : view.each()) {
-		glm::mat4 model_mat = world.getModelMatrix(ent);
-		s_renderer->draw(mesh, material, s_camera, model_mat);
-		
-		++num_objs;
-	}
+	SDL_SetWindowRelativeMouseMode(s_context->window, is_tabbed_in);
 }
 
 void Engine::resizeWindow(const SDL_Event& event) noexcept

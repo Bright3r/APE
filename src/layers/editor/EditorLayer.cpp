@@ -1,12 +1,11 @@
-#include "editor/Editor.h"
-
+#include "layers/editor/EditorLayer.h"
+#include "layers/editor/UI.h"
 #include "core/Engine.h"
 #include "core/components/Object.h"
 #include "core/scene/AssetHandle.h"
 #include "core/render/Camera.h"
 #include "core/render/Model.h"
 #include "core/scene/ModelLoader.h"
-#include "editor/UI.h"
 #include "physics/BVH.h"
 #include "physics/Colliders.h"
 
@@ -93,13 +92,6 @@ void EditorLayer::update() noexcept
 		Engine::loadScene("demos/test.json", Engine::world());
 	}
 
-	// Camera Tab In
-	if (Engine::input().isKeyDown(SDLK_C)) {
-		bool is_locked = cam->isLocked();
-		cam->setLocked(!is_locked);
-		Engine::setTabIn(is_locked);
-	}
-
 	// Camera Movement
 	float speed = 10.f;
 	float dt = Engine::getLastFrameTimeSec().count();
@@ -121,6 +113,13 @@ void EditorLayer::update() noexcept
 	if (Engine::input().isKeyDown(SDLK_S)) {
 		cam->moveBackward(speed, dt);
 	}
+	// Camera Tab In
+	if (Engine::input().isKeyDown(SDLK_C)) {
+		bool is_locked = cam->isLocked();
+		cam->setLocked(!is_locked);
+		Engine::setTabIn(is_locked);
+	}
+
 
 	// Mouse button events
 	for (auto& m_event : Engine::input().mouseButtonEvents()) {
@@ -143,7 +142,7 @@ void EditorLayer::draw() noexcept
 
 void EditorLayer::drawGUI() noexcept
 {
-	drawDebugPanel(Engine::world());
+	drawDebugPanel(Engine::world(), b_lock_selection);
 	drawSceneHierarchyPanel(Engine::world(), selected_ent);
 	drawManipulatorPanel(Engine::world(), selected_ent, gizmo_op);
 	drawGizmo(Engine::world(), selected_ent, gizmo_op);
@@ -151,6 +150,8 @@ void EditorLayer::drawGUI() noexcept
 
 void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 {
+	if (b_lock_selection) return;
+
 	// Cast ray from camera
 	glm::vec2 screen_coords(m_button.x, m_button.y);
 	glm::vec3 world_coords = screenToWorld(screen_coords);

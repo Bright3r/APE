@@ -53,10 +53,6 @@ public:
 
 	static void run() noexcept;
 
-	static bool keyDown(SDL_Keycode key) noexcept;
-
-	static void setTabIn(bool is_tabbed_in) noexcept;
-
 	[[nodiscard]] static Scene& world() noexcept;
 
 	[[nodiscard]] static Input::State& input() noexcept;
@@ -79,7 +75,7 @@ public:
 
 	static void setCamera(std::shared_ptr<Render::Camera> cam) noexcept;
 
-	static void draw(Scene& scene) noexcept;
+	static void setTabIn(bool is_tabbed_in) noexcept;
 
 	static void resizeWindow(const SDL_Event& event) noexcept;
 
