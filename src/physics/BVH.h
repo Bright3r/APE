@@ -177,7 +177,7 @@ struct BVHNode {
 			glm::vec2 bary_pos;
 			bool b_intersect = glm::intersectRayTriangle(
 				ray.pos,
-				ray.dir,
+				glm::normalize(ray.dir),
 				tri.v0, tri.v1, tri.v2,
 				bary_pos,
 				t

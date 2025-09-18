@@ -146,11 +146,9 @@ struct Scene {
 			}
 		}
 
-		auto& transform = registry.getComponent<TransformComponent>(ent);
 		auto& rbd = registry.emplaceComponent<Physics::RigidBodyComponent>(
 			ent,
-			tris,
-			&transform
+			tris
 		);
 		return rbd;
 	}

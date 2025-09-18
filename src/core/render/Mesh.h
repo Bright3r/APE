@@ -40,7 +40,7 @@ struct Mesh {
 	[[nodiscard]] std::vector<Triangle> triangles() const noexcept
 	{
 		std::vector<Triangle> tris;
-		for (size_t i = 0; i < (indices.size() / 3); i += 3) {
+		for (size_t i = 0; i < indices.size(); i += 3) {
 			tris.push_back({ 
        				vertices[indices[i]].pos,
 				vertices[indices[i+1]].pos,

@@ -42,7 +42,7 @@ void EditorApplication::setup() noexcept
 	
 	auto cube_model_handle = ModelLoader::load(CUBE_PATH);
 	auto cube = world.addModel(cube_model_handle);
-	// rbd = &world.addRigidBody(cube, cube_model_handle);
+	rbd = &world.addRigidBody(cube, cube_model_handle);
 
 	std::vector<AssetHandle<Render::Model>> models;
 	// models.push_back(ModelLoader::load(CUBE_PATH));
@@ -132,7 +132,10 @@ void EditorApplication::update() noexcept
 
 void EditorApplication::draw() noexcept
 {
-	drawBVH(rbd->phys_state.bvh, *rbd->ent_transform);
+	auto view = world.registry.view<Physics::RigidBodyComponent, TransformComponent>();
+	for (auto [ent, rbd, transform] : view.each()) {
+		drawBVH(rbd.phys_state.bvh, transform);
+	}
 }
 
 void EditorApplication::drawGUI() noexcept
@@ -160,18 +163,18 @@ void EditorApplication::onMouseDown(SDL_MouseButtonEvent mButton) noexcept
 	glm::vec3 world_coords = screenToWorld(screen_coords);
 	Physics::Collider::Ray ray = {
 		.pos = cam->getPosition(),
-		.dir = (world_coords - cam->getPosition())
+		.dir = glm::normalize(world_coords - cam->getPosition())
 	};
 
 	// Check for collision with scene models
 	float t_best = std::numeric_limits<float>::max();
-	auto view = world.registry.view<Physics::RigidBodyComponent>();
-	for (auto [ent, rbd] : view.each()) {
+	auto view = world.registry.view<Physics::RigidBodyComponent, TransformComponent>();
+	for (auto [ent, rbd, transform] : view.each()) {
 		// Transform ray into rbd's model space
-		glm::mat4 inv_model_mat = glm::inverse(rbd.ent_transform->getModelMatrix());
+		glm::mat4 inv_model_mat = glm::inverse(transform.getModelMatrix());
 		Physics::Collider::Ray ray_local = {
 			.pos = glm::vec3(inv_model_mat * glm::vec4(ray.pos, 1.f)),
-			.dir = glm::vec3(inv_model_mat * glm::vec4(ray.dir, 0.f))
+			.dir = glm::normalize(glm::vec3(inv_model_mat * glm::vec4(ray.dir, 0.f)))
 		};
 
 		float t;
