@@ -161,6 +161,11 @@ Render::Renderer* Engine::renderer() noexcept
 	return s_renderer.get();
 }
 
+Render::Context* Engine::context() noexcept
+{
+	return s_context.get();
+}
+
 std::weak_ptr<Render::Camera> Engine::getCamera() noexcept 
 {
 	return s_camera;

@@ -59,5 +59,10 @@ Context::~Context()
 	SDL_DestroyGPUDevice(device);
 }
 
+[[nodiscard]] float Context::getAspectRatio() const noexcept
+{
+	return window_width / static_cast<float>(window_height);
+}
+
 };	// end of namespace
 

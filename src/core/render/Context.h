@@ -22,10 +22,14 @@ struct Context {
 	Context(std::string_view title, int window_width, 
 		int window_height, int window_flags) noexcept;
 	~Context();
+
 	Context(const Context& other) = delete;
 	Context operator=(const Context& other) = delete;
 	Context(const Context&& other) = delete;
 	Context operator=(const Context&& other) = delete;
+
+
+	[[nodiscard]] float getAspectRatio() const noexcept;
 };
 
 

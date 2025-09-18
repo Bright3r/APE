@@ -227,11 +227,6 @@ void Renderer::createDepthTexture() noexcept
 	);
 }
 
-float Renderer::getAspectRatio() const noexcept
-{
-	return m_context->window_width / static_cast<float>(m_context->window_height);
-}
-
 void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 {
 	APE_CHECK((m_cmd_buf != nullptr),
@@ -426,7 +421,7 @@ void Renderer::draw(
 	ModelViewProjUniform mvp_uniform { 
 		glm::transpose(model_matrix),
 		glm::transpose(cam->getViewMatrix()), 
-		glm::transpose(cam->getProjectionMatrix(getAspectRatio()))
+		glm::transpose(cam->getProjectionMatrix(m_context->getAspectRatio()))
 	};
 	SDL_PushGPUVertexUniformData(
 		m_cmd_buf,
@@ -501,7 +496,7 @@ void Renderer::drawLine(
 	if (!clip_line(ep0, ep1)) return;
 
 	// Transform to clip space
-	glm::mat4 proj = cam->getProjectionMatrix(getAspectRatio());
+	glm::mat4 proj = cam->getProjectionMatrix(m_context->getAspectRatio());
 	glm::vec4 cp0 = proj * ep0;
 	glm::vec4 cp1 = proj * ep1;
 

@@ -135,8 +135,6 @@ public:
 		Shader* shader,
 		SDL_GPUPrimitiveType primitive_type) noexcept;
 
-	[[nodiscard]] float getAspectRatio() const noexcept;
-
 	void beginRenderPass(bool b_clear, bool b_depth) noexcept;
 
 	void beginDrawing() noexcept;

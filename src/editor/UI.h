@@ -89,6 +89,9 @@ static inline void drawDebugPanel(APE::Scene& world) noexcept
 	if (ImGui::RadioButton("show normals", renderer->debug_mode.show_normals)) {
 		renderer->debug_mode.show_normals = !renderer->debug_mode.show_normals;
 	}
+	if (ImGui::RadioButton("wireframe mode", renderer->wireframe_mode)) {
+		renderer->wireframe_mode = !renderer->wireframe_mode;
+	}
 
 
 	ImGui::Text("Lighting");
@@ -244,11 +247,6 @@ static inline void drawManipulatorPanel(
 	ImGui::End();
 }
 
-static inline void imguizmo() noexcept
-{
-
-}
-
 static inline void drawGizmo(
 	Scene& world,
 	const ECS::EntityHandle& ent,
@@ -273,7 +271,7 @@ static inline void drawGizmo(
 		auto cam = camera.lock();
 
 		auto view = cam->getViewMatrix();
-		auto proj = cam->getProjectionMatrix(Engine::renderer()->getAspectRatio());
+		auto proj = cam->getProjectionMatrix(Engine::context()->getAspectRatio());
 		ImGuizmo::Manipulate(
 			glm::value_ptr(view),
 			glm::value_ptr(proj),
