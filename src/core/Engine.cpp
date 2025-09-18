@@ -15,12 +15,10 @@
 #include <filesystem>
 #include <cstring>
 #include <chrono>
-#include <utility>
 
 namespace APE {
 
 void Engine::init(
-	std::unique_ptr<Application> app,
 	std::string_view window_title,
 	int window_width,
 	int window_height) noexcept 
@@ -29,9 +27,6 @@ void Engine::init(
 	s_quit = false;
 	s_framerate = 60.f;
 	s_last_frame_time = std::chrono::milliseconds(0);
-
-	// Create app state
-	s_app = std::move(app);
 
 	// Initialize renderer w/ default shader
 	s_context = std::make_shared<Render::Context>(
@@ -48,6 +43,11 @@ void Engine::init(
 	s_renderer = std::make_unique<Render::Renderer>(s_context);
 }
 
+void Engine::pushLayer(std::unique_ptr<Application> layer) noexcept
+{
+	s_layers.push_back(std::move(layer));
+}
+
 void Engine::pollEvents() noexcept
 {
 	SDL_Event event;
@@ -62,20 +62,17 @@ void Engine::pollEvents() noexcept
 				break;
 			case SDL_EVENT_KEY_DOWN:
 				s_key_state[event.key.key] = true;
-				s_app->onKeyDown(event.key);
 				break;
 			case SDL_EVENT_KEY_UP:
 				s_key_state[event.key.key] = false;
-				s_app->onKeyUp(event.key);
 				break;
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
-				s_app->onMouseDown(event.button);
 				break;
 			case SDL_EVENT_MOUSE_BUTTON_UP:
-				s_app->onMouseUp(event.button);
+				// s_app->onMouseUp(event.button);
 				break;
 			case SDL_EVENT_MOUSE_MOTION:
-				s_app->onMouseMove(event.motion);
+				// s_app->onMouseMove(event.motion);
 				break;
 		}
 	}
@@ -87,17 +84,23 @@ void Engine::stepGameloop() noexcept
 	pollEvents();
 
 	// Update Application Data
-	s_app->update();
+	for (auto& app : s_layers) {
+		app->update();
+	}
 
 	// Draw to Screen
 	s_renderer->beginDrawing();
 
 	// 3D Scene
-	draw(s_app->world);
-	s_app->draw();
+	draw(s_world);
+	for (auto& app : s_layers) {
+		app->draw();
+	}
 
 	// GUI
-	s_app->drawGUI();
+	for (auto& app : s_layers) {
+		app->drawGUI();
+	}
 
 	s_renderer->endDrawing();
 }
@@ -105,7 +108,9 @@ void Engine::stepGameloop() noexcept
 void Engine::run() noexcept 
 {
 	// Initial Setup
-	s_app->setup();
+	for (auto& app : s_layers) {
+		app->setup();
+	}
 
 	// Game Loop
 	while (!s_quit) {
@@ -164,6 +169,11 @@ Render::Renderer* Engine::renderer() noexcept
 Render::Context* Engine::context() noexcept
 {
 	return s_context.get();
+}
+
+Scene& Engine::world() noexcept
+{
+	return s_world;
 }
 
 std::weak_ptr<Render::Camera> Engine::getCamera() noexcept 

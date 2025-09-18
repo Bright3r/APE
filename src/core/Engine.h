@@ -20,8 +20,9 @@ class Engine {
 private:
 	// Application State
 	//
-	static inline std::unique_ptr<Application> s_app;
+	static inline std::vector<std::unique_ptr<Application>> s_layers;
 	static inline std::unordered_map<SDL_Keycode, bool> s_key_state;
+	static inline Scene s_world;
 
 	// Rendering
 	//
@@ -39,10 +40,11 @@ public:
 	// Main Functions
 	//
 	static void init(
-		std::unique_ptr<Application> app,
 		std::string_view window_title,
 		int window_width,
 		int window_height) noexcept;
+
+	static void pushLayer(std::unique_ptr<Application> layer) noexcept;
 
 	static void pollEvents() noexcept;
 
@@ -67,6 +69,8 @@ public:
 	[[nodiscard]] static Render::Renderer* renderer() noexcept;
 
 	[[nodiscard]] static Render::Context* context() noexcept;
+
+	[[nodiscard]] static Scene& world() noexcept;
 
 	[[nodiscard]] static std::weak_ptr<Render::Camera> getCamera() noexcept;
 

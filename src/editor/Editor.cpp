@@ -19,14 +19,7 @@
 
 namespace APE::Editor {
 
-void run() noexcept
-{
-	auto app = std::make_unique<EditorApplication>();
-	Engine::init(std::move(app), "APE Physics Engine", 1200, 800);
-	Engine::run();
-}
-
-void EditorApplication::setup() noexcept
+void EditorLayer::setup() noexcept
 {
 	Engine::setWindowTitle("APE Engine");;
 
@@ -37,12 +30,12 @@ void EditorApplication::setup() noexcept
 	static constexpr std::string_view CYLINDER_PATH = "res/models/cylinder.obj";
 
 	auto car_model_handle = ModelLoader::load(CAR_PATH);
-	auto car = world.addModel(car_model_handle);
-	world.addRigidBody(car, car_model_handle);
+	auto car = Engine::world().addModel(car_model_handle);
+	Engine::world().addRigidBody(car, car_model_handle);
 	
 	auto cube_model_handle = ModelLoader::load(CUBE_PATH);
-	auto cube = world.addModel(cube_model_handle);
-	world.addRigidBody(cube, cube_model_handle);
+	auto cube = Engine::world().addModel(cube_model_handle);
+	Engine::world().addRigidBody(cube, cube_model_handle);
 
 	std::vector<AssetHandle<Render::Model>> models;
 	models.push_back(ModelLoader::load(CUBE_PATH));
@@ -62,7 +55,7 @@ void EditorApplication::setup() noexcept
 			transform.position.x = (row - (sqrt / 2.f)) * 5;
 			transform.position.z = (col - (sqrt / 2.f)) * 5;
 
-			world.addModel(model_handle, transform);
+			Engine::world().addModel(model_handle, transform);
 		}
 	}
 
@@ -80,7 +73,7 @@ void EditorApplication::setup() noexcept
 	Engine::setFramerate(60);
 }
 
-void EditorApplication::update() noexcept
+void EditorLayer::update() noexcept
 {
 	std::string window_title = "FPS: " + 
 		std::to_string(1000.0 / Engine::getLastFrameTimeMS().count());
@@ -93,11 +86,11 @@ void EditorApplication::update() noexcept
 
 	// Save
 	if (Engine::keyDown(SDLK_P)) {
-		Engine::saveScene("demos/test.json", world);
+		Engine::saveScene("demos/test.json", Engine::world());
 	}
 	// Load
 	if (Engine::keyDown(SDLK_L)) {
-		Engine::loadScene("demos/test.json", world);
+		Engine::loadScene("demos/test.json", Engine::world());
 	}
 
 	// Camera Tab In
@@ -130,33 +123,23 @@ void EditorApplication::update() noexcept
 	}
 }
 
-void EditorApplication::draw() noexcept
+void EditorLayer::draw() noexcept
 {
-	auto view = world.registry.view<Physics::RigidBodyComponent, TransformComponent>();
+	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
 	for (auto [ent, rbd, transform] : view.each()) {
 		drawBVH(rbd.phys_state.bvh, transform);
 	}
 }
 
-void EditorApplication::drawGUI() noexcept
+void EditorLayer::drawGUI() noexcept
 {
-	drawDebugPanel(world);
-	drawSceneHierarchyPanel(world, selected_ent);
-	drawManipulatorPanel(world, selected_ent, gizmo_op);
-	drawGizmo(world, selected_ent, gizmo_op);
+	drawDebugPanel(Engine::world());
+	drawSceneHierarchyPanel(Engine::world(), selected_ent);
+	drawManipulatorPanel(Engine::world(), selected_ent, gizmo_op);
+	drawGizmo(Engine::world(), selected_ent, gizmo_op);
 }
 
-void EditorApplication::onKeyDown(SDL_KeyboardEvent key) noexcept
-{
-
-}
-
-void EditorApplication::onKeyUp(SDL_KeyboardEvent key) noexcept
-{
-
-}
-
-void EditorApplication::onMouseDown(SDL_MouseButtonEvent mButton) noexcept
+void EditorLayer::onMouseDown(SDL_MouseButtonEvent mButton) noexcept
 {
 	// Cast ray from camera
 	glm::vec2 screen_coords(mButton.x, mButton.y);
@@ -168,7 +151,7 @@ void EditorApplication::onMouseDown(SDL_MouseButtonEvent mButton) noexcept
 
 	// Check for collision with scene models
 	float t_best = std::numeric_limits<float>::max();
-	auto view = world.registry.view<Physics::RigidBodyComponent, TransformComponent>();
+	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
 	for (auto [ent, rbd, transform] : view.each()) {
 		// Transform ray into rbd's model space
 		glm::mat4 inv_model_mat = glm::inverse(transform.getModelMatrix());
@@ -189,17 +172,17 @@ void EditorApplication::onMouseDown(SDL_MouseButtonEvent mButton) noexcept
 	}
 }
 
-void EditorApplication::onMouseUp(SDL_MouseButtonEvent mButton) noexcept
+void EditorLayer::onMouseUp(SDL_MouseButtonEvent mButton) noexcept
 {
 
 }
 
-void EditorApplication::onMouseMove(SDL_MouseMotionEvent mEvent) noexcept
+void EditorLayer::onMouseMove(SDL_MouseMotionEvent mEvent) noexcept
 {
 	cam->rotate(mEvent.xrel, mEvent.yrel);
 }
 
-void EditorApplication::drawAABB(
+void EditorLayer::drawAABB(
 	Physics::Collider::AABB& aabb,
 	TransformComponent& transform) noexcept
 {
@@ -246,7 +229,7 @@ void EditorApplication::drawAABB(
 	Engine::renderer()->drawLine(tbr, tbl, green, cam.get());
 }
 
-void EditorApplication::drawNode(
+void EditorLayer::drawNode(
 	Physics::Collider::BVHNode& node,
 	TransformComponent& transform) noexcept
 {
@@ -256,14 +239,14 @@ void EditorApplication::drawNode(
 	}
 }
 
-void EditorApplication::drawBVH(
+void EditorLayer::drawBVH(
 	Physics::Collider::BVH& bvh,
 	TransformComponent& transform) noexcept
 {
 	drawNode(bvh.root, transform);
 }
 
-glm::vec3 EditorApplication::screenToWorld(glm::vec2 screen_coords) noexcept
+glm::vec3 EditorLayer::screenToWorld(glm::vec2 screen_coords) noexcept
 {
 	// Screen coords to ndc
 	glm::vec3 ndc = {
