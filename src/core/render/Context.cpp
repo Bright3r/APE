@@ -8,24 +8,22 @@
 namespace APE::Render {
 
 Context::Context(std::string_view title,
-		 int window_width,
-		 int window_height,
-		 int window_flags) noexcept
+	 int window_width,
+	 int window_height,
+	 int window_flags) noexcept
 	: title(title)
 	, window_width(window_width)
 	, window_height(window_height)
 	, window_flags(window_flags)
 {
-	bool succ_init = SDL_Init(SDL_INIT_VIDEO);
-	APE_CHECK(succ_init,
+	bool b_init = SDL_Init(SDL_INIT_VIDEO);
+	APE_CHECK(b_init,
 		"SDL_Init Failed - {}",
 		SDL_GetError()
 	);
 
 	device = SDL_CreateGPUDevice(
-		SDL_GPU_SHADERFORMAT_SPIRV|
-		SDL_GPU_SHADERFORMAT_DXIL |
-		SDL_GPU_SHADERFORMAT_MSL,
+		SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL,
 		true,
 		NULL
 	);
@@ -45,8 +43,8 @@ Context::Context(std::string_view title,
 		SDL_GetError()
 	);
 
-	bool succ_claim_window = SDL_ClaimWindowForGPUDevice(device, window);
-	APE_CHECK(succ_claim_window,
+	bool b_claim_window = SDL_ClaimWindowForGPUDevice(device, window);
+	APE_CHECK(b_claim_window,
 		"SDL_ClaimWindowForGPUDevice Failed - {}",
 		SDL_GetError()
 	);

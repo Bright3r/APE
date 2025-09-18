@@ -53,27 +53,27 @@ void Engine::pollEvents() noexcept
 	SDL_Event event;
 	while (SDL_PollEvent(&event) != 0) {
 		ImGui_ImplSDL3_ProcessEvent(&event);
+
 		switch (event.type) {
-			case SDL_EVENT_WINDOW_RESIZED:
-				resizeWindow(event);
-				break;
-			case SDL_EVENT_QUIT:
-				setQuit(true);
-				break;
-			case SDL_EVENT_KEY_DOWN:
-				s_key_state[event.key.key] = true;
-				break;
-			case SDL_EVENT_KEY_UP:
-				s_key_state[event.key.key] = false;
-				break;
-			case SDL_EVENT_MOUSE_BUTTON_DOWN:
-				break;
-			case SDL_EVENT_MOUSE_BUTTON_UP:
-				// s_app->onMouseUp(event.button);
-				break;
-			case SDL_EVENT_MOUSE_MOTION:
-				// s_app->onMouseMove(event.motion);
-				break;
+		case SDL_EVENT_WINDOW_RESIZED:
+			resizeWindow(event);
+			break;
+		case SDL_EVENT_QUIT:
+			setQuit(true);
+			break;
+		case SDL_EVENT_KEY_DOWN:
+			s_input.keyDown(event.key.key);
+			break;
+		case SDL_EVENT_KEY_UP:
+			s_input.keyUp(event.key.key);
+			break;
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+		case SDL_EVENT_MOUSE_BUTTON_UP:
+			s_input.mouseButton(event.button);
+			break;
+		case SDL_EVENT_MOUSE_MOTION:
+			s_input.mouseMotion(event.motion);
+			break;
 		}
 	}
 }
@@ -83,10 +83,11 @@ void Engine::stepGameloop() noexcept
 	// Poll User Input
 	pollEvents();
 
-	// Update Application Data
+	// Update Application Layers
 	for (auto& app : s_layers) {
 		app->update();
 	}
+	s_input.flush();
 
 	// Draw to Screen
 	s_renderer->beginDrawing();
@@ -134,13 +135,6 @@ void Engine::run() noexcept
 	std::terminate();
 }
 
-bool Engine::keyDown(SDL_Keycode key) noexcept
-{
-	if (s_key_state.contains(key)) {
-		return s_key_state.at(key);
-	}
-	return false;
-}
 
 void Engine::setTabIn(bool is_tabbed_in) noexcept
 {
@@ -174,6 +168,11 @@ Render::Context* Engine::context() noexcept
 Scene& Engine::world() noexcept
 {
 	return s_world;
+}
+
+Input::State& Engine::input() noexcept
+{
+	return s_input;
 }
 
 std::weak_ptr<Render::Camera> Engine::getCamera() noexcept 

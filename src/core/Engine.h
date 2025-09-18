@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Application.h"
+#include "core/Application.h"
+#include "core/input/Input.h"
 #include "core/scene/Scene.h"
 #include "core/render/Camera.h"
 #include "core/render/Context.h"
@@ -21,7 +22,7 @@ private:
 	// Application State
 	//
 	static inline std::vector<std::unique_ptr<Application>> s_layers;
-	static inline std::unordered_map<SDL_Keycode, bool> s_key_state;
+	static inline Input::State s_input;
 	static inline Scene s_world;
 
 	// Rendering
@@ -56,6 +57,10 @@ public:
 
 	static void setTabIn(bool is_tabbed_in) noexcept;
 
+	[[nodiscard]] static Scene& world() noexcept;
+
+	[[nodiscard]] static Input::State& input() noexcept;
+
 	static void saveScene(
 		std::filesystem::path save_path,
 		Scene& world) noexcept;
@@ -69,8 +74,6 @@ public:
 	[[nodiscard]] static Render::Renderer* renderer() noexcept;
 
 	[[nodiscard]] static Render::Context* context() noexcept;
-
-	[[nodiscard]] static Scene& world() noexcept;
 
 	[[nodiscard]] static std::weak_ptr<Render::Camera> getCamera() noexcept;
 

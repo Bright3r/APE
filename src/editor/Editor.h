@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Application.h"
+#include "core/Application.h"
 #include "core/components/Object.h"
 #include "core/components/Physics.h"
 #include "core/ecs/Registry.h"
@@ -16,23 +16,20 @@ namespace APE::Editor {
 void run() noexcept;
 
 class EditorLayer : public Application {
-
 	std::shared_ptr<Render::Camera> cam;
 	ECS::EntityHandle selected_ent;
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;
 
 public:
-	static void run() noexcept;
 	void draw() noexcept override;
 	void setup() noexcept override;
 	void update() noexcept override;
 	void drawGUI() noexcept override;
-	void onMouseDown(SDL_MouseButtonEvent mButton) noexcept override;
-	void onMouseUp(SDL_MouseButtonEvent mButton) noexcept override;
-	void onMouseMove(SDL_MouseMotionEvent mEvent) noexcept override;
 
 
 	// Helper functions
+	void handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept;
+
 	void drawAABB(
 		Physics::Collider::AABB& aabb,
 		TransformComponent& transform) noexcept;

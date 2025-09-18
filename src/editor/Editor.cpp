@@ -80,21 +80,21 @@ void EditorLayer::update() noexcept
 	Engine::setWindowTitle(window_title);
 	
 	// Quit
-	if (Engine::keyDown(SDLK_Q)) {
+	if (Engine::input().isKeyDown(SDLK_Q)) {
 		Engine::setQuit(true);
 	}
 
 	// Save
-	if (Engine::keyDown(SDLK_P)) {
+	if (Engine::input().isKeyDown(SDLK_P)) {
 		Engine::saveScene("demos/test.json", Engine::world());
 	}
 	// Load
-	if (Engine::keyDown(SDLK_L)) {
+	if (Engine::input().isKeyDown(SDLK_L)) {
 		Engine::loadScene("demos/test.json", Engine::world());
 	}
 
 	// Camera Tab In
-	if (Engine::keyDown(SDLK_C)) {
+	if (Engine::input().isKeyDown(SDLK_C)) {
 		bool is_locked = cam->isLocked();
 		cam->setLocked(!is_locked);
 		Engine::setTabIn(is_locked);
@@ -103,23 +103,33 @@ void EditorLayer::update() noexcept
 	// Camera Movement
 	float speed = 10.f;
 	float dt = Engine::getLastFrameTimeSec().count();
-	if (Engine::keyDown(SDLK_SPACE)) {
+	if (Engine::input().isKeyDown(SDLK_SPACE)) {
 		cam->moveUp(speed, dt);
 	}
-	if (Engine::keyDown(SDLK_LCTRL)) {
+	if (Engine::input().isKeyDown(SDLK_LCTRL)) {
 		cam->moveDown(speed, dt);
 	}
-	if (Engine::keyDown(SDLK_A)) {
+	if (Engine::input().isKeyDown(SDLK_A)) {
 		cam->moveLeft(speed, dt);
 	}
-	if (Engine::keyDown(SDLK_D)) {
+	if (Engine::input().isKeyDown(SDLK_D)) {
 		cam->moveRight(speed, dt);
 	}
-	if (Engine::keyDown(SDLK_W)) {
+	if (Engine::input().isKeyDown(SDLK_W)) {
 		cam->moveForward(speed, dt);
 	}
-	if (Engine::keyDown(SDLK_S)) {
+	if (Engine::input().isKeyDown(SDLK_S)) {
 		cam->moveBackward(speed, dt);
+	}
+
+	// Mouse button events
+	for (auto& m_event : Engine::input().mouseButtonEvents()) {
+		handleMouseButtonEvent(m_event);
+	}
+
+	// Mouse motion events
+	for (auto& m_event : Engine::input().mouseMotionEvents()) {
+		cam->rotate(m_event.xrel, m_event.yrel);
 	}
 }
 
@@ -139,10 +149,10 @@ void EditorLayer::drawGUI() noexcept
 	drawGizmo(Engine::world(), selected_ent, gizmo_op);
 }
 
-void EditorLayer::onMouseDown(SDL_MouseButtonEvent mButton) noexcept
+void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 {
 	// Cast ray from camera
-	glm::vec2 screen_coords(mButton.x, mButton.y);
+	glm::vec2 screen_coords(m_button.x, m_button.y);
 	glm::vec3 world_coords = screenToWorld(screen_coords);
 	Physics::Collider::Ray ray = {
 		.pos = cam->getPosition(),
@@ -170,16 +180,6 @@ void EditorLayer::onMouseDown(SDL_MouseButtonEvent mButton) noexcept
 			}
 		}
 	}
-}
-
-void EditorLayer::onMouseUp(SDL_MouseButtonEvent mButton) noexcept
-{
-
-}
-
-void EditorLayer::onMouseMove(SDL_MouseMotionEvent mEvent) noexcept
-{
-	cam->rotate(mEvent.xrel, mEvent.yrel);
 }
 
 void EditorLayer::drawAABB(
