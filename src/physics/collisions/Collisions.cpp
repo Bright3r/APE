@@ -1,4 +1,4 @@
-#include "physics/Collisions.h"
+#include "physics/collisions/Collisions.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>

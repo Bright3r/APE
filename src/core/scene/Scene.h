@@ -5,7 +5,8 @@
 #include "core/components/Render.h"
 #include "core/ecs/Registry.h"
 #include "core/render/Model.h"
-#include "physics/Colliders.h"
+#include "physics/PhysicsWorld.h"
+#include "physics/collisions/Colliders.h"
 
 #include <format>
 
@@ -14,6 +15,8 @@ namespace APE {
 struct Scene {
 	ECS::Registry registry;
 	ECS::EntityHandle root;
+
+	Physics::PhysicsWorld phys_world;
 
 	Scene() noexcept
 	{
@@ -128,7 +131,7 @@ struct Scene {
 	Physics::RigidBodyComponent& addRigidBody(
 		ECS::EntityHandle ent,
 		AssetHandle<Render::Model> model_handle) noexcept
-	{	
+	{
 		APE_CHECK((model_handle.data != nullptr),
 			"Scene::addRigidBody() Failed: model_handle data is null."
 		);
@@ -146,11 +149,14 @@ struct Scene {
 			}
 		}
 
-		auto& rbd = registry.emplaceComponent<Physics::RigidBodyComponent>(
+		auto rbd = phys_world.createRigidBody();
+		phys_world.addCollider(rbd, Physics::Collider::BVH(std::move(tris), 3));
+		auto& rbd_comp = registry.emplaceComponent<Physics::RigidBodyComponent>(
 			ent,
-			tris
+			&phys_world,
+			rbd
 		);
-		return rbd;
+		return rbd_comp;
 	}
 };
 

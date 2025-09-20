@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/Colliders.h"
+#include "physics/collisions/Colliders.h"
 
 #include <utility>
 

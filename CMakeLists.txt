@@ -30,9 +30,9 @@ add_library(
 	src/core/render/Image.cpp
 	src/core/scene/ModelLoader.cpp
 	src/core/scene/ImageLoader.cpp
-	src/physics/Collisions.cpp
 	src/layers/game/GameLayer.cpp
 	src/layers/editor/EditorLayer.cpp
+	src/physics/collisions/Collisions.cpp
 )
 
 target_include_directories(

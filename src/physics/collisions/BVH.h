@@ -1,7 +1,7 @@
 #pragma once
 
-#include "physics/Colliders.h"
-#include "physics/Collisions.h"
+#include "physics/collisions/Colliders.h"
+#include "physics/collisions/Collisions.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/intersect.hpp>
@@ -204,7 +204,7 @@ struct BVHNode {
 struct BVH {
 	BVHNode root;
 
-	BVH(const std::vector<Triangle>& triangles, int max_depth = 3) noexcept 
+	BVH(const std::vector<Triangle>& triangles = {}, int max_depth = 3) noexcept 
 	{
 		root = BVHNode(triangles, max_depth);
 	}

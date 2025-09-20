@@ -6,8 +6,8 @@
 #include "core/render/Camera.h"
 #include "core/render/Model.h"
 #include "core/scene/ModelLoader.h"
-#include "physics/BVH.h"
-#include "physics/Colliders.h"
+#include "physics/collisions/BVH.h"
+#include "physics/collisions/Colliders.h"
 
 #include <glm/glm.hpp>
 #include <imgui.h>
@@ -136,7 +136,7 @@ void EditorLayer::draw() noexcept
 {
 	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
 	for (auto [ent, rbd, transform] : view.each()) {
-		drawBVH(rbd.phys_state.bvh, transform);
+		drawBVH(rbd.get<Physics::Collider::BVH>(), transform);
 	}
 }
 
@@ -173,7 +173,7 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 
 		float t;
 		Physics::Collider::Triangle tri;
-		if (rbd.phys_state.bvh.checkCollision(ray_local, t, tri)) {
+		if (rbd.get<Physics::Collider::BVH>().checkCollision(ray_local, t, tri)) {
 			APE_TRACE("HIT");
 			if (t < t_best) {
 				selected_ent = ent;

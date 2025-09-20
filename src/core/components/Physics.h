@@ -1,17 +1,25 @@
 #pragma once
 
-#include "physics/State.h"
+#include "core/ecs/Registry.h"
+#include "physics/PhysicsWorld.h"
 
 namespace APE::Physics {
 
 struct RigidBodyComponent {
-	Physics::State phys_state;
+	PhysicsWorld* physics_world;
+	ECS::EntityHandle physics_ent;
 
-	RigidBodyComponent(
-		const std::vector<Collider::Triangle>& tris) noexcept
-		: phys_state(tris)
+	RigidBodyComponent(PhysicsWorld* physics_world = nullptr, ECS::EntityHandle ent = {}) noexcept
+		: physics_world(physics_world)
+		, physics_ent(ent)
 	{
 
+	}
+
+	template <typename Component>
+	Component& get() noexcept
+	{
+		return physics_world->get<Component>(physics_ent);
 	}
 };
 
