@@ -148,6 +148,7 @@ struct Scene {
 				tris.emplace_back(v0, v1, v2);
 			}
 		}
+		APE_TRACE("Model {} has {} polygons.", model.model_path.c_str(), tris.size());
 
 		auto rbd = phys_world.createRigidBody();
 		phys_world.addCollider(rbd, Physics::Collider::BVH(std::move(tris), 3));

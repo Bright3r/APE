@@ -18,8 +18,9 @@ void run() noexcept;
 class EditorLayer : public Application {
 	std::shared_ptr<Render::Camera> cam;
 	ECS::EntityHandle selected_ent;
-	bool b_lock_selection = false;
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;
+	bool b_lock_selection = false;
+	bool b_show_hitboxes = false;
 
 public:
 	void draw() noexcept override;

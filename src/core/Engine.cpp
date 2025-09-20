@@ -20,6 +20,8 @@ void Engine::init(
 	int window_width,
 	int window_height) noexcept 
 {
+	APE_INFO("Launching Engine!");
+
 	// Initialize w/ default app settings
 	s_quit = false;
 	s_framerate = 60.f;
@@ -128,6 +130,7 @@ void Engine::run() noexcept
 		s_last_frame_time = end - start;
 	}
 
+	APE_INFO("Terminating Engine!");
 	std::terminate();
 }
 

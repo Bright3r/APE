@@ -24,7 +24,10 @@
 
 namespace APE::Editor {
 
-static inline void drawDebugPanel(APE::Scene& world, bool& b_lock_selection) noexcept
+static inline void drawDebugPanel(
+	APE::Scene& world,
+	bool& b_lock_selection,
+	bool& b_show_hitboxes) noexcept
 {
 	ImGui::Begin("Debug", nullptr, ImGuiWindowFlags_MenuBar);
 
@@ -86,6 +89,9 @@ static inline void drawDebugPanel(APE::Scene& world, bool& b_lock_selection) noe
 	}
 	if (ImGui::RadioButton("lock selection", b_lock_selection)) {
 		b_lock_selection = !b_lock_selection;
+	}
+	if (ImGui::RadioButton("show hitboxes", b_show_hitboxes)) {
+		b_show_hitboxes = !b_show_hitboxes;
 	}
 
 	auto renderer = Engine::renderer();

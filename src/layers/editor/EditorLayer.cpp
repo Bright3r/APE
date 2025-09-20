@@ -28,21 +28,17 @@ void EditorLayer::setup() noexcept
 	static constexpr std::string_view CONE_PATH = "res/models/cone.obj";
 	static constexpr std::string_view CYLINDER_PATH = "res/models/cylinder.obj";
 
-	auto car_model_handle = ModelLoader::load(CAR_PATH);
-	auto car = Engine::world().addModel(car_model_handle);
-	Engine::world().addRigidBody(car, car_model_handle);
+	// auto car_model_handle = ModelLoader::load(CAR_PATH);
+	// auto car = Engine::world().addModel(car_model_handle);
+	// Engine::world().addRigidBody(car, car_model_handle);
 	
-	auto cube_model_handle = ModelLoader::load(CUBE_PATH);
-	auto cube = Engine::world().addModel(cube_model_handle);
-	Engine::world().addRigidBody(cube, cube_model_handle);
-
 	std::vector<AssetHandle<Render::Model>> models;
 	models.push_back(ModelLoader::load(CUBE_PATH));
-	models.push_back(ModelLoader::load(SPHERE_PATH));
-	models.push_back(ModelLoader::load(CONE_PATH));
-	models.push_back(ModelLoader::load(CYLINDER_PATH));
+	// models.push_back(ModelLoader::load(SPHERE_PATH));
+	// models.push_back(ModelLoader::load(CONE_PATH));
+	// models.push_back(ModelLoader::load(CYLINDER_PATH));
 
-	constexpr int NUM_SHAPES = 200;
+	constexpr int NUM_SHAPES = 10;
 	int sqrt = std::sqrt(NUM_SHAPES);
 	if (!models.empty()) {
 		for (int i = 0; i < NUM_SHAPES; ++i) {
@@ -54,7 +50,8 @@ void EditorLayer::setup() noexcept
 			transform.position.x = (row - (sqrt / 2.f)) * 5;
 			transform.position.z = (col - (sqrt / 2.f)) * 5;
 
-			Engine::world().addModel(model_handle, transform);
+			auto obj = Engine::world().addModel(model_handle, transform);
+			Engine::world().addRigidBody(obj, model_handle);
 		}
 	}
 
@@ -134,6 +131,8 @@ void EditorLayer::update() noexcept
 
 void EditorLayer::draw() noexcept
 {
+	if (!b_show_hitboxes) return;
+
 	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
 	for (auto [ent, rbd, transform] : view.each()) {
 		drawBVH(rbd.get<Physics::Collider::BVH>(), transform);
@@ -142,7 +141,11 @@ void EditorLayer::draw() noexcept
 
 void EditorLayer::drawGUI() noexcept
 {
-	drawDebugPanel(Engine::world(), b_lock_selection);
+	drawDebugPanel(
+		Engine::world(),
+		b_lock_selection,
+		b_show_hitboxes
+	);
 	drawSceneHierarchyPanel(Engine::world(), selected_ent);
 	drawManipulatorPanel(Engine::world(), selected_ent, gizmo_op);
 	drawGizmo(Engine::world(), selected_ent, gizmo_op);
