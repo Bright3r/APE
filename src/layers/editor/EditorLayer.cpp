@@ -33,9 +33,9 @@ void EditorLayer::setup() noexcept
 	// Engine::world().addRigidBody(car, car_model_handle);
 	
 	std::vector<AssetHandle<Render::Model>> models;
-	models.push_back(ModelLoader::load(CUBE_PATH));
+	// models.push_back(ModelLoader::load(CUBE_PATH));
 	// models.push_back(ModelLoader::load(SPHERE_PATH));
-	// models.push_back(ModelLoader::load(CONE_PATH));
+	models.push_back(ModelLoader::load(CONE_PATH));
 	// models.push_back(ModelLoader::load(CYLINDER_PATH));
 
 	constexpr int NUM_SHAPES = 10;
@@ -135,7 +135,9 @@ void EditorLayer::draw() noexcept
 
 	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
 	for (auto [ent, rbd, transform] : view.each()) {
-		drawBVH(rbd.get<Physics::Collisions::BVH>(), transform);
+		// drawBVH(rbd.get<Physics::Collisions::BVH>(), transform);
+		auto* collider = static_cast<Physics::Collisions::AABB*>(rbd.collider());
+		drawAABB(*collider, transform);
 	}
 }
 
@@ -166,29 +168,29 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 	// Check for collision with scene models
 	float t_best = std::numeric_limits<float>::max();
 	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
-	for (auto [ent, rbd, transform] : view.each()) {
-		// Transform ray into rbd's model space
-		glm::mat4 inv_model_mat = glm::inverse(transform.getModelMatrix());
-		Physics::Collisions::Ray ray_local(
-			glm::vec3(inv_model_mat * glm::vec4(ray.pos, 1.f)),
-			glm::normalize(glm::vec3(inv_model_mat * glm::vec4(ray.dir, 0.f)))
-		);
-
-		float t;
-		Physics::Collisions::TriangleCollider tri;
-		if (rbd.get<Physics::Collisions::BVH>().checkCollision(ray_local, t, tri)) {
-			APE_TRACE("HIT");
-			if (t < t_best) {
-				selected_ent = ent;
-				t_best = t;
-			}
-		}
-	}
+	// for (auto [ent, rbd, transform] : view.each()) {
+	// 	// Transform ray into rbd's model space
+	// 	glm::mat4 inv_model_mat = glm::inverse(transform.getModelMatrix());
+	// 	Physics::Collisions::Ray ray_local(
+	// 		glm::vec3(inv_model_mat * glm::vec4(ray.pos, 1.f)),
+	// 		glm::normalize(glm::vec3(inv_model_mat * glm::vec4(ray.dir, 0.f)))
+	// 	);
+	//
+	// 	float t;
+	// 	Physics::Collisions::Triangle tri;
+	// 	if (rbd.get<Physics::Collisions::BVH>().checkCollision(ray_local, t, tri)) {
+	// 		APE_TRACE("HIT");
+	// 		if (t < t_best) {
+	// 			selected_ent = ent;
+	// 			t_best = t;
+	// 		}
+	// 	}
+	// }
 }
 
 void EditorLayer::drawAABB(
-	Physics::Collisions::AABB& aabb,
-	TransformComponent& transform) noexcept
+	const Physics::Collisions::AABB& aabb,
+	const TransformComponent& transform) noexcept
 {
 	auto extents = aabb.extents();
 	auto center = aabb.center();
@@ -234,8 +236,8 @@ void EditorLayer::drawAABB(
 }
 
 void EditorLayer::drawNode(
-	Physics::Collisions::BVHNode& node,
-	TransformComponent& transform) noexcept
+	const Physics::Collisions::BVHNode& node,
+	const TransformComponent& transform) noexcept
 {
 	drawAABB(node.aabb, transform);
 	// for (auto& child : node.children) {
@@ -244,8 +246,8 @@ void EditorLayer::drawNode(
 }
 
 void EditorLayer::drawBVH(
-	Physics::Collisions::BVH& bvh,
-	TransformComponent& transform) noexcept
+	const Physics::Collisions::BVH& bvh,
+	const TransformComponent& transform) noexcept
 {
 	drawNode(bvh.root, transform);
 }

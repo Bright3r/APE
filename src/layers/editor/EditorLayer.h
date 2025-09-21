@@ -21,7 +21,7 @@ class EditorLayer : public Application {
 	ECS::EntityHandle selected_ent;
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;
 	bool b_lock_selection = false;
-	bool b_show_hitboxes = false;
+	bool b_show_hitboxes = true;
 
 public:
 	void draw() noexcept override;
@@ -34,14 +34,14 @@ public:
 	void handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept;
 
 	void drawAABB(
-		Physics::Collisions::AABB& aabb,
-		TransformComponent& transform) noexcept;
+		const Physics::Collisions::AABB& aabb,
+		const TransformComponent& transform) noexcept;
 	void drawNode(
-		Physics::Collisions::BVHNode& node,
-		TransformComponent& transform) noexcept;
+		const Physics::Collisions::BVHNode& node,
+		const TransformComponent& transform) noexcept;
 	void drawBVH(
-		Physics::Collisions::BVH& bvh,
-		TransformComponent& transform) noexcept;
+		const Physics::Collisions::BVH& bvh,
+		const TransformComponent& transform) noexcept;
 
 	glm::vec3 screenToWorld(glm::vec2 screen_coords) noexcept;
 };

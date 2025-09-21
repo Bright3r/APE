@@ -4,25 +4,20 @@
 
 namespace APE::Physics::Collisions {
 
-struct Collider {
-	virtual ~Collider() noexcept = default;
+enum class ColliderType {
+	AABB = 0,
+	Size
 };
 
-struct Ray : public Collider {
-	glm::vec3 pos;
-	glm::vec3 dir;
+struct Collider {
+	ColliderType type;
 
-	Ray(const glm::vec3& pos = glm::vec3(0), const glm::vec3& dir = glm::vec3(0)) noexcept
-		: pos(pos)
-		, dir(dir)
+	Collider(ColliderType type = ColliderType::Size) noexcept
 	{
 
 	}
 
-	[[nodiscard]] glm::vec3 eval(float t) const noexcept
-	{
-		return pos + (t * dir);
-	}
+	virtual ~Collider() noexcept = default;
 };
 
 struct AABB : public Collider {
@@ -30,7 +25,8 @@ struct AABB : public Collider {
 	glm::vec3 max;
 
 	AABB(const glm::vec3& min = glm::vec3(0), const glm::vec3& max = glm::vec3(0)) noexcept
-		: min(min)
+		: Collider(ColliderType::AABB) 
+		, min(min)
 		, max(max)
 	{
 
@@ -47,10 +43,27 @@ struct AABB : public Collider {
 	}
 };
 
-struct TriangleCollider : public Collider  {
+struct Ray {
+	glm::vec3 pos;
+	glm::vec3 dir;
+
+	Ray(const glm::vec3& pos = glm::vec3(0), const glm::vec3& dir = glm::vec3(0)) noexcept
+		: pos(pos)
+		, dir(dir)
+	{
+
+	}
+
+	[[nodiscard]] glm::vec3 eval(float t) const noexcept
+	{
+		return pos + (t * dir);
+	}
+};
+
+struct Triangle {
 	glm::vec3 v0, v1, v2;
 
-	TriangleCollider(
+	Triangle(
 		const glm::vec3& v0 = glm::vec3(0),
 		const glm::vec3& v1 = glm::vec3(0),
 		const glm::vec3& v2 = glm::vec3(0)) noexcept

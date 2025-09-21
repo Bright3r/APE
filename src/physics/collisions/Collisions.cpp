@@ -1,4 +1,5 @@
 #include "physics/collisions/Collisions.h"
+#include "util/Logger.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
@@ -7,7 +8,30 @@
 
 namespace APE::Physics::Collisions {
 
-MinMax projectTriangle(const glm::vec3& axis, const TriangleCollider& tri) noexcept
+bool AABBvsAABB(const Collider& a, const Collider& b) noexcept
+{
+	auto& aa = static_cast<const AABB&>(a);
+	auto& bb = static_cast<const AABB&>(b);
+
+	return (aa.min.x <= bb.max.x && aa.max.x >= bb.min.x) &&
+		(aa.min.y <= bb.max.y && aa.max.y >= bb.min.y) &&
+		(aa.min.z <= bb.max.z && aa.max.z >= bb.min.z);
+}
+
+bool intersects(const Collider& a, const Collider& b) noexcept
+{
+	auto fn = s_intersect_fn_table
+		[static_cast<size_t>(a.type)]
+		[static_cast<size_t>(b.type)];
+
+	if (!fn) {
+		APE_ERROR("APE::Physics::Collisions::intersects() Failed: invalid collider types.");
+	}
+
+	return fn(a, b);
+}
+
+MinMax projectTriangle(const glm::vec3& axis, const Triangle& tri) noexcept
 {
 	float min = glm::dot(tri.v0, axis);
 	float max = min;
@@ -45,7 +69,7 @@ MinMax projectAABB(const glm::vec3& axis, const AABB& box) noexcept
 
 bool overlapOnAxis(
 	const AABB& box,
-	const TriangleCollider& tri,
+	const Triangle& tri,
 	const glm::vec3& axis) noexcept
 {
 	// Skip axes near zero
@@ -58,14 +82,7 @@ bool overlapOnAxis(
 	return !(maxAABB < minTri || maxTri < minAABB);
 }
 
-bool intersects(const AABB& a, const AABB& b) noexcept
-{
-	return (a.min.x <= b.max.x && a.max.x >= b.min.x) &&
-		(a.min.y <= b.max.y && a.max.y >= b.min.y) &&
-		(a.min.z <= b.max.z && a.max.z >= b.min.z);
-}
-
-bool intersects(const AABB& box, const TriangleCollider& tri) noexcept 
+bool intersects(const AABB& box, const Triangle& tri) noexcept 
 {
 	// 13 axes to test for overlap
 	glm::vec3 axes[13];

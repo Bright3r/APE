@@ -9,15 +9,16 @@ class PhysicsWorld {
 	ECS::Registry world;
 
 public:
+	using ColliderHandle = std::shared_ptr<Collisions::Collider>;
+
 	void stepSimulation(float dt) noexcept
 	{
-		// Integrate Velocities
-		
 		// Collision Detection/Resolution
 
 		// Solve Constraints
 		
-		// Integrate Positions
+		// Integrate
+
 	}
 
 	ECS::EntityHandle createRigidBody(const RigidBody& rbd = {}) noexcept
@@ -27,9 +28,11 @@ public:
 		return ent;
 	}
 
-	void addCollider(const ECS::EntityHandle& ent, const Collisions::BVH& bvh) noexcept
+	void addCollider(
+		const ECS::EntityHandle& ent,
+		ColliderHandle collider) noexcept
 	{
-		world.emplaceComponent<Collisions::BVH>(ent, bvh);
+		world.emplaceComponent<ColliderHandle>(ent, collider);
 	}
 
 	void addJoint() noexcept

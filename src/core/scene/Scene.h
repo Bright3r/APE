@@ -142,7 +142,7 @@ struct Scene {
 		);
 
 		auto& model = *model_handle.data;
-		std::vector<Physics::Collisions::TriangleCollider> tris;
+		std::vector<Physics::Collisions::Triangle> tris;
 		for (auto& mesh : model.meshes) {
 			for (auto [v0, v1, v2] : mesh.triangles()) {
 				tris.emplace_back(v0, v1, v2);
@@ -150,8 +150,16 @@ struct Scene {
 		}
 		APE_TRACE("Model {} has {} polygons.", model.model_path.c_str(), tris.size());
 
+		glm::vec3 min_bounds(std::numeric_limits<float>::max());
+		glm::vec3 max_bounds(-std::numeric_limits<float>::max());
+		for (auto& tri : tris) {
+			min_bounds = glm::min(min_bounds, tri.v0, tri.v1, tri.v2);
+			max_bounds = glm::max(max_bounds, tri.v0, tri.v1, tri.v2);
+		}
+
 		auto rbd = phys_world.createRigidBody();
-		phys_world.addCollider(rbd, Physics::Collisions::BVH(std::move(tris), 3));
+		auto collider = std::make_shared<Physics::Collisions::AABB>(min_bounds, max_bounds);
+		phys_world.addCollider(rbd, collider);
 		auto& rbd_comp = registry.emplaceComponent<Physics::RigidBodyComponent>(
 			ent,
 			&phys_world,
