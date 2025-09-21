@@ -58,6 +58,38 @@ struct Ray {
 	{
 		return pos + (t * dir);
 	}
+
+	float getIntersectDist(const AABB& box) noexcept
+	{
+		float t1 = (box.min.x - pos.x) / dir.x;
+		float t2 = (box.max.x - pos.x) / dir.x;
+		float t3 = (box.min.y - pos.y) / dir.y;
+		float t4 = (box.max.y - pos.y) / dir.y;
+		float t5 = (box.min.z - pos.z) / dir.z;
+		float t6 = (box.max.z - pos.z) / dir.z;
+
+		float tmin = glm::max(
+			glm::max(glm::min(t1, t2), glm::min(t3, t4)), 
+			glm::min(t5, t6)
+		);
+		float tmax = glm::min(
+			glm::min(glm::max(t1, t2), glm::max(t3, t4)), 
+			glm::max(t5, t6)
+		);
+
+		if (tmax < 0 || tmin > tmax) return -1;
+
+		if (tmin < 0.0f) {
+			return tmax;
+		}
+		return tmin;
+	}
+
+	bool intersects(const AABB& box, float& t) noexcept 
+	{
+		t = getIntersectDist(box);
+		return t >= 0;
+	}
 };
 
 struct Triangle {

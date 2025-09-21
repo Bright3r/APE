@@ -168,24 +168,24 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 	// Check for collision with scene models
 	float t_best = std::numeric_limits<float>::max();
 	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
-	// for (auto [ent, rbd, transform] : view.each()) {
-	// 	// Transform ray into rbd's model space
-	// 	glm::mat4 inv_model_mat = glm::inverse(transform.getModelMatrix());
-	// 	Physics::Collisions::Ray ray_local(
-	// 		glm::vec3(inv_model_mat * glm::vec4(ray.pos, 1.f)),
-	// 		glm::normalize(glm::vec3(inv_model_mat * glm::vec4(ray.dir, 0.f)))
-	// 	);
-	//
-	// 	float t;
-	// 	Physics::Collisions::Triangle tri;
-	// 	if (rbd.get<Physics::Collisions::BVH>().checkCollision(ray_local, t, tri)) {
-	// 		APE_TRACE("HIT");
-	// 		if (t < t_best) {
-	// 			selected_ent = ent;
-	// 			t_best = t;
-	// 		}
-	// 	}
-	// }
+	for (auto [ent, rbd, transform] : view.each()) {
+		// Transform ray into rbd's model space
+		glm::mat4 inv_model_mat = glm::inverse(transform.getModelMatrix());
+		Physics::Collisions::Ray ray_local(
+			glm::vec3(inv_model_mat * glm::vec4(ray.pos, 1.f)),
+			glm::normalize(glm::vec3(inv_model_mat * glm::vec4(ray.dir, 0.f)))
+		);
+
+		float t;
+		auto collider = static_cast<Physics::Collisions::AABB*>(rbd.collider());
+		if (ray_local.intersects(*collider, t)) {
+			APE_TRACE("HIT");
+			if (t < t_best) {
+				selected_ent = ent;
+				t_best = t;
+			}
+		}
+	}
 }
 
 void EditorLayer::drawAABB(
