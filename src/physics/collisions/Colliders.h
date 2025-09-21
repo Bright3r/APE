@@ -11,8 +11,11 @@ enum class ColliderType {
 
 struct Collider {
 	ColliderType type;
+	glm::vec3 pos;
 
 	Collider(ColliderType type = ColliderType::Size) noexcept
+		: type(type)
+		, pos({})
 	{
 
 	}

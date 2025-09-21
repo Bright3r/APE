@@ -21,7 +21,12 @@ struct RigidBodyComponent {
 
 	Collisions::Collider* collider() noexcept
 	{
-		return physics_world->get<std::shared_ptr<Collisions::Collider>>(physics_ent).get();
+		return physics_world->get<PhysicsWorld::ColliderHandle>(physics_ent).get();
+	}
+
+	void updatePosition(const glm::vec3& pos) noexcept
+	{
+		physics_world->get<RigidBody>(physics_ent).pos = pos;
 	}
 };
 

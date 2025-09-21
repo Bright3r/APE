@@ -1,4 +1,5 @@
 #include "physics/collisions/Collisions.h"
+#include "physics/RigidBody.h"
 #include "util/Logger.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -13,9 +14,15 @@ bool AABBvsAABB(const Collider& a, const Collider& b) noexcept
 	auto& aa = static_cast<const AABB&>(a);
 	auto& bb = static_cast<const AABB&>(b);
 
-	return (aa.min.x <= bb.max.x && aa.max.x >= bb.min.x) &&
-		(aa.min.y <= bb.max.y && aa.max.y >= bb.min.y) &&
-		(aa.min.z <= bb.max.z && aa.max.z >= bb.min.z);
+	auto a_min = aa.min + a.pos;
+	auto a_max = aa.max + a.pos;
+
+	auto b_min = bb.min + b.pos;
+	auto b_max = bb.max + b.pos;
+
+	return (a_min.x <= b_max.x && a_max.x >= b_min.x) &&
+		(a_min.y <= b_max.y && a_max.y >= b_min.y) &&
+		(a_min.z <= b_max.z && a_max.z >= b_min.z);
 }
 
 bool intersects(const Collider& a, const Collider& b) noexcept
@@ -27,7 +34,6 @@ bool intersects(const Collider& a, const Collider& b) noexcept
 	if (!fn) {
 		APE_ERROR("APE::Physics::Collisions::intersects() Failed: invalid collider types.");
 	}
-
 	return fn(a, b);
 }
 

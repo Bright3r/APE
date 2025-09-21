@@ -6,6 +6,7 @@
 #include "core/ecs/Registry.h"
 #include "core/render/Model.h"
 #include "physics/PhysicsWorld.h"
+#include "physics/RigidBody.h"
 #include "physics/collisions/Colliders.h"
 
 #include <format>
@@ -132,7 +133,8 @@ struct Scene {
 		ECS::EntityHandle ent,
 		AssetHandle<Render::Model> model_handle) noexcept
 	{
-		APE_CHECK((model_handle.data != nullptr),
+		APE_CHECK(
+			(model_handle.data != nullptr),
 			"Scene::addRigidBody() Failed: model_handle data is null."
 		);
 
@@ -157,15 +159,17 @@ struct Scene {
 			max_bounds = glm::max(max_bounds, tri.v0, tri.v1, tri.v2);
 		}
 
-		auto rbd = phys_world.createRigidBody();
+		auto& transform = registry.getComponent<TransformComponent>(ent);
+		auto rbd = phys_world.createRigidBody(Physics::RigidBody(transform.position));
+
 		auto collider = std::make_shared<Physics::Collisions::AABB>(min_bounds, max_bounds);
 		phys_world.addCollider(rbd, collider);
-		auto& rbd_comp = registry.emplaceComponent<Physics::RigidBodyComponent>(
+
+		return registry.emplaceComponent<Physics::RigidBodyComponent>(
 			ent,
 			&phys_world,
 			rbd
 		);
-		return rbd_comp;
 	}
 };
 

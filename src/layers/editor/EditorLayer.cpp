@@ -38,6 +38,11 @@ void EditorLayer::setup() noexcept
 	models.push_back(ModelLoader::load(CONE_PATH));
 	// models.push_back(ModelLoader::load(CYLINDER_PATH));
 
+	// TransformComponent transform {};
+	// auto model_handle = ModelLoader::load(CONE_PATH);
+	// auto obj = Engine::world().addModel(model_handle, transform);
+	// Engine::world().addRigidBody(obj, model_handle);
+
 	constexpr int NUM_SHAPES = 10;
 	int sqrt = std::sqrt(NUM_SHAPES);
 	if (!models.empty()) {
@@ -127,6 +132,12 @@ void EditorLayer::update() noexcept
 	for (auto& m_event : Engine::input().mouseMotionEvents()) {
 		cam->rotate(m_event.xrel, m_event.yrel);
 	}
+
+
+
+	// TESTING ONLY
+	// STEP PHYSICS MANUALLY
+	Engine::world().phys_world.stepSimulation({});
 }
 
 void EditorLayer::draw() noexcept
@@ -135,9 +146,11 @@ void EditorLayer::draw() noexcept
 
 	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
 	for (auto [ent, rbd, transform] : view.each()) {
-		// drawBVH(rbd.get<Physics::Collisions::BVH>(), transform);
-		auto* collider = static_cast<Physics::Collisions::AABB*>(rbd.collider());
-		drawAABB(*collider, transform);
+		auto type = rbd.collider()->type;
+		if (type == Physics::Collisions::ColliderType::AABB) {
+			auto* collider = static_cast<Physics::Collisions::AABB*>(rbd.collider());
+			drawAABB(*collider, transform);
+		}
 	}
 }
 
@@ -151,6 +164,16 @@ void EditorLayer::drawGUI() noexcept
 	drawSceneHierarchyPanel(Engine::world(), selected_ent);
 	drawManipulatorPanel(Engine::world(), selected_ent, gizmo_op);
 	drawGizmo(Engine::world(), selected_ent, gizmo_op);
+
+	// Update physics position with modified transform
+	if (Engine::world().registry.hasAllComponents
+		<TransformComponent, Physics::RigidBodyComponent>(selected_ent)) 
+	{
+		auto [transform, rbd] = Engine::world().registry.getComponents
+			<TransformComponent, Physics::RigidBodyComponent>(selected_ent);
+
+		rbd.updatePosition(transform.position);
+	}
 }
 
 void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
@@ -176,9 +199,21 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 			glm::normalize(glm::vec3(inv_model_mat * glm::vec4(ray.dir, 0.f)))
 		);
 
-		float t;
-		auto collider = static_cast<Physics::Collisions::AABB*>(rbd.collider());
-		if (ray_local.intersects(*collider, t)) {
+		float t {};
+		bool b_collides = false;
+
+		switch (rbd.collider()->type) {
+		case Physics::Collisions::ColliderType::AABB:
+		{
+			auto& collider = *static_cast<Physics::Collisions::AABB*>(rbd.collider());
+			b_collides = ray_local.intersects(collider, t);
+			break;
+		}
+		default:
+			break;
+		};
+
+		if (b_collides) {
 			APE_TRACE("HIT");
 			if (t < t_best) {
 				selected_ent = ent;

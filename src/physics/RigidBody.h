@@ -1,10 +1,7 @@
 #pragma once
 
-#include "physics/collisions/BVH.h"
-
-#include <glm/glm.hpp>
-
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 namespace APE::Physics {
