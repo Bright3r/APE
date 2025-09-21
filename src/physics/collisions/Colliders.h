@@ -2,11 +2,22 @@
 
 #include <glm/glm.hpp>
 
-namespace APE::Physics::Collider {
+namespace APE::Physics::Collisions {
 
-struct Ray {
+struct Collider {
+	virtual ~Collider() noexcept = default;
+};
+
+struct Ray : public Collider {
 	glm::vec3 pos;
 	glm::vec3 dir;
+
+	Ray(const glm::vec3& pos = glm::vec3(0), const glm::vec3& dir = glm::vec3(0)) noexcept
+		: pos(pos)
+		, dir(dir)
+	{
+
+	}
 
 	[[nodiscard]] glm::vec3 eval(float t) const noexcept
 	{
@@ -14,9 +25,16 @@ struct Ray {
 	}
 };
 
-struct AABB {
+struct AABB : public Collider {
 	glm::vec3 min;
 	glm::vec3 max;
+
+	AABB(const glm::vec3& min = glm::vec3(0), const glm::vec3& max = glm::vec3(0)) noexcept
+		: min(min)
+		, max(max)
+	{
+
+	}
 
 	[[nodiscard]] glm::vec3 center() const noexcept 
 	{
@@ -29,8 +47,19 @@ struct AABB {
 	}
 };
 
-struct Triangle {
+struct TriangleCollider : public Collider  {
 	glm::vec3 v0, v1, v2;
+
+	TriangleCollider(
+		const glm::vec3& v0 = glm::vec3(0),
+		const glm::vec3& v1 = glm::vec3(0),
+		const glm::vec3& v2 = glm::vec3(0)) noexcept
+		: v0(v0)
+		, v1(v1)
+		, v2(v2)
+	{
+
+	}
 
 	[[nodiscard]] glm::vec3 getNormal() const noexcept 
 	{

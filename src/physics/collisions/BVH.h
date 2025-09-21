@@ -9,11 +9,11 @@
 
 #include <vector>
 
-namespace APE::Physics::Collider {
+namespace APE::Physics::Collisions {
 
 struct BVHNode {
 	std::vector<BVHNode> children;
-	std::vector<Triangle> triangles;
+	std::vector<TriangleCollider> triangles;
 	AABB aabb;
 
 	BVHNode(const AABB& aabb = AABB(glm::vec3(0), glm::vec3(0))) noexcept
@@ -22,7 +22,7 @@ struct BVHNode {
 
 	}
 
-	BVHNode(const std::vector<Triangle>& tris, int max_depth = 3) noexcept 
+	BVHNode(const std::vector<TriangleCollider>& tris, int max_depth = 3) noexcept 
 	{
 		// Get AABB of triangles
 		glm::vec3 min_bounds(std::numeric_limits<float>::max());
@@ -52,7 +52,7 @@ struct BVHNode {
 
 	// Count all triangles in this node and its children
 	//
-	int getTriangleCount() const noexcept 
+	int getTriangleColliderCount() const noexcept 
 	{
 		// Leaf node only has its own triangles
 		if (isLeaf()) return triangles.size();
@@ -60,7 +60,7 @@ struct BVHNode {
 		// Internal nodes contain triangles from all children
 		int count = 0;
 		for (const BVHNode& child : children) {
-			count += child.getTriangleCount();
+			count += child.getTriangleColliderCount();
 		}
 		return count;
 	}
@@ -134,7 +134,7 @@ struct BVHNode {
 		if (!children.empty()) {
 			// Remove nodes with no triangles
 			for (int i = 0; i < children.size(); i++) {
-				if (children[i].getTriangleCount() == 0) {
+				if (children[i].getTriangleColliderCount() == 0) {
 					children.erase(children.begin() + i);
 					--i;
 				}
@@ -152,7 +152,7 @@ struct BVHNode {
 	bool checkCollision(
 		const Ray& ray,
 		float& t_nearest,
-		Triangle& collision_tri) const noexcept 
+		TriangleCollider& collision_tri) const noexcept 
 	{
 		// Check if ray intersects this node's bounding box
 		if (!Collisions::intersects(aabb, ray)) {
@@ -199,12 +199,10 @@ struct BVHNode {
 };
 
 
-// Container class for BVH tree
-// Acts as an interface for BVH root
-struct BVH {
+struct BVH : public Collider {
 	BVHNode root;
 
-	BVH(const std::vector<Triangle>& triangles = {}, int max_depth = 3) noexcept 
+	BVH(const std::vector<TriangleCollider>& triangles = {}, int max_depth = 3) noexcept 
 	{
 		root = BVHNode(triangles, max_depth);
 	}
@@ -212,7 +210,7 @@ struct BVH {
 	bool checkCollision(
 		const Ray& ray,
 		float& t_nearest,
-		Triangle& collision_tri) const noexcept 
+		TriangleCollider& collision_tri) const noexcept 
 	{
 		t_nearest = std::numeric_limits<float>::max();
 		return root.checkCollision(ray, t_nearest, collision_tri);

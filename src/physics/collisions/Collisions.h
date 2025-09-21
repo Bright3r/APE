@@ -8,24 +8,24 @@ namespace APE::Physics::Collisions {
 
 using MinMax = std::pair<float, float>;
 
-MinMax projectTriangle(const glm::vec3& axis, const Collider::Triangle tri) noexcept;
+MinMax projectTriangle(const glm::vec3& axis, const TriangleCollider& tri) noexcept;
 
-MinMax projectAABB(const glm::vec3& axis, const Collider::AABB& box) noexcept;
+MinMax projectAABB(const glm::vec3& axis, const AABB& box) noexcept;
 
 bool overlapOnAxis(
-	const Collider::AABB& box,
-	const Collider::Triangle& tri,
+	const AABB& box,
+	const TriangleCollider& tri,
 	const glm::vec3& axis) noexcept;
 
-bool intersects(const Collider::AABB& a, const Collider::AABB& b) noexcept;
+bool intersects(const AABB& a, const AABB& b) noexcept;
 
-bool intersects(const Collider::AABB& box, const Collider::Triangle& tri) noexcept;
+bool intersects(const AABB& box, const TriangleCollider& tri) noexcept;
 
 float getIntersectDist(
-	const Collider::AABB& box,
-	const Collider::Ray& raycast) noexcept;
+	const AABB& box,
+	const Ray& raycast) noexcept;
 
-bool intersects(const Collider::AABB& box, const Collider::Ray& raycast) noexcept;
+bool intersects(const AABB& box, const Ray& raycast) noexcept;
 
 };	// end of namespace
 

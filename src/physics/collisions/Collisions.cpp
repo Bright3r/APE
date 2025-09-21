@@ -7,7 +7,7 @@
 
 namespace APE::Physics::Collisions {
 
-MinMax projectTriangle(const glm::vec3& axis, const Collider::Triangle tri) noexcept
+MinMax projectTriangle(const glm::vec3& axis, const TriangleCollider& tri) noexcept
 {
 	float min = glm::dot(tri.v0, axis);
 	float max = min;
@@ -20,7 +20,7 @@ MinMax projectTriangle(const glm::vec3& axis, const Collider::Triangle tri) noex
 	return { min, max };
 }
 
-MinMax projectAABB(const glm::vec3& axis, const Collider::AABB& box) noexcept
+MinMax projectAABB(const glm::vec3& axis, const AABB& box) noexcept
 {
 	std::array<glm::vec3, 8> corners = {
 		glm::vec3 { box.min.x, box.min.y, box.min.z },
@@ -44,8 +44,8 @@ MinMax projectAABB(const glm::vec3& axis, const Collider::AABB& box) noexcept
 }	
 
 bool overlapOnAxis(
-	const Collider::AABB& box,
-	const Collider::Triangle& tri,
+	const AABB& box,
+	const TriangleCollider& tri,
 	const glm::vec3& axis) noexcept
 {
 	// Skip axes near zero
@@ -58,14 +58,14 @@ bool overlapOnAxis(
 	return !(maxAABB < minTri || maxTri < minAABB);
 }
 
-bool intersects(const Collider::AABB& a, const Collider::AABB& b) noexcept
+bool intersects(const AABB& a, const AABB& b) noexcept
 {
 	return (a.min.x <= b.max.x && a.max.x >= b.min.x) &&
 		(a.min.y <= b.max.y && a.max.y >= b.min.y) &&
 		(a.min.z <= b.max.z && a.max.z >= b.min.z);
 }
 
-bool intersects(const Collider::AABB& box, const Collider::Triangle& tri) noexcept 
+bool intersects(const AABB& box, const TriangleCollider& tri) noexcept 
 {
 	// 13 axes to test for overlap
 	glm::vec3 axes[13];
@@ -106,8 +106,8 @@ bool intersects(const Collider::AABB& box, const Collider::Triangle& tri) noexce
 };	
 
 float getIntersectDist(
-	const Collider::AABB& box,
-	const Collider::Ray& ray) noexcept
+	const AABB& box,
+	const Ray& ray) noexcept
 {
 	float t1 = (box.min.x - ray.pos.x) / ray.dir.x;
 	float t2 = (box.max.x - ray.pos.x) / ray.dir.x;
@@ -133,7 +133,7 @@ float getIntersectDist(
 	return tmin;
 }
 
-bool intersects(const Collider::AABB& box, const Collider::Ray& raycast) noexcept 
+bool intersects(const AABB& box, const Ray& raycast) noexcept 
 {
 	float t = getIntersectDist(box, raycast);
 	return t >= 0;

@@ -135,7 +135,7 @@ void EditorLayer::draw() noexcept
 
 	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
 	for (auto [ent, rbd, transform] : view.each()) {
-		drawBVH(rbd.get<Physics::Collider::BVH>(), transform);
+		drawBVH(rbd.get<Physics::Collisions::BVH>(), transform);
 	}
 }
 
@@ -158,10 +158,10 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 	// Cast ray from camera
 	glm::vec2 screen_coords(m_button.x, m_button.y);
 	glm::vec3 world_coords = screenToWorld(screen_coords);
-	Physics::Collider::Ray ray = {
-		.pos = cam->getPosition(),
-		.dir = glm::normalize(world_coords - cam->getPosition())
-	};
+	Physics::Collisions::Ray ray(
+		cam->getPosition(),
+		glm::normalize(world_coords - cam->getPosition())
+	);
 
 	// Check for collision with scene models
 	float t_best = std::numeric_limits<float>::max();
@@ -169,14 +169,14 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 	for (auto [ent, rbd, transform] : view.each()) {
 		// Transform ray into rbd's model space
 		glm::mat4 inv_model_mat = glm::inverse(transform.getModelMatrix());
-		Physics::Collider::Ray ray_local = {
-			.pos = glm::vec3(inv_model_mat * glm::vec4(ray.pos, 1.f)),
-			.dir = glm::normalize(glm::vec3(inv_model_mat * glm::vec4(ray.dir, 0.f)))
-		};
+		Physics::Collisions::Ray ray_local(
+			glm::vec3(inv_model_mat * glm::vec4(ray.pos, 1.f)),
+			glm::normalize(glm::vec3(inv_model_mat * glm::vec4(ray.dir, 0.f)))
+		);
 
 		float t;
-		Physics::Collider::Triangle tri;
-		if (rbd.get<Physics::Collider::BVH>().checkCollision(ray_local, t, tri)) {
+		Physics::Collisions::TriangleCollider tri;
+		if (rbd.get<Physics::Collisions::BVH>().checkCollision(ray_local, t, tri)) {
 			APE_TRACE("HIT");
 			if (t < t_best) {
 				selected_ent = ent;
@@ -187,7 +187,7 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 }
 
 void EditorLayer::drawAABB(
-	Physics::Collider::AABB& aabb,
+	Physics::Collisions::AABB& aabb,
 	TransformComponent& transform) noexcept
 {
 	auto extents = aabb.extents();
@@ -234,17 +234,17 @@ void EditorLayer::drawAABB(
 }
 
 void EditorLayer::drawNode(
-	Physics::Collider::BVHNode& node,
+	Physics::Collisions::BVHNode& node,
 	TransformComponent& transform) noexcept
 {
 	drawAABB(node.aabb, transform);
-	for (auto& child : node.children) {
-		drawNode(child, transform);
-	}
+	// for (auto& child : node.children) {
+	// 	drawNode(child, transform);
+	// }
 }
 
 void EditorLayer::drawBVH(
-	Physics::Collider::BVH& bvh,
+	Physics::Collisions::BVH& bvh,
 	TransformComponent& transform) noexcept
 {
 	drawNode(bvh.root, transform);

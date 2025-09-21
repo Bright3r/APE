@@ -142,7 +142,7 @@ struct Scene {
 		);
 
 		auto& model = *model_handle.data;
-		std::vector<Physics::Collider::Triangle> tris;
+		std::vector<Physics::Collisions::TriangleCollider> tris;
 		for (auto& mesh : model.meshes) {
 			for (auto [v0, v1, v2] : mesh.triangles()) {
 				tris.emplace_back(v0, v1, v2);
@@ -151,7 +151,7 @@ struct Scene {
 		APE_TRACE("Model {} has {} polygons.", model.model_path.c_str(), tris.size());
 
 		auto rbd = phys_world.createRigidBody();
-		phys_world.addCollider(rbd, Physics::Collider::BVH(std::move(tris), 3));
+		phys_world.addCollider(rbd, Physics::Collisions::BVH(std::move(tris), 3));
 		auto& rbd_comp = registry.emplaceComponent<Physics::RigidBodyComponent>(
 			ent,
 			&phys_world,

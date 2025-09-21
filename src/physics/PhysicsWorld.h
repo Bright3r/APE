@@ -27,9 +27,9 @@ public:
 		return ent;
 	}
 
-	void addCollider(const ECS::EntityHandle& ent, const Collider::BVH& bvh) noexcept
+	void addCollider(const ECS::EntityHandle& ent, const Collisions::BVH& bvh) noexcept
 	{
-		world.emplaceComponent<Collider::BVH>(ent, bvh);
+		world.emplaceComponent<Collisions::BVH>(ent, bvh);
 	}
 
 	void addJoint() noexcept

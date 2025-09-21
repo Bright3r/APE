@@ -2,9 +2,10 @@
 
 #include "core/Application.h"
 #include "core/components/Object.h"
-#include "core/components/Physics.h"
 #include "core/ecs/Registry.h"
 #include "core/render/Camera.h"
+#include "physics/collisions/BVH.h"
+#include "physics/collisions/Colliders.h"
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -33,13 +34,13 @@ public:
 	void handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept;
 
 	void drawAABB(
-		Physics::Collider::AABB& aabb,
+		Physics::Collisions::AABB& aabb,
 		TransformComponent& transform) noexcept;
 	void drawNode(
-		Physics::Collider::BVHNode& node,
+		Physics::Collisions::BVHNode& node,
 		TransformComponent& transform) noexcept;
 	void drawBVH(
-		Physics::Collider::BVH& bvh,
+		Physics::Collisions::BVH& bvh,
 		TransformComponent& transform) noexcept;
 
 	glm::vec3 screenToWorld(glm::vec2 screen_coords) noexcept;
