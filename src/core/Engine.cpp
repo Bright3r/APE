@@ -49,6 +49,8 @@ void Engine::pushLayer(std::unique_ptr<Application> layer) noexcept
 
 void Engine::pollEvents() noexcept
 {
+	s_input.nextFrame();
+
 	SDL_Event event;
 	while (SDL_PollEvent(&event) != 0) {
 		ImGui_ImplSDL3_ProcessEvent(&event);
@@ -61,10 +63,8 @@ void Engine::pollEvents() noexcept
 			setQuit(true);
 			break;
 		case SDL_EVENT_KEY_DOWN:
-			s_input.keyDown(event.key.key);
-			break;
 		case SDL_EVENT_KEY_UP:
-			s_input.keyUp(event.key.key);
+			s_input.keyPress(event.key);
 			break;
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		case SDL_EVENT_MOUSE_BUTTON_UP:

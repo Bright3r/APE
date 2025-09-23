@@ -76,47 +76,48 @@ void EditorLayer::setup() noexcept
 
 void EditorLayer::update() noexcept
 {
-	std::string window_title = "FPS: " + 
-		std::to_string(1000.0 / Engine::getLastFrameTimeMS().count());
+	std::string fps = std::to_string(1000.0 / Engine::getLastFrameTimeMS().count());
+	std::string window_title = "FPS: " + fps;
 	Engine::setWindowTitle(window_title);
 	
 	// Quit
-	if (Engine::input().isKeyDown(SDLK_Q)) {
+	auto& input = Engine::input();
+	if (input.isKeyDown(SDLK_Q)) {
 		Engine::setQuit(true);
 	}
 
 	// Save
-	if (Engine::input().isKeyDown(SDLK_P)) {
+	if (input.isKeyDown(SDLK_P) && input.isFirstFramePressed(SDLK_P)) {
 		Engine::saveScene("demos/test.json", Engine::world());
 	}
 	// Load
-	if (Engine::input().isKeyDown(SDLK_L)) {
+	if (input.isKeyDown(SDLK_L) && input.isFirstFramePressed(SDLK_L)) {
 		Engine::loadScene("demos/test.json", Engine::world());
 	}
 
 	// Camera Movement
 	float speed = 10.f;
 	float dt = Engine::getLastFrameTimeSec().count();
-	if (Engine::input().isKeyDown(SDLK_SPACE)) {
+	if (input.isKeyDown(SDLK_SPACE)) {
 		cam->moveUp(speed, dt);
 	}
-	if (Engine::input().isKeyDown(SDLK_LCTRL)) {
+	if (input.isKeyDown(SDLK_LCTRL)) {
 		cam->moveDown(speed, dt);
 	}
-	if (Engine::input().isKeyDown(SDLK_A)) {
+	if (input.isKeyDown(SDLK_A)) {
 		cam->moveLeft(speed, dt);
 	}
-	if (Engine::input().isKeyDown(SDLK_D)) {
+	if (input.isKeyDown(SDLK_D)) {
 		cam->moveRight(speed, dt);
 	}
-	if (Engine::input().isKeyDown(SDLK_W)) {
+	if (input.isKeyDown(SDLK_W)) {
 		cam->moveForward(speed, dt);
 	}
-	if (Engine::input().isKeyDown(SDLK_S)) {
+	if (input.isKeyDown(SDLK_S)) {
 		cam->moveBackward(speed, dt);
 	}
 	// Camera Tab In
-	if (Engine::input().isKeyDown(SDLK_C)) {
+	if (input.isKeyDown(SDLK_C) && input.isFirstFramePressed(SDLK_C)) {
 		bool is_locked = cam->isLocked();
 		cam->setLocked(!is_locked);
 		Engine::setTabIn(is_locked);
@@ -137,7 +138,7 @@ void EditorLayer::update() noexcept
 
 	// TESTING ONLY
 	// STEP PHYSICS MANUALLY
-	if (Engine::input().isKeyDown(SDLK_PERIOD)) {
+	if (input.isKeyDown(SDLK_PERIOD)) {
 		Engine::world().phys_world.stepSimulation(1.f / 60);
 	}
 	// Update object transforms to sync with physics rigid body

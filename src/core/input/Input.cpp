@@ -1,11 +1,12 @@
 #include "core/input/Input.h"
+#include <algorithm>
 
 namespace APE::Input {
 
 bool State::isKeyDown(SDL_Keycode key) const noexcept
 {
 	if (m_key_state.contains(key)) {
-		return m_key_state.at(key);
+		return m_key_state.at(key).down;
 	}
 	return false;
 }
@@ -13,6 +14,14 @@ bool State::isKeyDown(SDL_Keycode key) const noexcept
 bool State::isKeyUp(SDL_Keycode key) const noexcept
 {
 	return !isKeyDown(key);
+}
+
+bool State::isFirstFramePressed(SDL_Keycode key) const noexcept
+{
+	if (m_key_state.contains(key)) {
+		return m_key_state.at(key).time_pressed == m_timestamp;
+	}
+	return false;
 }
 
 const std::vector<SDL_MouseButtonEvent>& State::mouseButtonEvents() const noexcept
@@ -25,14 +34,25 @@ const std::vector<SDL_MouseMotionEvent>& State::mouseMotionEvents() const noexce
 	return m_mouse_motions;
 }
 
-void State::keyDown(SDL_Keycode key) noexcept
+void State::nextFrame() noexcept
 {
-	m_key_state[key] = true;
+	++m_timestamp;
 }
 
-void State::keyUp(SDL_Keycode key) noexcept
+void State::keyPress(const SDL_KeyboardEvent& event) noexcept
 {
-	m_key_state[key] = false;
+	// Update global timestamp
+	m_timestamp = std::max(m_timestamp, event.timestamp);
+
+	// Skip repeat events
+	if (event.down == isKeyDown(event.key)) return;
+
+	// Update key state
+	KeyState key_state = {
+		.down = event.down,
+		.time_pressed = event.timestamp,
+	};
+	m_key_state[event.key] = key_state;
 }
 
 void State::mouseButton(const SDL_MouseButtonEvent& event) noexcept
