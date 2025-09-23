@@ -137,7 +137,14 @@ void EditorLayer::update() noexcept
 
 	// TESTING ONLY
 	// STEP PHYSICS MANUALLY
-	Engine::world().phys_world.stepSimulation({});
+	if (Engine::input().isKeyDown(SDLK_PERIOD)) {
+		Engine::world().phys_world.stepSimulation(1.f / 60);
+	}
+	// Update object transforms to sync with physics rigid body
+	auto view = Engine::world().registry.view<TransformComponent, Physics::RigidBodyComponent>();
+	for (auto [ent, transform, rbd] : view.each()) {
+		transform.position = rbd.getPosition();
+	}
 }
 
 void EditorLayer::draw() noexcept
@@ -172,7 +179,7 @@ void EditorLayer::drawGUI() noexcept
 		auto [transform, rbd] = Engine::world().registry.getComponents
 			<TransformComponent, Physics::RigidBodyComponent>(selected_ent);
 
-		rbd.updatePosition(transform.position);
+		rbd.setPosition(transform.position);
 	}
 }
 

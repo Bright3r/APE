@@ -3,6 +3,7 @@
 #include "core/ecs/Registry.h"
 #include "physics/RigidBody.h"
 #include "physics/collisions/Collisions.h"
+#include <cmath>
 
 namespace APE::Physics {
 
@@ -33,8 +34,12 @@ public:
 
 		// Solve Constraints
 		
+		// Apply gravity - special case for now
+		applyGravity();
+		
 		// Integrate
-
+		integrateAcceleration(dt);
+		integrateVelocity(dt);
 	}
 
 	ECS::EntityHandle createRigidBody(const RigidBody& rbd) noexcept
@@ -60,6 +65,53 @@ public:
 	Component& get(const ECS::EntityHandle& ent) noexcept
 	{
 		return world.getComponent<Component>(ent);
+	}
+
+private:
+	void applyGravity() noexcept
+	{
+		glm::vec3 gravity_force(0, -9.8f, 0);
+
+		auto view = world.view<RigidBody>();
+		for (auto [ent, rbd] : view.each()) {
+			rbd.forces += gravity_force;
+		}
+	}
+
+	void integrateAcceleration(float dt) noexcept
+	{
+		auto view = world.view<RigidBody>();
+		for (auto [ent, rbd] : view.each()) {
+			float inv_mass = 1.f / rbd.mass;
+			glm::vec3 accel = inv_mass * rbd.forces;
+
+			// Integrate acceleration
+			glm::vec3 delta_vel = accel * dt;
+
+			// Apply change in velocity
+			rbd.vel_linear += delta_vel;
+
+			// Reset rigid body forces for next frame
+			rbd.forces = glm::vec3(0);
+		}
+	}
+
+	void integrateVelocity(float dt) noexcept
+	{
+		float damping_constant = 1.f - 0.95f;
+		float damping_factor = std::powf(damping_constant, dt);
+
+		auto view = world.view<RigidBody>();
+		for (auto [ent, rbd] : view.each()) {
+			// Integrate velocity
+			glm::vec3 delta_pos = rbd.vel_linear * dt;
+
+			// Apply change in position
+			rbd.pos += delta_pos;
+
+			// Dampen velocity
+			// rbd.vel_linear *= damping_factor;
+		}
 	}
 };
 

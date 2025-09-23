@@ -24,7 +24,12 @@ struct RigidBodyComponent {
 		return physics_world->get<PhysicsWorld::ColliderHandle>(physics_ent).get();
 	}
 
-	void updatePosition(const glm::vec3& pos) noexcept
+	glm::vec3 getPosition() const noexcept
+	{
+		return physics_world->get<RigidBody>(physics_ent).pos;
+	}
+
+	void setPosition(const glm::vec3& pos) noexcept
 	{
 		physics_world->get<RigidBody>(physics_ent).pos = pos;
 	}
