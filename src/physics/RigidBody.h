@@ -42,6 +42,42 @@ struct RigidBody {
 	{
 
 	}
+
+	void addForce(const glm::vec3& force) noexcept
+	{
+		forces += force;
+	}
+
+	void addForce(const glm::vec3& force, const glm::vec3& position) noexcept
+	{
+		forces += force;
+		torques += glm::cross(pos, force);
+	}
+
+	[[nodiscard]] glm::mat3 inertiaTensorLocal() const noexcept
+	{
+		// Hard coded for 1x1x1 box
+		float w = 1;
+		float h = 1;
+		float d = 1;
+		float ix = (1.f / 12) * mass * (h*h + d*d);
+		float iy = (1.f / 12) * mass * (w*w + d*d);
+		float iz = (1.f / 12) * mass * (w*w + h*h);
+		glm::mat3 local_tensor(
+			ix, 0,  0,
+			0,  iy, 0,
+			0,  0,  iz
+		);
+		return local_tensor;
+	}
+
+	[[nodiscard]] glm::mat3 inertiaTensorWorld() const noexcept
+	{
+		glm::mat3 local_tensor = inertiaTensorLocal();
+
+		glm::mat3 orientation_mat = glm::mat3_cast(orientation);
+		return orientation_mat * local_tensor * glm::transpose(orientation_mat);
+	}
 };
 
 };	// end of namespace

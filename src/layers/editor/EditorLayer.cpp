@@ -143,7 +143,8 @@ void EditorLayer::update() noexcept
 	// Update object transforms to sync with physics rigid body
 	auto view = Engine::world().registry.view<TransformComponent, Physics::RigidBodyComponent>();
 	for (auto [ent, transform, rbd] : view.each()) {
-		transform.position = rbd.getPosition();
+		transform.position = rbd.get().pos;
+		transform.rotation = rbd.get().orientation;
 	}
 }
 
@@ -179,7 +180,8 @@ void EditorLayer::drawGUI() noexcept
 		auto [transform, rbd] = Engine::world().registry.getComponents
 			<TransformComponent, Physics::RigidBodyComponent>(selected_ent);
 
-		rbd.setPosition(transform.position);
+		rbd.get().pos = transform.position;
+		rbd.get().orientation = transform.rotation;
 	}
 }
 
@@ -225,6 +227,10 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 			if (t < t_best) {
 				selected_ent = ent;
 				t_best = t;
+
+				glm::vec3 force = ray.dir * 10.f;
+				glm::vec3 force_pos = ray.eval(t);
+				rbd.get().addForce(force, force_pos);
 			}
 		}
 	}
