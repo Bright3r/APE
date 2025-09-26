@@ -37,7 +37,7 @@ protected:
 	{
 		RigidBody start;
 		start.pos = { 0, 100, 0 };
-		start.mass = 1.f;
+		start.inv_mass = 1 / 1.f;
 		start.forces = { 0, -9.8f, 0 };
 		Scenario freefall {
 			.start = start,

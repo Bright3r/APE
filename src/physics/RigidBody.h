@@ -13,7 +13,7 @@ struct RigidBody {
 	glm::vec3 vel_angular;
 
 	// Properties
-	float mass;
+	float inv_mass;
 	float restitution;
 	glm::mat3 moment;
 
@@ -22,7 +22,7 @@ struct RigidBody {
 	glm::vec3 torques;
 
 	RigidBody(const glm::vec3& pos = glm::vec3(0),
-		float mass = 1,
+		float inv_mass = 1 / 1.f,
 		float restitution = 1,
 		const glm::quat& orientation = {},
 		const glm::mat3& moment = {},
@@ -34,7 +34,7 @@ struct RigidBody {
 		, orientation(orientation)
 		, vel_linear(vel_linear)
 		, vel_angular(vel_angular)
-		, mass(mass)
+		, inv_mass(inv_mass)
 		, restitution(restitution)
 		, moment(moment)
 		, forces(forces)
@@ -48,14 +48,19 @@ struct RigidBody {
 		forces += force;
 	}
 
-	void addForce(const glm::vec3& force, const glm::vec3& position) noexcept
+	void addForce(const glm::vec3& force, const glm::vec3& force_position) noexcept
 	{
+		glm::vec3 local_position = force_position - pos;
+
 		forces += force;
-		torques += glm::cross(pos, force);
+		torques += glm::cross(local_position, force);
 	}
 
 	[[nodiscard]] glm::mat3 inertiaTensorLocal() const noexcept
 	{
+		float mass = 0;
+		if (inv_mass != 0) mass = 1.f / inv_mass;
+
 		// Hard coded for 1x1x1 box
 		float w = 1;
 		float h = 1;

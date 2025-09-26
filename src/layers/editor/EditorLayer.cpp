@@ -229,7 +229,9 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 				selected_ent = ent;
 				t_best = t;
 
-				glm::vec3 force = ray.dir * 10.f;
+				// Apply force to selected object
+				float newtons = 1.f;
+				glm::vec3 force = newtons * glm::normalize(ray.dir);
 				glm::vec3 force_pos = ray.eval(t);
 				rbd.get().addForce(force, force_pos);
 			}

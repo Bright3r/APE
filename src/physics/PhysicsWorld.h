@@ -1,16 +1,27 @@
 #pragma once
 
 #include "core/ecs/Registry.h"
+#include "physics/Integrator.h"
 #include "physics/RigidBody.h"
 #include "physics/collisions/Collisions.h"
-#include <cmath>
+#include <memory>
+#include <utility>
 
 namespace APE::Physics {
 
 class PhysicsWorld {
 	ECS::Registry world;
+	std::unique_ptr<Integrator> integrator;
 
 public:
+	PhysicsWorld(
+		std::unique_ptr<Integrator> integrator = std::make_unique<EulerIntegrator>()) noexcept
+		: integrator(std::move(integrator))
+	{
+		
+	}
+
+
 	using ColliderHandle = std::shared_ptr<Collisions::Collider>;
 
 	void stepSimulation(float dt) noexcept
@@ -38,8 +49,7 @@ public:
 		applyGravity();
 		
 		// Integrate
-		integrateAcceleration(dt);
-		integrateVelocity(dt);
+		integrate(dt);
 	}
 
 	ECS::EntityHandle createRigidBody(const RigidBody& rbd) noexcept
@@ -78,75 +88,11 @@ private:
 		}
 	}
 
-	void integrateAcceleration(float dt) noexcept
-	{
+	void integrate(float dt) noexcept
+	{	
 		auto view = world.view<RigidBody>();
 		for (auto [ent, rbd] : view.each()) {
-			// Linear Motion
-			{
-				float inv_mass = 1.f / rbd.mass;
-				glm::vec3 accel = inv_mass * rbd.forces;
-
-				// Integrate acceleration
-				glm::vec3 delta_vel = accel * dt;
-
-				// Apply change in velocity
-				rbd.vel_linear += delta_vel;
-
-				// Reset rigid body forces for next frame
-				rbd.forces = glm::vec3(0);
-			}
-
-			// Rotational Motion
-			{
-				glm::mat3 inv_intertia_tensor = 
-					glm::inverse(rbd.inertiaTensorWorld());
-				glm::vec3 accel_angular = inv_intertia_tensor * rbd.torques;
-
-				// Integrate angular acceleration
-				glm::vec3 delta_vel = accel_angular * dt;
-
-				// Apply change in angular velocity
-				rbd.vel_angular += delta_vel;
-
-				// Reset rigid body torques for next frame
-				rbd.torques = glm::vec3(0);
-			}
-		}
-	}
-
-	void integrateVelocity(float dt) noexcept
-	{
-		float damping_constant = 1.f - 0.95f;
-		float damping_factor = std::powf(damping_constant, dt);
-
-		auto view = world.view<RigidBody>();
-		for (auto [ent, rbd] : view.each()) {
-			// Linear Motion
-			{
-				// Integrate velocity
-				glm::vec3 delta_pos = rbd.vel_linear * dt;
-
-				// Apply change in position
-				rbd.pos += delta_pos;
-
-				// Dampen velocity
-				rbd.vel_linear *= damping_factor;
-			}
-
-			// Rotational Motion
-			{
-				glm::vec3 ang_vel = rbd.vel_angular;
-				glm::quat spin(0.f, ang_vel.x, ang_vel.y, ang_vel.z);
-
-				// Integrate angular velocity
-				glm::quat delta_orientation = (spin * rbd.orientation) * (dt * 0.5f);
-				
-				// Apply change in orientation
-				rbd.orientation = glm::normalize(rbd.orientation + delta_orientation); 
-				// Dampen angular velocity
-				rbd.vel_angular *= damping_factor;
-			}
+			integrator->integrate(rbd, dt);
 		}
 	}
 };
