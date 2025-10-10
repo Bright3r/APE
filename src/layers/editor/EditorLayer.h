@@ -22,6 +22,7 @@ class EditorLayer : public Application {
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;
 	bool b_lock_selection = false;
 	bool b_show_hitboxes = true;
+	float mouse_force = 0.f;
 
 public:
 	void draw() noexcept override;

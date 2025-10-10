@@ -1,6 +1,7 @@
 #include "physics/collisions/Collisions.h"
 #include "physics/RigidBody.h"
 #include "util/Logger.h"
+#include <limits>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
@@ -9,7 +10,7 @@
 
 namespace APE::Physics::Collisions {
 
-bool AABBvsAABB(const Collider& a, const Collider& b) noexcept
+bool AABBvsAABB(const Collider& a, const Collider& b, CollisionInfo& collision_info) noexcept
 {
 	auto& aa = static_cast<const AABB&>(a);
 	auto& bb = static_cast<const AABB&>(b);
@@ -20,21 +21,63 @@ bool AABBvsAABB(const Collider& a, const Collider& b) noexcept
 	auto b_min = bb.min + b.pos;
 	auto b_max = bb.max + b.pos;
 
-	return (a_min.x <= b_max.x && a_max.x >= b_min.x) &&
+	bool b_intersect = (a_min.x <= b_max.x && a_max.x >= b_min.x) &&
 		(a_min.y <= b_max.y && a_max.y >= b_min.y) &&
 		(a_min.z <= b_max.z && a_max.z >= b_min.z);
+
+	// Reject collision
+	if (!b_intersect) return false;
+
+	// Calculate collision point + normal
+	static const std::array<glm::vec3, 6> faces = {
+		glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0),
+		glm::vec3(0, -1, 0), glm::vec3(0, 1, 0),
+		glm::vec3(0, 0, -1), glm::vec3(0, 0, 1)
+	};
+
+	std::array<float, 6> distances = {
+		(b_max.x - a_min.x),
+		(a_max.x - b_min.x),
+		(b_max.y - a_min.y),
+		(a_max.y - b_min.y),
+		(b_max.z - a_min.z),
+		(a_max.z - b_min.z)
+	};
+
+	float penetration = std::numeric_limits<float>::infinity();
+	glm::vec3 best_axis {};
+	for (size_t i = 0; i < 6; ++i) {
+		if (distances[i] < penetration) {
+			penetration = distances[i];
+			best_axis = faces[i];
+		}
+	}
+
+	glm::vec3 overlap_min = glm::max(a_min, b_min);
+	glm::vec3 overlap_max = glm::min(a_max, b_max);
+	glm::vec3 contact_point = 0.5f * (overlap_min + overlap_max);
+
+	collision_info.contact = {
+		.pos = contact_point,
+		.normal = best_axis,
+		.penetration = penetration,
+	};
+	return true;
 }
 
-bool intersects(const Collider& a, const Collider& b) noexcept
+bool intersects(
+	const Collider& a,
+	const Collider& b,
+	CollisionInfo& collision_info) noexcept
 {
-	auto fn = s_intersect_fn_table
-		[static_cast<size_t>(a.type)]
-		[static_cast<size_t>(b.type)];
+	auto a_type = static_cast<size_t>(a.type);
+	auto b_type = static_cast<size_t>(b.type);
+	auto fn = s_intersect_fn_table[a_type][b_type];
 
 	if (!fn) {
 		APE_ERROR("APE::Physics::Collisions::intersects() Failed: invalid collider types.");
 	}
-	return fn(a, b);
+	return fn(a, b, collision_info);
 }
 
 MinMax projectTriangle(const glm::vec3& axis, const Triangle& tri) noexcept

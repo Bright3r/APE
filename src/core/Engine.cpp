@@ -88,15 +88,15 @@ void Engine::stepGameloop() noexcept
 	}
 	s_input.flush();
 
-	// Draw to Screen
+	// Rendering
 	s_renderer->beginDrawing();
 
-	// 3D Scene
+	// 3D
 	for (auto& app : s_layers) {
 		app->draw();
 	}
 
-	// GUI
+	// UI
 	for (auto& app : s_layers) {
 		app->drawGUI();
 	}

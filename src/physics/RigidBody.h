@@ -56,9 +56,24 @@ struct RigidBody {
 		torques += glm::cross(local_position, force);
 	}
 
+	void addTorque(const glm::vec3& torque) noexcept
+	{
+		torques += torque;
+	}
+
+	void applyLinearImpulse(const glm::vec3& force) noexcept
+	{
+		vel_linear += force * inv_mass;
+	}
+
+	void applyAngularImpulse(const glm::vec3& torque) noexcept
+	{
+		vel_angular += glm::inverse(inertiaTensorWorld()) * torque;
+	}
+
 	[[nodiscard]] glm::mat3 inertiaTensorLocal() const noexcept
 	{
-		float mass = 0;
+		float mass = 0.f;
 		if (inv_mass != 0) mass = 1.f / inv_mass;
 
 		// Hard coded for 1x1x1 box

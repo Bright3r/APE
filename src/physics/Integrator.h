@@ -49,7 +49,7 @@ private:
 		}
 	}
 
-	void integrateVelocity(RigidBody& rb, float dt, float damping_constant = 0.f) const noexcept
+	void integrateVelocity(RigidBody& rb, float dt, float damping_constant = 0.05f) const noexcept
 	{
 		damping_constant = 1.f - damping_constant;
 		float damping_factor = std::powf(damping_constant, dt);

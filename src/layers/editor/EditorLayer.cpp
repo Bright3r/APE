@@ -168,7 +168,8 @@ void EditorLayer::drawGUI() noexcept
 	drawDebugPanel(
 		Engine::world(),
 		b_lock_selection,
-		b_show_hitboxes
+		b_show_hitboxes,
+		mouse_force
 	);
 	drawSceneHierarchyPanel(Engine::world(), selected_ent);
 	drawManipulatorPanel(Engine::world(), selected_ent, gizmo_op);
@@ -230,8 +231,7 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 				t_best = t;
 
 				// Apply force to selected object
-				float newtons = 1.f;
-				glm::vec3 force = newtons * glm::normalize(ray.dir);
+				glm::vec3 force = mouse_force * glm::normalize(ray.dir);
 				glm::vec3 force_pos = ray.eval(t);
 				rbd.get().addForce(force, force_pos);
 			}

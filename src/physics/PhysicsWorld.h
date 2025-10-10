@@ -4,6 +4,8 @@
 #include "physics/Integrator.h"
 #include "physics/RigidBody.h"
 #include "physics/collisions/Collisions.h"
+
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -37,7 +39,11 @@ public:
 				auto& b = *collider_b.get();
 				b.pos = rbd_b.pos;
 
-				if (Collisions::intersects(a, b)) {
+				Collisions::CollisionInfo collision;
+				if (Collisions::intersects(a, b, collision)) {
+					collision.a = &rbd_a;
+					collision.b = &rbd_b;
+					resolveCollision(collision);
 					APE_TRACE("{} and {} collide.", ent_a.id, ent_b.id);
 				}
 			}
@@ -46,7 +52,7 @@ public:
 		// Solve Constraints
 		
 		// Apply gravity - special case for now
-		applyGravity();
+		// applyGravity();
 		
 		// Integrate
 		integrate(dt);
@@ -95,6 +101,57 @@ private:
 			integrator->integrate(rbd, dt);
 		}
 	}
+
+	void resolveCollision(Collisions::CollisionInfo& collision) noexcept
+	{
+		auto& rbd_a = *collision.a;
+		auto& rbd_b = *collision.b;
+		auto& p = collision.contact;
+
+		// Make collision normal point from A --> B
+		if (glm::dot(p.normal, (rbd_b.pos - rbd_a.pos)) < 0) {
+			p.normal *= -1;
+		}
+
+		// Separate out objects (projection)
+		float total_inv_mass = rbd_a.inv_mass + rbd_b.inv_mass;
+		rbd_a.pos -= p.normal * p.penetration * (rbd_a.inv_mass / total_inv_mass);
+		rbd_b.pos += p.normal * p.penetration * (rbd_b.inv_mass / total_inv_mass);
+
+		// Conserve momentum
+		glm::vec3 relative_a = p.pos - rbd_a.pos;
+		glm::vec3 relative_b = p.pos - rbd_b.pos;
+
+		glm::vec3 vel_angular_a = glm::cross(rbd_a.vel_angular, relative_a);
+		glm::vec3 vel_angular_b = glm::cross(rbd_b.vel_angular, relative_b);
+
+		glm::vec3 full_vel_a = rbd_a.vel_linear + vel_angular_a;
+		glm::vec3 full_vel_b = rbd_b.vel_linear + vel_angular_b;
+		glm::vec3 contact_vel = full_vel_b - full_vel_a;
+
+		// Calculate impulse
+		float impulse_force = glm::dot(contact_vel, p.normal);
+
+		glm::vec3 inertia_a = glm::cross(rbd_a.inertiaTensorWorld() * 
+			glm::cross(relative_a, p.normal), relative_a);
+
+		glm::vec3 inertia_b = glm::cross(rbd_b.inertiaTensorWorld() * 
+			glm::cross(relative_b, p.normal), relative_b);
+
+		float angular_effect = glm::dot(inertia_a + inertia_b, p.normal);
+
+		float restitution = std::min(rbd_a.restitution, rbd_b.restitution);
+		float j = ( -(1.f + restitution) * impulse_force) / (total_inv_mass + angular_effect);
+		glm::vec3 impulse = p.normal * j;
+
+		// Apply impulse
+		rbd_a.applyLinearImpulse(-impulse);
+		rbd_b.applyLinearImpulse(impulse);
+
+		rbd_a.applyAngularImpulse(glm::cross(relative_a, -impulse));
+		rbd_b.applyAngularImpulse(glm::cross(relative_b, impulse));
+	}
+
 };
 
 };	// end of namespace

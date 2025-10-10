@@ -4,12 +4,12 @@
 #include "util/Logger.h"
 
 #include <SDL3/SDL_gpu.h>
-#include <array>
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlgpu3.h>
 #include "ImGuizmo.h"
 
+#include <array>
 #include <utility>
 
 namespace APE::Render {

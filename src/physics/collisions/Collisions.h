@@ -1,5 +1,6 @@
 #pragma once
 
+#include "physics/RigidBody.h"
 #include "physics/collisions/Colliders.h"
 
 #include <functional>
@@ -7,20 +8,39 @@
 
 namespace APE::Physics::Collisions {
 
+struct ContactPoint {
+	glm::vec3 pos;
+	glm::vec3 normal;
+	float penetration;
+};
+
+struct CollisionInfo {
+	RigidBody* a;
+	RigidBody* b;
+
+	ContactPoint contact;
+};
+
 /*
 * Function Table for dispatching collision queries
 */
 constexpr size_t NUM_COLLIDERS = static_cast<size_t>(ColliderType::Size);
-using IntersectFn = std::function<bool(const Collider& a, const Collider& b)>;
+using IntersectFn = std::function<bool(
+	const Collider& a,
+	const Collider& b,
+	CollisionInfo& collision_info)>;
 using IntersectFnTable = std::array<std::array<IntersectFn, NUM_COLLIDERS>, NUM_COLLIDERS>;
 
-bool AABBvsAABB(const Collider& a, const Collider& b) noexcept;
+bool AABBvsAABB(const Collider& a, const Collider& b, CollisionInfo& collision_info) noexcept;
 
 static inline IntersectFnTable s_intersect_fn_table = {
 	{ &AABBvsAABB }
 };
 
-[[nodiscard]] bool intersects(const Collider& a, const Collider& b) noexcept;
+[[nodiscard]] bool intersects(
+	const Collider& a,
+	const Collider& b,
+	CollisionInfo& collision_info) noexcept;
 
 
 /*
