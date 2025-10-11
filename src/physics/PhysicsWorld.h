@@ -11,32 +11,30 @@
 
 namespace APE::Physics {
 
-class PhysicsWorld {
+struct PhysicsWorld {
+	static constexpr const char* Name = "PhysicsWorld";
+
 	ECS::Registry world;
 	std::unique_ptr<Integrator> integrator;
 
-public:
-	PhysicsWorld(
-		std::unique_ptr<Integrator> integrator = std::make_unique<EulerIntegrator>()) noexcept
+	explicit PhysicsWorld(std::unique_ptr<Integrator> integrator = 
+		std::make_unique<EulerIntegrator>()) noexcept
 		: integrator(std::move(integrator))
 	{
 		
 	}
 
-
-	using ColliderHandle = std::shared_ptr<Collisions::Collider>;
-
 	void stepSimulation(float dt) noexcept
 	{
 		// Collision Detection/Resolution
-		auto view = world.view<RigidBody, ColliderHandle>().each();
+		auto view = world.view<RigidBody, Collisions::AABB>().each();
 		for (size_t i = 0; i < view.size(); ++i) {
 			auto [ent_a, rbd_a, collider_a] = view[i];
-			auto& a = *collider_a.get();
+			auto& a = collider_a;
 			a.pos = rbd_a.pos;
 			for (size_t j = i+1; j < view.size(); ++j) {
 				auto [ent_b, rbd_b, collider_b] = view[j];
-				auto& b = *collider_b.get();
+				auto& b = collider_b;
 				b.pos = rbd_b.pos;
 
 				Collisions::CollisionInfo collision;
@@ -67,9 +65,9 @@ public:
 
 	void addCollider(
 		const ECS::EntityHandle& ent,
-		ColliderHandle collider) noexcept
+		const Collisions::AABB& collider) noexcept
 	{
-		world.emplaceComponent<ColliderHandle>(ent, collider);
+		world.emplaceComponent<Collisions::AABB>(ent, collider);
 	}
 
 	void addJoint() noexcept
@@ -132,13 +130,14 @@ private:
 		// Calculate impulse
 		float impulse_force = glm::dot(contact_vel, p.normal);
 
-		glm::vec3 inertia_a = glm::cross(rbd_a.inertiaTensorWorld() * 
+		glm::vec3 inertia_a = glm::cross(rbd_a.inverseInertiaTensorWorld() * 
 			glm::cross(relative_a, p.normal), relative_a);
 
-		glm::vec3 inertia_b = glm::cross(rbd_b.inertiaTensorWorld() * 
+		glm::vec3 inertia_b = glm::cross(rbd_b.inverseInertiaTensorWorld() * 
 			glm::cross(relative_b, p.normal), relative_b);
 
 		float angular_effect = glm::dot(inertia_a + inertia_b, p.normal);
+		// float angular_effect = 0.f;
 
 		float restitution = std::min(rbd_a.restitution, rbd_b.restitution);
 		float j = ( -(1.f + restitution) * impulse_force) / (total_inv_mass + angular_effect);

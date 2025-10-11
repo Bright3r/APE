@@ -7,26 +7,24 @@
 namespace APE::Physics {
 
 struct RigidBodyComponent {
-	PhysicsWorld* physics_world;
+	static constexpr const char* Name = "RigidBodyHandle";
+
 	ECS::EntityHandle physics_ent;
 
-	RigidBodyComponent(
-		PhysicsWorld* physics_world = nullptr,
-		ECS::EntityHandle ent = {}) noexcept
-		: physics_world(physics_world)
-		, physics_ent(ent)
+	explicit RigidBodyComponent(ECS::EntityHandle ent = {}) noexcept
+		: physics_ent(ent)
 	{
 
 	}
 
-	Collisions::Collider* collider() noexcept
+	Collisions::AABB& collider(PhysicsWorld& phys_world) noexcept
 	{
-		return physics_world->get<PhysicsWorld::ColliderHandle>(physics_ent).get();
+		return phys_world.get<Collisions::AABB>(physics_ent);
 	}
 
-	RigidBody& get() noexcept
+	RigidBody& get(PhysicsWorld& phys_world) noexcept
 	{
-		return physics_world->get<RigidBody>(physics_ent);
+		return phys_world.get<RigidBody>(physics_ent);
 	}
 };
 

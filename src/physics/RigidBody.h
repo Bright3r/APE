@@ -7,6 +7,8 @@
 namespace APE::Physics {
 
 struct RigidBody {
+	static constexpr const char* Name = "RigidBody";
+
 	glm::vec3 pos;
 	glm::quat orientation;
 	glm::vec3 vel_linear;
@@ -68,7 +70,7 @@ struct RigidBody {
 
 	void applyAngularImpulse(const glm::vec3& torque) noexcept
 	{
-		vel_angular += glm::inverse(inertiaTensorWorld()) * torque;
+		vel_angular += inverseInertiaTensorWorld() * torque;
 	}
 
 	[[nodiscard]] glm::mat3 inertiaTensorLocal() const noexcept
@@ -97,6 +99,11 @@ struct RigidBody {
 
 		glm::mat3 orientation_mat = glm::mat3_cast(orientation);
 		return orientation_mat * local_tensor * glm::transpose(orientation_mat);
+	}
+
+	[[nodiscard]] glm::mat3 inverseInertiaTensorWorld() const noexcept
+	{
+		return glm::inverse(inertiaTensorWorld());
 	}
 };
 

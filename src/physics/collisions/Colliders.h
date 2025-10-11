@@ -10,10 +10,12 @@ enum class ColliderType {
 };
 
 struct Collider {
+	static constexpr const char* Name = "Collider";
+
 	ColliderType type;
 	glm::vec3 pos;
 
-	Collider(ColliderType type = ColliderType::Size) noexcept
+	Collider(ColliderType type = ColliderType::AABB) noexcept
 		: type(type)
 		, pos({})
 	{
@@ -24,6 +26,8 @@ struct Collider {
 };
 
 struct AABB : public Collider {
+	static constexpr const char* Name = "AABB-Collider";
+
 	glm::vec3 min;
 	glm::vec3 max;
 

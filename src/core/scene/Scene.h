@@ -162,12 +162,11 @@ struct Scene {
 		auto& transform = registry.getComponent<TransformComponent>(ent);
 		auto rbd = phys_world.createRigidBody(Physics::RigidBody(transform.position));
 
-		auto collider = std::make_shared<Physics::Collisions::AABB>(min_bounds, max_bounds);
+		auto collider = Physics::Collisions::AABB(min_bounds, max_bounds);
 		phys_world.addCollider(rbd, collider);
 
 		return registry.emplaceComponent<Physics::RigidBodyComponent>(
 			ent,
-			&phys_world,
 			rbd
 		);
 	}

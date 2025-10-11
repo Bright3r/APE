@@ -187,6 +187,7 @@ static inline void drawManipulatorPanel(
 
 	// Tag
 	if (world.registry.hasComponent<HierarchyComponent>(ent)) {
+		ImGui::Text("Hierarchy");
 		auto& hierarchy = 
 			world.registry.getComponent<HierarchyComponent>(ent);
 
@@ -203,6 +204,7 @@ static inline void drawManipulatorPanel(
 
 	// Transform
 	if (world.registry.hasComponent<TransformComponent>(ent)) {
+		ImGui::Text("Transform");
 		auto& transform = 
 			world.registry.getComponent<TransformComponent>(ent);
 
@@ -244,6 +246,7 @@ static inline void drawManipulatorPanel(
 
 	// Material
 	if (world.registry.hasComponent<Render::MaterialComponent>(ent)) {
+		ImGui::Text("Material");
 		if (ImGui::Button("Change Texture")) {
 			std::filesystem::path tex_path;
 			auto status = Files::openDialog(tex_path);
@@ -260,7 +263,9 @@ static inline void drawManipulatorPanel(
 
 	// Physics
 	if (world.registry.hasComponent<Physics::RigidBodyComponent>(ent)) {
-		auto& rbd = world.registry.getComponent<Physics::RigidBodyComponent>(ent).get();
+		ImGui::Text("Physics");
+
+		auto& rbd = world.registry.getComponent<Physics::RigidBodyComponent>(ent).get(world.phys_world);
 
 		ImGui::InputFloat3("Position", glm::value_ptr(rbd.pos));
 		ImGui::InputFloat3("Linear Vel", glm::value_ptr(rbd.vel_linear));

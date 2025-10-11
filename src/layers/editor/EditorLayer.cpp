@@ -138,14 +138,15 @@ void EditorLayer::update() noexcept
 
 	// TESTING ONLY
 	// STEP PHYSICS MANUALLY
+	auto& world = Engine::world();
 	if (input.isKeyDown(SDLK_PERIOD)) {
-		Engine::world().phys_world.stepSimulation(1.f / 60);
+		world.phys_world.stepSimulation(1.f / 60);
 	}
 	// Update object transforms to sync with physics rigid body
-	auto view = Engine::world().registry.view<TransformComponent, Physics::RigidBodyComponent>();
+	auto view = world.registry.view<TransformComponent, Physics::RigidBodyComponent>();
 	for (auto [ent, transform, rbd] : view.each()) {
-		transform.position = rbd.get().pos;
-		transform.rotation = rbd.get().orientation;
+		transform.position = rbd.get(world.phys_world).pos;
+		transform.rotation = rbd.get(world.phys_world).orientation;
 	}
 }
 
@@ -153,37 +154,40 @@ void EditorLayer::draw() noexcept
 {
 	if (!b_show_hitboxes) return;
 
-	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
+	auto& world = Engine::world();
+	auto view = world.registry.view<Physics::RigidBodyComponent, TransformComponent>();
 	for (auto [ent, rbd, transform] : view.each()) {
-		auto type = rbd.collider()->type;
+		auto type = rbd.collider(world.phys_world).type;
 		if (type == Physics::Collisions::ColliderType::AABB) {
-			auto* collider = static_cast<Physics::Collisions::AABB*>(rbd.collider());
-			drawAABB(*collider, transform);
+			auto aabb = rbd.collider(world.phys_world);
+			drawAABB(aabb, transform);
 		}
 	}
 }
 
 void EditorLayer::drawGUI() noexcept
 {
+	auto& world = Engine::world();
+
 	drawDebugPanel(
-		Engine::world(),
+		world,
 		b_lock_selection,
 		b_show_hitboxes,
 		mouse_force
 	);
-	drawSceneHierarchyPanel(Engine::world(), selected_ent);
-	drawManipulatorPanel(Engine::world(), selected_ent, gizmo_op);
-	drawGizmo(Engine::world(), selected_ent, gizmo_op);
+	drawSceneHierarchyPanel(world, selected_ent);
+	drawManipulatorPanel(world, selected_ent, gizmo_op);
+	drawGizmo(world, selected_ent, gizmo_op);
 
 	// Update physics position with modified transform
-	if (Engine::world().registry.hasAllComponents
+	if (world.registry.hasAllComponents
 		<TransformComponent, Physics::RigidBodyComponent>(selected_ent)) 
 	{
-		auto [transform, rbd] = Engine::world().registry.getComponents
+		auto [transform, rbd] = world.registry.getComponents
 			<TransformComponent, Physics::RigidBodyComponent>(selected_ent);
 
-		rbd.get().pos = transform.position;
-		rbd.get().orientation = transform.rotation;
+		rbd.get(world.phys_world).pos = transform.position;
+		rbd.get(world.phys_world).orientation = transform.rotation;
 	}
 }
 
@@ -201,7 +205,8 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 
 	// Check for collision with scene models
 	float t_best = std::numeric_limits<float>::max();
-	auto view = Engine::world().registry.view<Physics::RigidBodyComponent, TransformComponent>();
+	auto& world = Engine::world();
+	auto view = world.registry.view<Physics::RigidBodyComponent, TransformComponent>();
 	for (auto [ent, rbd, transform] : view.each()) {
 		// Transform ray into rbd's model space
 		glm::mat4 inv_model_mat = glm::inverse(transform.getModelMatrix());
@@ -213,10 +218,10 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 		float t {};
 		bool b_collides = false;
 
-		switch (rbd.collider()->type) {
+		switch (rbd.collider(world.phys_world).type) {
 		case Physics::Collisions::ColliderType::AABB:
 		{
-			auto& collider = *static_cast<Physics::Collisions::AABB*>(rbd.collider());
+			auto& collider = rbd.collider(world.phys_world);
 			b_collides = ray_local.intersects(collider, t);
 			break;
 		}
@@ -233,7 +238,7 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 				// Apply force to selected object
 				glm::vec3 force = mouse_force * glm::normalize(ray.dir);
 				glm::vec3 force_pos = ray.eval(t);
-				rbd.get().addForce(force, force_pos);
+				rbd.get(world.phys_world).addForce(force, force_pos);
 			}
 		}
 	}
