@@ -33,9 +33,9 @@ void EditorLayer::setup() noexcept
 	// Engine::world().addRigidBody(car, car_model_handle);
 	
 	std::vector<AssetHandle<Render::Model>> models;
-	// models.push_back(ModelLoader::load(CUBE_PATH));
+	models.push_back(ModelLoader::load(CUBE_PATH));
 	// models.push_back(ModelLoader::load(SPHERE_PATH));
-	models.push_back(ModelLoader::load(CONE_PATH));
+	// models.push_back(ModelLoader::load(CONE_PATH));
 	// models.push_back(ModelLoader::load(CYLINDER_PATH));
 
 	// TransformComponent transform {};
@@ -62,9 +62,9 @@ void EditorLayer::setup() noexcept
 
 
 	cam = std::make_shared<Render::Camera>(
-		glm::vec3(-2.5f, 8.f, 8.f),
-		-45.f,
-		-90.f,
+		glm::vec3(26.5, 13.5, -2),
+		-22.f,
+		-180.f,
 		45.f,
 		0.3f
 	);

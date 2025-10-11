@@ -104,19 +104,19 @@
                         "component": {
                             "pos": {
                                 "x": 2.5,
-                                "y": 0.0,
+                                "y": 1.497591257095337,
                                 "z": 2.5
                             },
                             "orientation": {
                                 "x": 0.0,
                                 "y": 0.0,
                                 "z": 0.0,
-                                "w": 0.0
+                                "w": 1.0
                             },
                             "vel_linear": {
                                 "x": 0.0,
                                 "y": 0.0,
-                                "z": 0.0
+                                "z": -5.0
                             },
                             "vel_angular": {
                                 "x": 0.0,
@@ -842,7 +842,8 @@
                             }
                         }
                     }
-                ]
+                ],
+                "RigidBodyHandle": []
             }
         },
         "registry": {
@@ -988,7 +989,7 @@
                     "component": {
                         "position": {
                             "x": 2.5,
-                            "y": 0.0,
+                            "y": 1.497591257095337,
                             "z": 2.5
                         },
                         "scale": {
@@ -1000,7 +1001,7 @@
                             "x": 0.0,
                             "y": 0.0,
                             "z": 0.0,
-                            "w": 0.0
+                            "w": 1.0
                         }
                     }
                 },
@@ -1707,7 +1708,7 @@
                         "model_handle": {
                             "asset_key": {
                                 "path": {
-                                    "path": "res/models/cone.obj"
+                                    "path": "res/models/cube.obj"
                                 },
                                 "sub_index": ""
                             },
@@ -1724,7 +1725,7 @@
                         "model_handle": {
                             "asset_key": {
                                 "path": {
-                                    "path": "res/models/cone.obj"
+                                    "path": "res/models/cube.obj"
                                 },
                                 "sub_index": ""
                             },
@@ -1741,7 +1742,7 @@
                         "model_handle": {
                             "asset_key": {
                                 "path": {
-                                    "path": "res/models/cone.obj"
+                                    "path": "res/models/cube.obj"
                                 },
                                 "sub_index": ""
                             },
@@ -1758,7 +1759,7 @@
                         "model_handle": {
                             "asset_key": {
                                 "path": {
-                                    "path": "res/models/cone.obj"
+                                    "path": "res/models/cube.obj"
                                 },
                                 "sub_index": ""
                             },
@@ -1775,7 +1776,7 @@
                         "model_handle": {
                             "asset_key": {
                                 "path": {
-                                    "path": "res/models/cone.obj"
+                                    "path": "res/models/cube.obj"
                                 },
                                 "sub_index": ""
                             },
@@ -1792,7 +1793,7 @@
                         "model_handle": {
                             "asset_key": {
                                 "path": {
-                                    "path": "res/models/cone.obj"
+                                    "path": "res/models/cube.obj"
                                 },
                                 "sub_index": ""
                             },
@@ -1809,7 +1810,7 @@
                         "model_handle": {
                             "asset_key": {
                                 "path": {
-                                    "path": "res/models/cone.obj"
+                                    "path": "res/models/cube.obj"
                                 },
                                 "sub_index": ""
                             },
@@ -1826,7 +1827,7 @@
                         "model_handle": {
                             "asset_key": {
                                 "path": {
-                                    "path": "res/models/cone.obj"
+                                    "path": "res/models/cube.obj"
                                 },
                                 "sub_index": ""
                             },
@@ -1843,7 +1844,7 @@
                         "model_handle": {
                             "asset_key": {
                                 "path": {
-                                    "path": "res/models/cone.obj"
+                                    "path": "res/models/cube.obj"
                                 },
                                 "sub_index": ""
                             },
@@ -1860,7 +1861,7 @@
                         "model_handle": {
                             "asset_key": {
                                 "path": {
-                                    "path": "res/models/cone.obj"
+                                    "path": "res/models/cube.obj"
                                 },
                                 "sub_index": ""
                             },
@@ -2034,7 +2035,109 @@
             ],
             "Light": [],
             "RigidBody": [],
-            "AABB-Collider": []
+            "AABB-Collider": [],
+            "RigidBodyHandle": [
+                {
+                    "entity": {
+                        "id": 28
+                    },
+                    "component": {
+                        "physics_ent": {
+                            "id": 30
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 25
+                    },
+                    "component": {
+                        "physics_ent": {
+                            "id": 27
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 22
+                    },
+                    "component": {
+                        "physics_ent": {
+                            "id": 24
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 19
+                    },
+                    "component": {
+                        "physics_ent": {
+                            "id": 21
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 16
+                    },
+                    "component": {
+                        "physics_ent": {
+                            "id": 18
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 13
+                    },
+                    "component": {
+                        "physics_ent": {
+                            "id": 15
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 10
+                    },
+                    "component": {
+                        "physics_ent": {
+                            "id": 12
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 7
+                    },
+                    "component": {
+                        "physics_ent": {
+                            "id": 9
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 4
+                    },
+                    "component": {
+                        "physics_ent": {
+                            "id": 6
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 1
+                    },
+                    "component": {
+                        "physics_ent": {
+                            "id": 3
+                        }
+                    }
+                }
+            ]
         },
         "root": {
             "id": 0

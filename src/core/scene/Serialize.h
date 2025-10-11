@@ -250,15 +250,6 @@ void serialize(Archive& ar, APE::Physics::RigidBody& rb)
 	);
 }
 
-// template <class Archive>
-// void serialize(Archive& ar, APE::Physics::Collisions::Collider& collider)
-// {
-// 	ar(
-// 		cereal::make_nvp("type", collider.type),
-// 		cereal::make_nvp("pos", collider.pos)
-// 	);
-// }
-
 template <class Archive>
 void serialize(Archive& ar, APE::Physics::Collisions::AABB& aabb)
 {
@@ -335,7 +326,7 @@ void save(Archive& ar, const APE::ECS::Registry& r)
 
 	serializePool<Archive, APE::Physics::RigidBody>(ar, r);
 	serializePool<Archive, APE::Physics::Collisions::AABB>(ar, r);
-	// serializePool<Archive, APE::Physics::RigidBodyComponent>(ar, r);
+	serializePool<Archive, APE::Physics::RigidBodyComponent>(ar, r);
 }
 
 template <class Archive>
@@ -356,7 +347,7 @@ void load(Archive& ar, APE::ECS::Registry& r)
 
 	deserializePool<Archive, APE::Physics::RigidBody>(ar, r);
 	deserializePool<Archive, APE::Physics::Collisions::AABB>(ar, r);
-	// deserializePool<Archive, APE::Physics::RigidBodyComponent>(ar, r);
+	deserializePool<Archive, APE::Physics::RigidBodyComponent>(ar, r);
 }
 
 
