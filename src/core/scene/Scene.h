@@ -1,13 +1,9 @@
 #pragma once
 
 #include "core/components/Object.h"
-#include "core/components/Physics.h"
 #include "core/components/Render.h"
 #include "core/ecs/Registry.h"
 #include "core/render/Model.h"
-#include "physics/PhysicsWorld.h"
-#include "physics/RigidBody.h"
-#include "physics/collisions/Colliders.h"
 
 #include <format>
 
@@ -16,8 +12,6 @@ namespace APE {
 struct Scene {
 	ECS::Registry registry;
 	ECS::EntityHandle root;
-
-	Physics::PhysicsWorld phys_world;
 
 	Scene() noexcept
 	{
@@ -129,47 +123,6 @@ struct Scene {
 		return par;
 	}
 
-	Physics::RigidBodyComponent& addRigidBody(
-		ECS::EntityHandle ent,
-		AssetHandle<Render::Model> model_handle) noexcept
-	{
-		APE_CHECK(
-			(model_handle.data != nullptr),
-			"Scene::addRigidBody() Failed: model_handle data is null."
-		);
-
-		APE_CHECK(
-			(registry.hasComponent<TransformComponent>(ent)),
-			"Scene::addRigidBody() Failed: entity {} does not have Transform Component."
-		);
-
-		auto& model = *model_handle.data;
-		std::vector<Physics::Collisions::Triangle> tris;
-		for (auto& mesh : model.meshes) {
-			for (auto [v0, v1, v2] : mesh.triangles()) {
-				tris.emplace_back(v0, v1, v2);
-			}
-		}
-		APE_TRACE("Model {} has {} polygons.", model.model_path.c_str(), tris.size());
-
-		glm::vec3 min_bounds(std::numeric_limits<float>::max());
-		glm::vec3 max_bounds(-std::numeric_limits<float>::max());
-		for (auto& tri : tris) {
-			min_bounds = glm::min(min_bounds, tri.v0, tri.v1, tri.v2);
-			max_bounds = glm::max(max_bounds, tri.v0, tri.v1, tri.v2);
-		}
-
-		auto& transform = registry.getComponent<TransformComponent>(ent);
-		auto rbd = phys_world.createRigidBody(Physics::RigidBody(transform.position));
-
-		auto collider = Physics::Collisions::AABB(min_bounds, max_bounds);
-		phys_world.addCollider(rbd, collider);
-
-		return registry.emplaceComponent<Physics::RigidBodyComponent>(
-			ent,
-			rbd
-		);
-	}
 };
 
 };	// end of namespace

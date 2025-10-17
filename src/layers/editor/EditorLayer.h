@@ -1,11 +1,8 @@
 #pragma once
 
 #include "core/Application.h"
-#include "core/components/Object.h"
 #include "core/ecs/Registry.h"
 #include "core/render/Camera.h"
-#include "physics/collisions/BVH.h"
-#include "physics/collisions/Colliders.h"
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -34,15 +31,9 @@ public:
 	// Helper functions
 	void handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept;
 
-	void drawAABB(
-		const Physics::Collisions::AABB& aabb,
-		const TransformComponent& transform) noexcept;
-	void drawNode(
-		const Physics::Collisions::BVHNode& node,
-		const TransformComponent& transform) noexcept;
-	void drawBVH(
-		const Physics::Collisions::BVH& bvh,
-		const TransformComponent& transform) noexcept;
+	// void drawAABB(
+	// 	const Physics::Collisions::AABB& aabb,
+	// 	const TransformComponent& transform) noexcept;
 
 	glm::vec3 screenToWorld(glm::vec2 screen_coords) noexcept;
 };

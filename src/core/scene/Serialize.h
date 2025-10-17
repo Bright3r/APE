@@ -1,12 +1,9 @@
 #pragma once
 
 #include "core/components/Object.h"
-#include "core/components/Physics.h"
 #include "core/scene/AssetLoader.h"
 #include "core/ecs/Registry.h"
 #include "core/scene/Scene.h"
-#include "physics/Integrator.h"
-#include "physics/PhysicsWorld.h"
 #include "util/Logger.h"
 
 #include <cereal/cereal.hpp>
@@ -214,56 +211,6 @@ void serialize(Archive& ar, APE::Render::LightComponent& l)
 
 
 /*
-* Physics Components
-*/
-template <class Archive>
-void save(Archive& ar, const APE::Physics::RigidBodyComponent& rbd)
-{
-	ar(
-		cereal::make_nvp("physics_ent", rbd.physics_ent)
-	);
-}
-
-template <class Archive>
-void load(Archive& ar, APE::Physics::RigidBodyComponent& rbd)
-{
-	ar(
-		cereal::make_nvp("physics_ent", rbd.physics_ent)
-	);
-
-	rbd.physics_ent = s_old_to_new.at(s_phys_registry).at(rbd.physics_ent.id);
-}
-
-template <class Archive>
-void serialize(Archive& ar, APE::Physics::RigidBody& rb)
-{
-	ar(
-		cereal::make_nvp("pos", rb.pos),
-		cereal::make_nvp("orientation", rb.orientation),
-		cereal::make_nvp("vel_linear", rb.vel_linear),
-		cereal::make_nvp("vel_angular", rb.vel_angular),
-		cereal::make_nvp("inv_mass", rb.inv_mass),
-		cereal::make_nvp("restitution", rb.restitution),
-		cereal::make_nvp("moment", rb.moment),
-		cereal::make_nvp("forces", rb.forces),
-		cereal::make_nvp("torques", rb.torques)
-	);
-}
-
-template <class Archive>
-void serialize(Archive& ar, APE::Physics::Collisions::AABB& aabb)
-{
-	ar(
-		cereal::make_nvp("type", aabb.type),
-		cereal::make_nvp("pos", aabb.pos),
-		cereal::make_nvp("min", aabb.min),
-		cereal::make_nvp("max", aabb.max)
-	);
-}
-
-
-
-/*
 * ECS Component Pool
 */
 template <typename Component>
@@ -323,10 +270,6 @@ void save(Archive& ar, const APE::ECS::Registry& r)
 	serializePool<Archive, APE::Render::MeshComponent>(ar, r);
 	serializePool<Archive, APE::Render::MaterialComponent>(ar, r);
 	serializePool<Archive, APE::Render::LightComponent>(ar, r);
-
-	serializePool<Archive, APE::Physics::RigidBody>(ar, r);
-	serializePool<Archive, APE::Physics::Collisions::AABB>(ar, r);
-	serializePool<Archive, APE::Physics::RigidBodyComponent>(ar, r);
 }
 
 template <class Archive>
@@ -344,40 +287,7 @@ void load(Archive& ar, APE::ECS::Registry& r)
 	deserializePool<Archive, APE::Render::MeshComponent>(ar, r);
 	deserializePool<Archive, APE::Render::MaterialComponent>(ar, r);
 	deserializePool<Archive, APE::Render::LightComponent>(ar, r);
-
-	deserializePool<Archive, APE::Physics::RigidBody>(ar, r);
-	deserializePool<Archive, APE::Physics::Collisions::AABB>(ar, r);
-	deserializePool<Archive, APE::Physics::RigidBodyComponent>(ar, r);
 }
-
-
-
-/*
-* Physics World
-*/
-template <class Archive>
-void save(Archive& ar, const APE::Physics::PhysicsWorld& phys_world)
-{
-	// TODO - serialize integrator type
-	ar(
-		cereal::make_nvp("registry", phys_world.world)
-	);
-}
-
-template <class Archive>
-void load(Archive& ar, APE::Physics::PhysicsWorld& phys_world)
-{	
-	phys_world.integrator = std::make_unique<APE::Physics::EulerIntegrator>();
-
-	APE::ECS::EntityHandle tombstone = phys_world.world.tombstone();
-	s_old_to_new[&phys_world.world][tombstone.id] = tombstone;
-	s_phys_registry = &phys_world.world;
-
-	ar(
-		cereal::make_nvp("registry", phys_world.world)
-	);
-}
-
 
 
 /*
@@ -387,7 +297,6 @@ template <class Archive>
 void save(Archive& ar, const APE::Scene& scene)
 {
 	ar(
-		cereal::make_nvp("physics_world", scene.phys_world),
 		cereal::make_nvp("registry", scene.registry), 
 		cereal::make_nvp("root", scene.root)
 	);
@@ -403,7 +312,6 @@ void load(Archive& ar, APE::Scene& scene)
 	s_scene_registry = &scene.registry;
 
 	ar(
-		cereal::make_nvp("physics_world", scene.phys_world),
 		cereal::make_nvp("registry", scene.registry),
 		cereal::make_nvp("root", scene.root)
 	);

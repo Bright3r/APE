@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 set (CMAKE_CXX_STANDARD 20)
+set (VCPKG_CMAKE_GENERATOR "Ninja")
 set(CMAKE_TOOLCHAIN_FILE 
 	"$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" CACHE STRING ""
 )
@@ -17,6 +18,7 @@ find_package(imgui CONFIG REQUIRED)
 find_package(imguizmo CONFIG REQUIRED)
 find_package(cereal CONFIG REQUIRED)
 find_package(nfd CONFIG REQUIRED)
+find_package(Jolt CONFIG REQUIRED)
 find_package(GTest CONFIG REQUIRED)
 
 # Compile Engine into lib
@@ -32,7 +34,6 @@ add_library(
 	src/core/scene/ImageLoader.cpp
 	src/layers/game/GameLayer.cpp
 	src/layers/editor/EditorLayer.cpp
-	src/physics/collisions/Collisions.cpp
 )
 
 target_include_directories(
@@ -51,6 +52,7 @@ target_link_libraries(
 	imguizmo::imguizmo
 	cereal::cereal
 	nfd::nfd
+	Jolt::Jolt
 )
 
 
@@ -82,7 +84,6 @@ add_executable(
 	tests
 	tests/ecs/pool_test.cpp
 	tests/ecs/registry_test.cpp
-	tests/physics/integrator_test.cpp
 )
 
 target_link_libraries(

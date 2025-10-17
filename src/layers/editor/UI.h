@@ -104,10 +104,6 @@ static inline void drawDebugPanel(
 	}
 
 
-	ImGui::Text("Physics");
-	ImGui::InputFloat("Mouse Force", &mouse_force);
-
-
 	ImGui::Text("Lighting");
 	auto& light = renderer->light;
 	ImGui::SliderInt("type", reinterpret_cast<int*>(&light.type), 0, Render::LightType::Size);
@@ -258,26 +254,6 @@ static inline void drawManipulatorPanel(
 						tex_handle
 					);
 			}
-		}
-	}
-
-	// Physics
-	if (world.registry.hasComponent<Physics::RigidBodyComponent>(ent)) {
-		ImGui::Text("Physics");
-
-		auto& rbd = world.registry.getComponent<Physics::RigidBodyComponent>(ent).get(world.phys_world);
-
-		ImGui::InputFloat3("Position", glm::value_ptr(rbd.pos));
-		ImGui::InputFloat3("Linear Vel", glm::value_ptr(rbd.vel_linear));
-		ImGui::InputFloat3("Angular Vel", glm::value_ptr(rbd.vel_angular));
-		ImGui::InputFloat("Inverse Mass", &rbd.inv_mass);
-		ImGui::InputFloat("Restitution", &rbd.restitution);
-		ImGui::InputFloat3("Forces", glm::value_ptr(rbd.forces));
-		ImGui::InputFloat3("Torques", glm::value_ptr(rbd.torques));
-
-		if (ImGui::Button("Reset Forces")) {
-			rbd.forces = glm::vec3(0);
-			rbd.torques = glm::vec3(0);
 		}
 	}
 

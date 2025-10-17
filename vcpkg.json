@@ -37,6 +37,9 @@
 			"name": "nativefiledialog-extended"
 		},
 		{
+			"name": "joltphysics"
+		},
+		{
 			"name": "gtest"
 		}
 	]
