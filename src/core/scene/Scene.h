@@ -4,6 +4,7 @@
 #include "core/components/Render.h"
 #include "core/ecs/Registry.h"
 #include "core/render/Model.h"
+#include "phys/Physics.h"
 
 #include <format>
 
