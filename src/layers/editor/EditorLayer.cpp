@@ -1,4 +1,5 @@
 #include "layers/editor/EditorLayer.h"
+#include "core/components/Physics.h"
 #include "layers/editor/UI.h"
 #include "core/Engine.h"
 #include "core/components/Object.h"
@@ -7,6 +8,9 @@
 #include "core/render/Model.h"
 #include "core/scene/ModelLoader.h"
 
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/EActivation.h>
 #include <glm/glm.hpp>
 #include <imgui.h>
 
@@ -27,7 +31,6 @@ void EditorLayer::setup() noexcept
 
 	// auto car_model_handle = ModelLoader::load(CAR_PATH);
 	// auto car = Engine::world().addModel(car_model_handle);
-	// Engine::world().addRigidBody(car, car_model_handle);
 	
 	std::vector<AssetHandle<Render::Model>> models;
 	models.push_back(ModelLoader::load(CUBE_PATH));
@@ -35,11 +38,10 @@ void EditorLayer::setup() noexcept
 	// models.push_back(ModelLoader::load(CONE_PATH));
 	// models.push_back(ModelLoader::load(CYLINDER_PATH));
 
-	// TransformComponent transform {};
-	// auto model_handle = ModelLoader::load(CONE_PATH);
-	// auto obj = Engine::world().addModel(model_handle, transform);
-	// Engine::world().addRigidBody(obj, model_handle);
+	auto& phys_system = Engine::physics_system();
+	auto& body_if = phys_system.phys_system.GetBodyInterface();
 
+	// Add boxes
 	constexpr int NUM_SHAPES = 10;
 	int sqrt = std::sqrt(NUM_SHAPES);
 	if (!models.empty()) {
@@ -52,11 +54,56 @@ void EditorLayer::setup() noexcept
 			transform.position.x = (row - (sqrt / 2.f)) * 5;
 			transform.position.z = (col - (sqrt / 2.f)) * 5;
 
-			Engine::world().addModel(model_handle, transform);
+			// Add entity model
+			auto ent = Engine::world().addModel(model_handle, transform);
+
+			// Register entity with physics system
+			JPH::BodyCreationSettings box_settings(
+				new JPH::BoxShape(JPH::Vec3(0.5f, 0.5f, 0.5f)), 
+				JPH::RVec3(transform.position.x, transform.position.y, transform.position.z),
+				JPH::Quat(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w),
+				JPH::EMotionType::Dynamic,
+				Phys::Layers::MOVING
+			);
+			JPH::BodyID box_id = body_if.CreateAndAddBody(
+				box_settings,
+				JPH::EActivation::Activate
+			);
+
+			// Maintain handle to physics body in ECS
+			Engine::world().registry.emplaceComponent<Phys::PhysicsComponent>(ent, box_id);
 		}
 	}
 
+	// Add floor
+	auto box_handle = ModelLoader::load(CUBE_PATH);
 
+	TransformComponent box_transform {};
+	box_transform.position.y = -10.f;
+	box_transform.scale = glm::vec3(20.f, 1.f, 20.f);
+
+	auto ent = Engine::world().addModel(box_handle, box_transform);
+	
+	JPH::BodyCreationSettings floor_settings(
+		new JPH::BoxShape(JPH::Vec3(box_transform.scale.x / 2.f, box_transform.scale.y / 2.f, box_transform.scale.z / 2.f)), 
+		JPH::RVec3(box_transform.position.x, box_transform.position.y, box_transform.position.z),
+		JPH::Quat(box_transform.rotation.x, box_transform.rotation.y, box_transform.rotation.z, box_transform.rotation.w),
+		JPH::EMotionType::Static,
+		Phys::Layers::NON_MOVING
+	);
+	JPH::BodyID floor_id = body_if.CreateAndAddBody(
+		floor_settings,
+		JPH::EActivation::Activate
+	);
+
+	Engine::world().registry.emplaceComponent<Phys::PhysicsComponent>(ent, floor_id);
+
+
+	// Optimize collision checks
+	phys_system.optimizeBroadPhase();
+
+
+	// Create fly cam
 	cam = std::make_shared<Render::Camera>(
 		glm::vec3(26.5, 13.5, -2),
 		-22.f,
@@ -128,6 +175,29 @@ void EditorLayer::update() noexcept
 	// Mouse motion events
 	for (auto& m_event : Engine::input().mouseMotionEvents()) {
 		cam->rotate(m_event.xrel, m_event.yrel);
+	}
+
+
+	// TEMPORARY - UPDATE PHYSICS
+	auto& phys_system = Engine::physics_system();
+	phys_system.update(dt);
+
+	// Sync transforms with physics state
+	auto& body_if = phys_system.phys_system.GetBodyInterface();
+	auto view = Engine::world().registry.view<TransformComponent, Phys::PhysicsComponent>();
+	for (auto& [ent, transform, pbody] : view.each())
+	{
+		// auto pos = body_if.GetCenterOfMassPosition(pbody.body_id);
+		auto pos = body_if.GetPosition(pbody.body_id);
+		transform.position.x = pos.GetX();
+		transform.position.y = pos.GetY();
+		transform.position.z = pos.GetZ();
+
+		auto rot = body_if.GetRotation(pbody.body_id);
+		transform.rotation.x = rot.GetX();
+		transform.rotation.y = rot.GetY();
+		transform.rotation.z = rot.GetZ();
+		transform.rotation.w = rot.GetW();
 	}
 }
 

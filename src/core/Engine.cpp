@@ -163,6 +163,11 @@ Scene& Engine::world() noexcept
 	return s_world;
 }
 
+Phys::PhysicsSystem& Engine::physics_system() noexcept
+{
+	return s_phys_system;
+}
+
 Input::State& Engine::input() noexcept
 {
 	return s_input;

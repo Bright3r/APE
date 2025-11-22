@@ -1,7 +1,10 @@
 #pragma once
 
 #include "util/Logger.h"
+
 #include <Jolt/Core/Core.h>
+#include <Jolt/Core/IssueReporting.h>
+#include <Jolt/Core/Memory.h>
 #include <Jolt/Jolt.h>
 #include <Jolt/Math/Real.h>
 #include <Jolt/Physics/Body/Body.h>
@@ -20,8 +23,40 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
+
 #include <array>
+#include <cstdarg>
+#include <cstdio>
+#include <memory>
 #include <sys/types.h>
+
+namespace APE::Phys
+{
+
+static void TraceImpl(const char* in_fmt, ...)
+{
+	va_list list;
+	va_start(list, in_fmt);
+	char buf[1024];
+	vsnprintf(buf, sizeof(buf), in_fmt, list);
+	va_end(list);
+
+	APE_TRACE(buf);
+}
+
+#ifdef JPH_ENABLE_ASSERTS
+static bool AssertFailedImpl(
+	const char* in_expr,
+	const char* in_msg,
+	const char* in_file,
+	uint in_line)
+{
+	if (in_expr && in_msg && in_file) APE_WARN("{}: {}: ( {} ) {}", in_file, in_line, in_expr, in_msg);
+	else APE_WARN("JPH ASSERTION FAILURE: NO MESSAGE");
+
+	return true;
+}
+#endif
 
 namespace Layers 
 {
@@ -156,4 +191,77 @@ struct MyBodyActivationListener : public JPH::BodyActivationListener
 		APE_TRACE("A body went to sleep");
 	}
 };
+
+struct PhysicsSystem
+{
+	JPH::PhysicsSystem phys_system;
+	std::unique_ptr<JPH::TempAllocatorImpl> temp_allocator;
+	std::unique_ptr<JPH::JobSystemThreadPool> job_system;
+
+	// Physics system parameters
+	BroadPhaseLayerInterfaceImpl broad_phase_layer_interface;
+	ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
+	ObjectLayerPairFilterImpl object_vs_object_layer_filter;
+
+	PhysicsSystem(
+		const uint cMaxBodies = 65536,
+		const uint cNumBodyMutexes = 0,
+		const uint cMaxBodyPairs = 65536,
+		const uint cMaxContactConstraints = 10240) noexcept
+	{
+		// Memory Allocator
+		JPH::RegisterDefaultAllocator();
+
+		// Traces and Callbacks
+		JPH::Trace = TraceImpl;
+		JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = AssertFailedImpl;);
+
+		// Factory for creating class instances (required)
+		JPH::Factory::sInstance = new JPH::Factory();
+
+		// Register physics types with factory
+		JPH::RegisterTypes();
+
+		// Temp allocator (default 10 MB)
+		temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
+
+		// Job system
+		job_system = std::make_unique<JPH::JobSystemThreadPool>(
+			JPH::cMaxPhysicsJobs,
+			JPH::cMaxPhysicsBarriers,
+			std::thread::hardware_concurrency() - 1
+		);
+
+		// Init physics system
+		phys_system.Init(
+			cMaxBodies,
+			cNumBodyMutexes,
+			cMaxBodyPairs,
+			cMaxContactConstraints,
+			broad_phase_layer_interface,
+			object_vs_broadphase_layer_filter,
+			object_vs_object_layer_filter
+		);
+	}
+
+	~PhysicsSystem() noexcept
+	{
+		JPH::UnregisterTypes();
+
+		delete JPH::Factory::sInstance;
+		JPH::Factory::sInstance = nullptr;
+	}
+
+	void update(float delta) noexcept
+	{
+		phys_system.Update(delta, 1, temp_allocator.get(), job_system.get());
+	}
+
+	void optimizeBroadPhase() noexcept
+	{
+		phys_system.OptimizeBroadPhase();
+	}
+};
+
+};	// end of namespace APE::Phys
 

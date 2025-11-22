@@ -6,6 +6,7 @@
 #include "core/render/Camera.h"
 #include "core/render/Context.h"
 #include "core/render/Renderer.h"
+#include "phys/Physics.h"
 #include "util/Timing.h"
 
 #include <SDL3/SDL_gpu.h>
@@ -24,6 +25,7 @@ private:
 	static inline std::vector<std::unique_ptr<Application>> s_layers;
 	static inline Input::State s_input;
 	static inline Scene s_world;
+	static inline Phys::PhysicsSystem s_phys_system;
 
 	// Rendering
 	//
@@ -54,6 +56,8 @@ public:
 	static void run() noexcept;
 
 	[[nodiscard]] static Scene& world() noexcept;
+
+	[[nodiscard]] static Phys::PhysicsSystem& physics_system() noexcept;
 
 	[[nodiscard]] static Input::State& input() noexcept;
 

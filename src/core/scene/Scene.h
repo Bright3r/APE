@@ -77,7 +77,8 @@ struct Scene {
 		return model_mat;
 	}
 
-	ECS::EntityHandle addModel(AssetHandle<Render::Model> model_handle,
+	ECS::EntityHandle addModel(
+		AssetHandle<Render::Model> model_handle,
 		const TransformComponent& transform = {}) noexcept
 	{
 		APE_CHECK((model_handle.data != nullptr),
