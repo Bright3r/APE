@@ -2,6 +2,7 @@
 
 #include "core/Engine.h"
 #include "core/components/Object.h"
+#include "core/components/Physics.h"
 #include "core/components/Render.h"
 #include "core/ecs/Registry.h"
 #include "core/scene/ImageLoader.h"
@@ -12,6 +13,7 @@
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui_impl_sdl3.h>
 #include <ImGuizmo.h>
 #include <glm/gtc/quaternion.hpp>
@@ -254,6 +256,23 @@ static inline void drawManipulatorPanel(
 						tex_handle
 					);
 			}
+		}
+	}
+
+	// Physics
+	if (world.registry.hasComponent<Phys::PhysicsComponent>(ent))
+	{
+		auto& pbody = world.registry.getComponent<Phys::PhysicsComponent>(ent);
+
+		ImGui::Text("Physics");
+
+		static glm::vec3 vel {};
+		ImGui::SliderFloat3("Velocity Addition", glm::value_ptr(vel), -20.f, 20.f, "%.1f");
+
+		if (ImGui::Button("Add Velocity"))
+		{
+			auto& body_if = world.phys_system.phys_system.GetBodyInterface();
+			body_if.AddLinearVelocity(pbody.body_id, JPH::Vec3(vel.x, vel.y, vel.z));
 		}
 	}
 

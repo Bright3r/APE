@@ -38,7 +38,7 @@ void EditorLayer::setup() noexcept
 	// models.push_back(ModelLoader::load(CONE_PATH));
 	// models.push_back(ModelLoader::load(CYLINDER_PATH));
 
-	auto& phys_system = Engine::physics_system();
+	auto& phys_system = Engine::world().phys_system;
 	auto& body_if = phys_system.phys_system.GetBodyInterface();
 
 	// Add boxes
@@ -80,7 +80,7 @@ void EditorLayer::setup() noexcept
 
 	TransformComponent box_transform {};
 	box_transform.position.y = -10.f;
-	box_transform.scale = glm::vec3(20.f, 1.f, 20.f);
+	box_transform.scale = glm::vec3(20.f, 0.1f, 20.f);
 
 	auto ent = Engine::world().addModel(box_handle, box_transform);
 	
@@ -179,7 +179,7 @@ void EditorLayer::update() noexcept
 
 
 	// TEMPORARY - UPDATE PHYSICS
-	auto& phys_system = Engine::physics_system();
+	auto& phys_system = Engine::world().phys_system;
 	phys_system.update(dt);
 
 	// Sync transforms with physics state
@@ -192,6 +192,8 @@ void EditorLayer::update() noexcept
 		transform.position.x = pos.GetX();
 		transform.position.y = pos.GetY();
 		transform.position.z = pos.GetZ();
+
+		APE_TRACE("Y-Pos: {}", transform.position.y);
 
 		auto rot = body_if.GetRotation(pbody.body_id);
 		transform.rotation.x = rot.GetX();

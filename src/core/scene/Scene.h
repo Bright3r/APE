@@ -7,10 +7,12 @@
 #include "phys/Physics.h"
 
 #include <format>
+#include <utility>
 
 namespace APE {
 
 struct Scene {
+	Phys::PhysicsSystem phys_system;
 	ECS::Registry registry;
 	ECS::EntityHandle root;
 
@@ -22,6 +24,20 @@ struct Scene {
 			"Root Node"
 		);
 		setParent(root, { registry.tombstone() });
+	}
+
+	Scene(Scene&& other) noexcept
+	{
+		registry = std::move(other.registry);
+		root = std::move(other.root);
+	}
+
+	Scene& operator=(Scene&& other) noexcept
+	{	
+		registry = std::move(other.registry);
+		root = std::move(other.root);
+
+		return *this;
 	}
 
 	void setParent(ECS::EntityHandle child, ECS::EntityHandle parent) noexcept
@@ -124,7 +140,6 @@ struct Scene {
 		}
 		return par;
 	}
-
 };
 
 };	// end of namespace

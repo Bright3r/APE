@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <fstream>
 #include <unordered_map>
+#include <utility>
 
 
 namespace cereal {
@@ -345,7 +346,7 @@ struct Serialize {
 		APE_TRACE("New scene entity count: {}",
 			world.registry.numEntities()
 		);
-		return world;
+		return std::move(world);
 	}
 };
 

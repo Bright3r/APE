@@ -57,8 +57,6 @@ public:
 
 	[[nodiscard]] static Scene& world() noexcept;
 
-	[[nodiscard]] static Phys::PhysicsSystem& physics_system() noexcept;
-
 	[[nodiscard]] static Input::State& input() noexcept;
 
 	static void saveScene(
