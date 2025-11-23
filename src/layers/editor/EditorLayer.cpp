@@ -9,6 +9,7 @@
 #include "core/scene/ModelLoader.h"
 
 #include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/BodyLock.h>
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
@@ -19,6 +20,8 @@
 #include <Jolt/Physics/Collision/TransformedShape.h>
 #include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 #include <Jolt/Physics/EActivation.h>
+#include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Geometry/AABox.h>
 
 #include <glm/glm.hpp>
 #include <imgui.h>
@@ -212,7 +215,14 @@ void EditorLayer::update() noexcept
 
 void EditorLayer::draw() noexcept
 {
-
+	if (b_show_hitboxes)
+	{
+		auto view = Engine::world().registry.view<Phys::PhysicsComponent>();
+		for (auto& [ent, pbody] : view.each())
+		{
+			drawAABB(pbody.body_id);
+		}
+	}
 }
 
 void EditorLayer::drawGUI() noexcept
@@ -252,52 +262,55 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 	}
 }
 
-// void EditorLayer::drawAABB(
-// 	const Physics::Collisions::AABB& aabb,
-// 	const TransformComponent& transform) noexcept
-// {
-// 	auto extents = aabb.extents();
-// 	auto center = aabb.center();
-//
-// 	// Top Front Left
-// 	glm::vec3 tfl = center + glm::vec3(-extents.x, extents.y, -extents.z);
-// 	tfl = glm::vec3(transform.getModelMatrix() * glm::vec4(tfl, 1.f));
-// 	// Top Front Right
-// 	glm::vec3 tfr = center + glm::vec3(extents.x, extents.y, -extents.z);
-// 	tfr = glm::vec3(transform.getModelMatrix() * glm::vec4(tfr, 1.f));
-// 	// Top Back Left
-// 	glm::vec3 tbl = center + glm::vec3(-extents.x, extents.y, extents.z);
-// 	tbl = glm::vec3(transform.getModelMatrix() * glm::vec4(tbl, 1.f));
-// 	// Top Back Right
-// 	glm::vec3 tbr = center + glm::vec3(extents.x, extents.y, extents.z);
-// 	tbr = glm::vec3(transform.getModelMatrix() * glm::vec4(tbr, 1.f));
-// 	// Bottom Front Left
-// 	glm::vec3 bfl = center + glm::vec3(-extents.x, -extents.y, -extents.z);
-// 	bfl = glm::vec3(transform.getModelMatrix() * glm::vec4(bfl, 1.f));
-// 	// Bottom Front Right
-// 	glm::vec3 bfr = center + glm::vec3(extents.x, -extents.y, -extents.z);
-// 	bfr = glm::vec3(transform.getModelMatrix() * glm::vec4(bfr, 1.f));
-// 	// Bottom Back Left
-// 	glm::vec3 bbl = center + glm::vec3(-extents.x, -extents.y, extents.z);
-// 	bbl = glm::vec3(transform.getModelMatrix() * glm::vec4(bbl, 1.f));
-// 	// Bottom Back Right
-// 	glm::vec3 bbr = center + glm::vec3(extents.x, -extents.y, extents.z);
-// 	bbr = glm::vec3(transform.getModelMatrix() * glm::vec4(bbr, 1.f));
-//
-// 	std::array<Uint8, 4> green = { 0, 0, 255, 255 };
-// 	Engine::renderer()->drawLine(tfl, tfr, green, cam.get());
-// 	Engine::renderer()->drawLine(tfl, tbl, green, cam.get());
-// 	Engine::renderer()->drawLine(tfl, bfl, green, cam.get());
-// 	Engine::renderer()->drawLine(bbl, bfl, green, cam.get());
-// 	Engine::renderer()->drawLine(bbl, tbl, green, cam.get());
-// 	Engine::renderer()->drawLine(bbl, bbr, green, cam.get());
-// 	Engine::renderer()->drawLine(bfr, bbr, green, cam.get());
-// 	Engine::renderer()->drawLine(bfr, tfr, green, cam.get());
-// 	Engine::renderer()->drawLine(bfr, bfl, green, cam.get());
-// 	Engine::renderer()->drawLine(tbr, tfr, green, cam.get());
-// 	Engine::renderer()->drawLine(tbr, bbr, green, cam.get());
-// 	Engine::renderer()->drawLine(tbr, tbl, green, cam.get());
-// }
+void EditorLayer::drawAABB(JPH::BodyID body_id) noexcept
+{
+	auto& lock_if = Engine::world().phys_system.phys_system.GetBodyLockInterface();	
+	{
+		JPH::BodyLockRead lock(lock_if, body_id);
+		if (lock.Succeeded())
+		{
+			const JPH::Body& body = lock.GetBody();
+			auto aabb = body.GetWorldSpaceBounds();
+
+			auto pcenter = aabb.GetCenter();
+			auto pextents = aabb.GetExtent();
+
+			auto center = glm::vec3(pcenter.GetX(), pcenter.GetY(), pcenter.GetZ());
+			auto extents = glm::vec3(pextents.GetX(), pextents.GetY(), pextents.GetZ());
+
+			// Top Front Left
+			glm::vec3 tfl = center + glm::vec3(-extents.x, extents.y, -extents.z);
+			// Top Front Right
+			glm::vec3 tfr = center + glm::vec3(extents.x, extents.y, -extents.z);
+			// Top Back Left
+			glm::vec3 tbl = center + glm::vec3(-extents.x, extents.y, extents.z);
+			// Top Back Right
+			glm::vec3 tbr = center + glm::vec3(extents.x, extents.y, extents.z);
+			// Bottom Front Left
+			glm::vec3 bfl = center + glm::vec3(-extents.x, -extents.y, -extents.z);
+			// Bottom Front Right
+			glm::vec3 bfr = center + glm::vec3(extents.x, -extents.y, -extents.z);
+			// Bottom Back Left
+			glm::vec3 bbl = center + glm::vec3(-extents.x, -extents.y, extents.z);
+			// Bottom Back Right
+			glm::vec3 bbr = center + glm::vec3(extents.x, -extents.y, extents.z);
+
+			std::array<Uint8, 4> green = { 0, 255, 0, 255 };
+			Engine::renderer()->drawLine(tfl, tfr, green, cam.get());
+			Engine::renderer()->drawLine(tfl, tbl, green, cam.get());
+			Engine::renderer()->drawLine(tfl, bfl, green, cam.get());
+			Engine::renderer()->drawLine(bbl, bfl, green, cam.get());
+			Engine::renderer()->drawLine(bbl, tbl, green, cam.get());
+			Engine::renderer()->drawLine(bbl, bbr, green, cam.get());
+			Engine::renderer()->drawLine(bfr, bbr, green, cam.get());
+			Engine::renderer()->drawLine(bfr, tfr, green, cam.get());
+			Engine::renderer()->drawLine(bfr, bfl, green, cam.get());
+			Engine::renderer()->drawLine(tbr, tfr, green, cam.get());
+			Engine::renderer()->drawLine(tbr, bbr, green, cam.get());
+			Engine::renderer()->drawLine(tbr, tbl, green, cam.get());
+		}
+	}
+}
 
 glm::vec3 EditorLayer::screenToWorld(glm::vec2 screen_coords) noexcept
 {

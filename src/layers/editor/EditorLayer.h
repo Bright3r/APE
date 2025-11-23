@@ -4,6 +4,9 @@
 #include "core/ecs/Registry.h"
 #include "core/render/Camera.h"
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Body/BodyID.h>
+
 #include <imgui.h>
 #include <ImGuizmo.h>
 
@@ -33,9 +36,7 @@ public:
 	// Helper functions
 	void handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept;
 
-	// void drawAABB(
-	// 	const Physics::Collisions::AABB& aabb,
-	// 	const TransformComponent& transform) noexcept;
+	void drawAABB(JPH::BodyID body_id) noexcept;
 
 	glm::vec3 screenToWorld(glm::vec2 screen_coords) noexcept;
 };
