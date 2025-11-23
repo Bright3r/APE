@@ -9,6 +9,12 @@
 #include "core/scene/Scene.h"
 #include "util/Files.h"
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Math/Quat.h>
+#include <Jolt/Math/Vec3.h>
+#include <Jolt/Physics/Body/BodyID.h>
+#include <Jolt/Physics/EActivation.h>
+
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_render.h>
@@ -30,6 +36,7 @@ static inline void drawDebugPanel(
 	APE::Scene& world,
 	bool& b_lock_selection,
 	bool& b_show_hitboxes,
+	bool& b_play_simulation,
 	float& mouse_force) noexcept
 {
 	ImGui::Begin("Debug", nullptr, ImGuiWindowFlags_MenuBar);
@@ -95,6 +102,9 @@ static inline void drawDebugPanel(
 	}
 	if (ImGui::RadioButton("show hitboxes", b_show_hitboxes)) {
 		b_show_hitboxes = !b_show_hitboxes;
+	}
+	if (ImGui::RadioButton("play simulation", b_play_simulation)) {
+		b_play_simulation = !b_play_simulation;
 	}
 
 	auto renderer = Engine::renderer();
@@ -337,6 +347,28 @@ static inline void drawGizmo(
 		if (!b_degenerate)
 		{
 			transform = new_transform;
+		}
+
+
+		// Sync physics state
+		if (world.registry.hasComponent<Phys::PhysicsComponent>(ent))
+		{
+			auto& body_if = world.phys_system.phys_system.GetBodyInterface();
+
+			auto pbody = world.registry.getComponent<Phys::PhysicsComponent>(ent);
+			JPH::Vec3 ppos { 
+				transform.position.x,
+				transform.position.y,
+				transform.position.z 
+			};
+			JPH::Quat prot {
+				transform.rotation.x,
+				transform.rotation.y,
+				transform.rotation.z,
+				transform.rotation.w
+			};
+			body_if.SetPosition(pbody.body_id, ppos, JPH::EActivation::Activate);
+			body_if.SetRotation(pbody.body_id, prot, JPH::EActivation::Activate);
 		}
 	}
 }

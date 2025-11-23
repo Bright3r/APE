@@ -1,12 +1,17 @@
 #pragma once
 
 #include "core/components/Object.h"
+#include "core/components/Physics.h"
 #include "core/components/Render.h"
 #include "core/ecs/Registry.h"
 #include "core/render/Model.h"
 #include "phys/Physics.h"
 
+#include <Jolt/Physics/Body/BodyID.h>
+
 #include <format>
+#include <sys/types.h>
+#include <unordered_map>
 #include <utility>
 
 namespace APE {
@@ -15,6 +20,8 @@ struct Scene {
 	Phys::PhysicsSystem phys_system;
 	ECS::Registry registry;
 	ECS::EntityHandle root;
+
+	std::unordered_map<JPH::BodyID, ECS::EntityHandle> pbody_to_ent;
 
 	Scene() noexcept
 	{
@@ -139,6 +146,17 @@ struct Scene {
 			);
 		}
 		return par;
+	}
+
+	void registerPhysicsBody(ECS::EntityHandle ent, JPH::BodyID body_id) noexcept
+	{
+		registry.emplaceComponent<Phys::PhysicsComponent>(ent, body_id);
+		pbody_to_ent[body_id] = ent;
+	}
+
+	ECS::EntityHandle getPhysicsBodyEntity(JPH::BodyID body_id) const noexcept
+	{
+		return pbody_to_ent.at(body_id);
 	}
 };
 

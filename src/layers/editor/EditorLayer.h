@@ -21,6 +21,8 @@ class EditorLayer : public Application {
 	bool b_show_hitboxes = true;
 	float mouse_force = 0.f;
 
+	bool b_play_simulation = false;
+
 public:
 	void draw() noexcept override;
 	void setup() noexcept override;

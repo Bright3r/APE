@@ -10,8 +10,10 @@
 #include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/Body/BodyID.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 #include <Jolt/Physics/Collision/ContactListener.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
 #include <Jolt/Physics/Collision/Shape/SubShapeIDPair.h>
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
@@ -23,7 +25,11 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
+#include <Jolt/Physics/Collision/CastResult.h>
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 
+#include <glm/glm.hpp>
 #include <array>
 #include <cstdarg>
 #include <cstdio>
@@ -203,6 +209,8 @@ struct PhysicsSystem
 	ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
 	ObjectLayerPairFilterImpl object_vs_object_layer_filter;
 
+	static constexpr float MAX_RAY_DIST = 10000.f;
+
 	PhysicsSystem(
 		const uint cMaxBodies = 65536,
 		const uint cNumBodyMutexes = 0,
@@ -260,6 +268,27 @@ struct PhysicsSystem
 	void optimizeBroadPhase() noexcept
 	{
 		phys_system.OptimizeBroadPhase();
+	}
+
+	JPH::AllHitCollisionCollector<JPH::CastRayCollector> castRay(
+		glm::vec3 pos,
+		glm::vec3 dir) noexcept
+	{
+		// Create JPH Raycast Query
+		auto rpos = JPH::Vec3(pos.x, pos.y, pos.z);
+		auto rdir = JPH::Vec3(dir.x, dir.y, dir.z);
+		JPH::RRayCast ray { rpos, MAX_RAY_DIST * rdir };
+
+		JPH::RayCastSettings ray_settings;
+		ray_settings.SetBackFaceMode(JPH::EBackFaceMode::CollideWithBackFaces);
+
+		JPH::AllHitCollisionCollector<JPH::CastRayCollector> collector;
+
+		// Cast ray
+		phys_system.GetNarrowPhaseQuery().CastRay(ray, ray_settings, collector);
+		collector.Sort();
+
+		return collector;
 	}
 };
 

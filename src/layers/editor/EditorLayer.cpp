@@ -1,6 +1,6 @@
 #include "layers/editor/EditorLayer.h"
-#include "core/components/Physics.h"
 #include "layers/editor/UI.h"
+#include "core/components/Physics.h"
 #include "core/Engine.h"
 #include "core/components/Object.h"
 #include "core/scene/AssetHandle.h"
@@ -8,12 +8,20 @@
 #include "core/render/Model.h"
 #include "core/scene/ModelLoader.h"
 
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/BackFaceMode.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
+#include <Jolt/Physics/Collision/TransformedShape.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 #include <Jolt/Physics/EActivation.h>
+
 #include <glm/glm.hpp>
 #include <imgui.h>
-
 #include <cmath>
 #include <vector>
 
@@ -71,7 +79,7 @@ void EditorLayer::setup() noexcept
 			);
 
 			// Maintain handle to physics body in ECS
-			Engine::world().registry.emplaceComponent<Phys::PhysicsComponent>(ent, box_id);
+			Engine::world().registerPhysicsBody(ent, box_id);
 		}
 	}
 
@@ -96,7 +104,7 @@ void EditorLayer::setup() noexcept
 		JPH::EActivation::Activate
 	);
 
-	Engine::world().registry.emplaceComponent<Phys::PhysicsComponent>(ent, floor_id);
+	Engine::world().registerPhysicsBody(ent, floor_id);
 
 
 	// Optimize collision checks
@@ -179,6 +187,8 @@ void EditorLayer::update() noexcept
 
 
 	// TEMPORARY - UPDATE PHYSICS
+	if (!b_play_simulation) return;
+
 	auto& phys_system = Engine::world().phys_system;
 	phys_system.update(dt);
 
@@ -187,13 +197,10 @@ void EditorLayer::update() noexcept
 	auto view = Engine::world().registry.view<TransformComponent, Phys::PhysicsComponent>();
 	for (auto& [ent, transform, pbody] : view.each())
 	{
-		// auto pos = body_if.GetCenterOfMassPosition(pbody.body_id);
 		auto pos = body_if.GetPosition(pbody.body_id);
 		transform.position.x = pos.GetX();
 		transform.position.y = pos.GetY();
 		transform.position.z = pos.GetZ();
-
-		APE_TRACE("Y-Pos: {}", transform.position.y);
 
 		auto rot = body_if.GetRotation(pbody.body_id);
 		transform.rotation.x = rot.GetX();
@@ -216,6 +223,7 @@ void EditorLayer::drawGUI() noexcept
 		world,
 		b_lock_selection,
 		b_show_hitboxes,
+		b_play_simulation,
 		mouse_force
 	);
 	drawSceneHierarchyPanel(world, selected_ent);
@@ -225,7 +233,23 @@ void EditorLayer::drawGUI() noexcept
 
 void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 {
+	if (!m_button.down) return;
 
+	// Calculate raycast
+	auto screen_coords = glm::vec2(m_button.x, m_button.y);
+	auto pos = cam->getPosition();
+	auto dir = glm::normalize(screenToWorld(screen_coords) - pos);
+	
+	auto& phys_system = Engine::world().phys_system;
+	auto collector = phys_system.castRay(pos, dir);
+	if (collector.HadHit())
+	{
+		APE_TRACE("RAY HIT");
+		auto& hit = collector.mHits[0];
+		
+		auto body_id = hit.mBodyID;
+		if (!b_lock_selection) selected_ent = Engine::world().getPhysicsBodyEntity(body_id);
+	}
 }
 
 // void EditorLayer::drawAABB(
@@ -285,8 +309,10 @@ glm::vec3 EditorLayer::screenToWorld(glm::vec2 screen_coords) noexcept
 	};
 
 	// Ndc to view space
-	glm::mat4 inv_proj = 
-		glm::inverse(cam->getProjectionMatrix(Engine::context()->getAspectRatio()));
+	glm::mat4 inv_proj = glm::inverse(
+		cam->getProjectionMatrix(Engine::context()->getAspectRatio())
+	);
+
 	glm::vec4 clip(ndc, 1.f);
 	glm::vec4 eye = inv_proj * clip;
 	glm::vec4 view(eye / eye.w);
