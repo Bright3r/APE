@@ -3,6 +3,9 @@
 #include "core/Application.h"
 #include "core/ecs/Registry.h"
 #include "core/render/Camera.h"
+#include "phys/Physics.h"
+#include "phys/PlayerController.h"
+#include "layers/game/Player.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/BodyID.h>
@@ -26,12 +29,13 @@ class EditorLayer : public Application {
 
 	bool b_play_simulation = false;
 
+	std::unique_ptr<Player> player;
+
 public:
 	void draw() noexcept override;
 	void setup() noexcept override;
 	void update() noexcept override;
 	void drawGUI() noexcept override;
-
 
 	// Helper functions
 	void handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept;

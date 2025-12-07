@@ -64,9 +64,113 @@
                 },
                 {
                     "id": 20
+                },
+                {
+                    "id": 21
+                },
+                {
+                    "id": 22
+                },
+                {
+                    "id": 23
+                },
+                {
+                    "id": 24
                 }
             ],
             "Transform": [
+                {
+                    "entity": {
+                        "id": 24
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 23
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 2.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 22
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 21
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": -10.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 20.0,
+                            "y": 0.10000000149011612,
+                            "z": 20.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
                 {
                     "entity": {
                         "id": 20
@@ -531,6 +635,62 @@
             "Hierarchy": [
                 {
                     "entity": {
+                        "id": 24
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 23
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 23
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 24
+                            }
+                        ],
+                        "tag": "Model 23"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 22
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 21
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 21
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 22
+                            }
+                        ],
+                        "tag": "Model 21"
+                    }
+                },
+                {
+                    "entity": {
                         "id": 20
                     },
                     "component": {
@@ -847,6 +1007,12 @@
                             },
                             {
                                 "id": 19
+                            },
+                            {
+                                "id": 21
+                            },
+                            {
+                                "id": 23
                             }
                         ],
                         "tag": "Root Node"
@@ -854,6 +1020,40 @@
                 }
             ],
             "Mesh": [
+                {
+                    "entity": {
+                        "id": 24
+                    },
+                    "component": {
+                        "model_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/cube.obj"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 1
+                        },
+                        "mesh_index": 0
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 22
+                    },
+                    "component": {
+                        "model_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/cube.obj"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 1
+                        },
+                        "mesh_index": 0
+                    }
+                },
                 {
                     "entity": {
                         "id": 20
@@ -1026,6 +1226,38 @@
                 }
             ],
             "Material": [
+                {
+                    "entity": {
+                        "id": 24
+                    },
+                    "component": {
+                        "texture_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/textures/checkerboard.png"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 2
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 22
+                    },
+                    "component": {
+                        "texture_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/textures/checkerboard.png"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 2
+                        }
+                    }
+                },
                 {
                     "entity": {
                         "id": 20

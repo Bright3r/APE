@@ -7,6 +7,7 @@
 #include "core/render/Camera.h"
 #include "core/render/Model.h"
 #include "core/scene/ModelLoader.h"
+#include "phys/PlayerController.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/BodyLock.h>
@@ -26,6 +27,7 @@
 #include <glm/glm.hpp>
 #include <imgui.h>
 #include <cmath>
+#include <memory>
 #include <vector>
 
 namespace APE::Editor {
@@ -110,6 +112,24 @@ void EditorLayer::setup() noexcept
 	Engine::world().registerPhysicsBody(ent, floor_id);
 
 
+	// Add Player
+	TransformComponent player_transform {};
+	player_transform.position.y = 0.f;
+	player_transform.scale = glm::vec3(1.f, 2.f, 1.f);
+
+	auto player_ent = Engine::world().addModel(box_handle, player_transform);
+	
+	JPH::CharacterVirtualSettings settings;
+	settings.mShape = new JPH::BoxShape(JPH::Vec3(player_transform.scale.x / 2.f, player_transform.scale.y / 2.f, player_transform.scale.z / 2.f));
+	settings.mInnerBodyLayer = Phys::Layers::MOVING;
+
+	player = std::make_unique<Player>(
+		std::make_unique<Phys::PlayerController>(settings, player_transform, phys_system),
+		player_ent
+	);
+
+
+
 	// Optimize collision checks
 	phys_system.optimizeBroadPhase();
 
@@ -140,14 +160,14 @@ void EditorLayer::update() noexcept
 		Engine::setQuit(true);
 	}
 
-	// Save
-	if (input.isKeyDown(SDLK_P) && input.isFirstFramePressed(SDLK_P)) {
-		Engine::saveScene("demos/test.json", Engine::world());
-	}
-	// Load
-	if (input.isKeyDown(SDLK_L) && input.isFirstFramePressed(SDLK_L)) {
-		Engine::loadScene("demos/test.json", Engine::world());
-	}
+	// // Save
+	// if (input.isKeyDown(SDLK_P) && input.isFirstFramePressed(SDLK_P)) {
+	// 	Engine::saveScene("demos/test.json", Engine::world());
+	// }
+	// // Load
+	// if (input.isKeyDown(SDLK_L) && input.isFirstFramePressed(SDLK_L)) {
+	// 	Engine::loadScene("demos/test.json", Engine::world());
+	// }
 
 	// Camera Movement
 	float speed = 10.f;
@@ -177,6 +197,10 @@ void EditorLayer::update() noexcept
 		Engine::setTabIn(is_locked);
 	}
 
+	if (input.isKeyDown(SDLK_P) && input.isFirstFramePressed(SDLK_P))
+	{
+		b_play_simulation = !b_play_simulation;
+	}
 
 	// Mouse button events
 	for (auto& m_event : Engine::input().mouseButtonEvents()) {
@@ -192,8 +216,36 @@ void EditorLayer::update() noexcept
 	// TEMPORARY - UPDATE PHYSICS
 	if (!b_play_simulation) return;
 
+	glm::vec3 player_dir(0.f);
+	if (input.isKeyDown(SDLK_J)) {
+		player_dir.z += 1;
+	}
+	if (input.isKeyDown(SDLK_L)) {
+		player_dir.z -= 1;
+	}
+	if (input.isKeyDown(SDLK_I)) {
+		player_dir.x -= 1;
+	}
+	if (input.isKeyDown(SDLK_K)) {
+		player_dir.x += 1;
+	}
+
+	if (input.isKeyDown(SDLK_M)) {
+		if (player->controller->player_body->IsSupported())
+		{
+			player->controller->jump(5.f);
+		}
+	}
+
+	auto player_speed = 5.f;
+	glm::vec3 vel(0.f);
+	if (glm::length(player_dir) != 0.f) vel = glm::normalize(player_dir) * player_speed;
+	player->controller->setHorizontalVelocity(vel);
+
+
 	auto& phys_system = Engine::world().phys_system;
 	phys_system.update(dt);
+
 
 	// Sync transforms with physics state
 	auto& body_if = phys_system.phys_system.GetBodyInterface();
@@ -211,6 +263,21 @@ void EditorLayer::update() noexcept
 		transform.rotation.z = rot.GetZ();
 		transform.rotation.w = rot.GetW();
 	}
+
+	player->controller->update(dt, phys_system);
+
+	auto player_pos = player->controller->player_body->GetPosition();
+	auto player_rot = player->controller->player_body->GetRotation();
+
+	auto& player_transform = Engine::world().registry.getComponent<TransformComponent>(player->ent);
+	player_transform.position.x = player_pos.GetX();
+	player_transform.position.y = player_pos.GetY();
+	player_transform.position.z = player_pos.GetZ();
+
+	player_transform.rotation.x = player_rot.GetX();
+	player_transform.rotation.y = player_rot.GetY();
+	player_transform.rotation.z = player_rot.GetZ();
+	player_transform.rotation.w = player_rot.GetW();
 }
 
 void EditorLayer::draw() noexcept

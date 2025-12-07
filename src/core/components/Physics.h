@@ -8,7 +8,8 @@
 namespace APE::Phys
 {
 
-struct PhysicsComponent {
+struct PhysicsComponent 
+{
 	static constexpr const char* Name = "PhysicsObject";
 
 	JPH::BodyID body_id;
