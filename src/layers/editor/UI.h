@@ -16,6 +16,7 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyID.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/Shape.h>
 #include <Jolt/Physics/EActivation.h>
 
 #include <SDL3/SDL_mouse.h>
@@ -189,6 +190,62 @@ static inline void drawSceneHierarchyPanel(
 	ImGui::End();
 }
 
+
+JPH::Shape* createColliderShape() noexcept
+{
+	enum ColliderShapes
+	{
+		Box = 0,
+		Sphere,
+		END
+	};
+	std::vector<std::string> collider_shapes {
+		"Box",
+		"Sphere"
+	};
+
+	static int curr_shape = Box;
+	if (ImGui::BeginCombo("Collider Shape", collider_shapes.data()[curr_shape].c_str()))
+	{
+		for (auto s = 0; s < ColliderShapes::END; ++s)
+		{
+			bool is_selected = (curr_shape == s);
+			if (ImGui::Selectable(collider_shapes.data()[s].c_str(), is_selected))
+			{
+				curr_shape = s;
+			}
+
+			if (is_selected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	JPH::Shape* shape {};
+	switch (curr_shape)
+	{
+	case Box:
+	{
+		static glm::vec3 bounds(1.f);
+		ImGui::InputFloat3("Half Extents", glm::value_ptr(bounds), "%.2f");
+		shape = new JPH::BoxShape(JPH::Vec3(bounds.x, bounds.y, bounds.z));
+		break;
+	}
+	case Sphere:
+	{
+		static float radius = 1.f;
+		ImGui::InputFloat("Radius", &radius);
+		shape = new JPH::SphereShape(radius);
+		break;
+	}
+	}
+
+	return shape;
+}
+
+
 static inline void drawManipulatorPanel(
 	Scene& world,
 	const ECS::EntityHandle& ent,
@@ -301,14 +358,13 @@ static inline void drawManipulatorPanel(
 	}
 	else
 	{
+		ImGui::Text("Create Body");
+
 		TransformComponent transform {};
 		if (Engine::world().registry.hasComponent<TransformComponent>(ent))
 		{
 			transform = Engine::world().registry.getComponent<TransformComponent>(ent);
 		}
-
-		static glm::vec3 bounds = transform.scale / 2.f;
-		ImGui::InputFloat3("Bounds", glm::value_ptr(bounds), "%.2f");
 
 		static glm::vec3 pos = transform.position;
 		ImGui::InputFloat3("Position", glm::value_ptr(pos), "%.2f");
@@ -316,10 +372,11 @@ static inline void drawManipulatorPanel(
 		static glm::quat rot = transform.rotation;
 		ImGui::InputFloat4("Orientation", glm::value_ptr(rot), "%.2f");
 
+		JPH::Shape* shape = createColliderShape();
 		if (ImGui::Button("Create Body"))
 		{
 			JPH::BodyCreationSettings settings(
-				new JPH::BoxShape(JPH::Vec3(bounds.x, bounds.y, bounds.z)),
+				shape,
 				JPH::RVec3(pos.x, pos.y, pos.z),
 				JPH::Quat(rot.x, rot.y, rot.z, rot.w),
 				JPH::EMotionType::Dynamic,
@@ -333,6 +390,7 @@ static inline void drawManipulatorPanel(
 
 	ImGui::End();
 }
+
 
 static inline void drawGizmo(
 	Scene& world,

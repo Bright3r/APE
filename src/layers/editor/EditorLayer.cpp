@@ -144,7 +144,6 @@ void EditorLayer::setup() noexcept
 	world.registry.emplaceComponent<TransformComponent>(camera_ent, glm::vec3(-0.4f, 0.4f, 0.f));
 
 
-
 	// Optimize collision checks
 	phys_system.optimizeBroadPhase();
 
@@ -161,6 +160,8 @@ void EditorLayer::setup() noexcept
 	Engine::setTabIn(true);
 
 	Engine::setFramerate(60);
+
+	selected_ent = world.root;
 }
 
 void EditorLayer::update() noexcept
