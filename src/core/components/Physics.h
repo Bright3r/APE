@@ -1,9 +1,11 @@
 #pragma once
 
 #include "core/ecs/Registry.h"
+#include "phys/PlayerController.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/BodyID.h>
+#include <utility>
 
 namespace APE::Phys
 {
@@ -16,6 +18,19 @@ struct PhysicsComponent
 
 	PhysicsComponent(JPH::BodyID body_id = {}) noexcept
 		: body_id(body_id)
+	{
+
+	}
+};
+
+struct PlayerComponent
+{
+	static constexpr const char* Name = "PlayerComponent";
+
+	std::unique_ptr<Phys::PlayerController> controller;
+
+	PlayerComponent(std::unique_ptr<Phys::PlayerController> controller) noexcept
+		: controller(std::move(controller))
 	{
 
 	}

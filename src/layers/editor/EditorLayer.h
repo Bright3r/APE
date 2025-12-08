@@ -3,9 +3,6 @@
 #include "core/Application.h"
 #include "core/ecs/Registry.h"
 #include "core/render/Camera.h"
-#include "phys/Physics.h"
-#include "phys/PlayerController.h"
-#include "layers/game/Player.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/BodyID.h>
@@ -20,7 +17,8 @@ namespace APE::Editor {
 void run() noexcept;
 
 class EditorLayer : public Application {
-	std::shared_ptr<Render::Camera> cam;
+	std::shared_ptr<Render::Camera> fly_cam;
+	std::shared_ptr<Render::Camera> curr_cam;
 	ECS::EntityHandle selected_ent;
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;
 	bool b_lock_selection = false;
@@ -28,8 +26,6 @@ class EditorLayer : public Application {
 	float mouse_force = 0.f;
 
 	bool b_play_simulation = false;
-
-	std::unique_ptr<Player> player;
 
 public:
 	void draw() noexcept override;

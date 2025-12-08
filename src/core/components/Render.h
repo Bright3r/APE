@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/render/Camera.h"
 #include "core/scene/AssetHandle.h"
 #include "core/render/Model.h"
 #include "core/render/Image.h"
@@ -7,16 +8,19 @@
 
 #include <glm/glm.hpp>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-struct MeshComponent {
+struct MeshComponent 
+{
 	static constexpr const char* Name = "Mesh";
 	AssetHandle<Model> model_handle;
 	size_t mesh_index;
 
 	MeshComponent(
 		AssetHandle<Model> model_handle = {}, 
-		size_t mesh_index = 0) noexcept
+		size_t mesh_index = 0
+	) noexcept
 		: model_handle(model_handle)
 		, mesh_index(mesh_index)
 	{
@@ -24,7 +28,8 @@ struct MeshComponent {
 	}
 };
 
-struct MaterialComponent {
+struct MaterialComponent 
+{
 	static constexpr const char* Name = "Material";
 	AssetHandle<Image> texture_handle;
 
@@ -36,7 +41,22 @@ struct MaterialComponent {
 	}
 };
 
-enum LightType {
+struct CameraComponent
+{
+	static constexpr const char* Name = "Camera";
+	std::shared_ptr<Camera> camera;
+	glm::vec3 offset;
+
+	CameraComponent(std::shared_ptr<Camera> camera, glm::vec3 offset = glm::vec3(0.f)) noexcept
+		: camera(camera)
+		, offset(offset)
+	{
+
+	}
+};
+
+enum LightType 
+{
 	Point = 0,
 	Direction,
 	Spot,
@@ -44,12 +64,14 @@ enum LightType {
 	Size
 };
 
-enum class AreaLightShape {
+enum class AreaLightShape 
+{
 	Rectangle,
 	Disk
 };
 
-struct LightComponent {
+struct LightComponent 
+{
 	static constexpr const char* Name = "Light";
 	LightType type;
 	float intensity;

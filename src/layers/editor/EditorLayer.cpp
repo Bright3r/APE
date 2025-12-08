@@ -1,4 +1,5 @@
 #include "layers/editor/EditorLayer.h"
+#include "core/components/Render.h"
 #include "layers/editor/UI.h"
 #include "core/components/Physics.h"
 #include "core/Engine.h"
@@ -28,6 +29,7 @@
 #include <imgui.h>
 #include <cmath>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace APE::Editor {
@@ -113,20 +115,29 @@ void EditorLayer::setup() noexcept
 
 
 	// Add Player
+	// 
+	// Transform
 	TransformComponent player_transform {};
 	player_transform.position.y = 0.f;
 	player_transform.scale = glm::vec3(1.f, 2.f, 1.f);
 
+	// Model
 	auto player_ent = Engine::world().addModel(box_handle, player_transform);
 	
+	// Controller
 	JPH::CharacterVirtualSettings settings;
 	settings.mShape = new JPH::BoxShape(JPH::Vec3(player_transform.scale.x / 2.f, player_transform.scale.y / 2.f, player_transform.scale.z / 2.f));
 	settings.mInnerBodyLayer = Phys::Layers::MOVING;
 
-	player = std::make_unique<Player>(
-		std::make_unique<Phys::PlayerController>(settings, player_transform, phys_system),
-		player_ent
-	);
+	Phys::PlayerComponent player_comp { 
+		std::make_unique<Phys::PlayerController>(settings, player_transform, phys_system)
+	};
+	Engine::world().registry.emplaceComponent<Phys::PlayerComponent>(player_ent, std::move(player_comp));
+
+	// FPS Camera
+	auto fps_cam = std::make_shared<Render::Camera>(player_transform.position);
+	Render::CameraComponent camera_comp(fps_cam);
+	Engine::world().registry.emplaceComponent<Render::CameraComponent>(player_ent, camera_comp);
 
 
 
@@ -135,14 +146,14 @@ void EditorLayer::setup() noexcept
 
 
 	// Create fly cam
-	cam = std::make_shared<Render::Camera>(
+	fly_cam = std::make_shared<Render::Camera>(
 		glm::vec3(26.5, 13.5, -2),
 		-22.f,
 		-180.f,
 		45.f,
 		0.3f
 	);
-	Engine::setCamera(cam);
+	Engine::setCamera(fly_cam);
 	Engine::setTabIn(true);
 
 	Engine::setFramerate(60);
@@ -173,27 +184,27 @@ void EditorLayer::update() noexcept
 	float speed = 10.f;
 	float dt = Engine::getLastFrameTimeSec().count();
 	if (input.isKeyDown(SDLK_SPACE)) {
-		cam->moveUp(speed, dt);
+		curr_cam->moveUp(speed, dt);
 	}
 	if (input.isKeyDown(SDLK_LCTRL)) {
-		cam->moveDown(speed, dt);
+		curr_cam->moveDown(speed, dt);
 	}
 	if (input.isKeyDown(SDLK_A)) {
-		cam->moveLeft(speed, dt);
+		curr_cam->moveLeft(speed, dt);
 	}
 	if (input.isKeyDown(SDLK_D)) {
-		cam->moveRight(speed, dt);
+		curr_cam->moveRight(speed, dt);
 	}
 	if (input.isKeyDown(SDLK_W)) {
-		cam->moveForward(speed, dt);
+		curr_cam->moveForward(speed, dt);
 	}
 	if (input.isKeyDown(SDLK_S)) {
-		cam->moveBackward(speed, dt);
+		curr_cam->moveBackward(speed, dt);
 	}
 	// Camera Tab In
 	if (input.isKeyDown(SDLK_C) && input.isFirstFramePressed(SDLK_C)) {
-		bool is_locked = cam->isLocked();
-		cam->setLocked(!is_locked);
+		bool is_locked = curr_cam->isLocked();
+		curr_cam->setLocked(!is_locked);
 		Engine::setTabIn(is_locked);
 	}
 
@@ -209,8 +220,27 @@ void EditorLayer::update() noexcept
 
 	// Mouse motion events
 	for (auto& m_event : Engine::input().mouseMotionEvents()) {
-		cam->rotate(m_event.xrel, m_event.yrel);
+		curr_cam->rotate(m_event.xrel, m_event.yrel);
 	}
+
+
+	// Switch Camera
+	auto pview = Engine::world().registry.view<Phys::PlayerComponent>().each();
+	auto& [player_ent, player] = pview.at(0);
+	auto& player_cam = Engine::world().registry.getComponent<Render::CameraComponent>(player_ent);
+	if (input.isKeyDown(SDLK_T) && input.isFirstFramePressed(SDLK_T)) {
+		std::shared_ptr<Render::Camera> cam = fly_cam;
+		if (curr_cam == fly_cam)
+		{
+			cam = player_cam.camera;
+		}
+		curr_cam = cam;
+		Engine::setCamera(cam);
+	}
+
+	// Sync Player Camera Position
+	auto& player_transform = Engine::world().registry.getComponent<TransformComponent>(player_ent);
+	player_cam.camera->setPosition(player_transform.position + player_cam.offset);
 
 
 	// TEMPORARY - UPDATE PHYSICS
@@ -231,16 +261,16 @@ void EditorLayer::update() noexcept
 	}
 
 	if (input.isKeyDown(SDLK_M)) {
-		if (player->controller->player_body->IsSupported())
+		if (player.controller->body->IsSupported())
 		{
-			player->controller->jump(5.f);
+			player.controller->jump(5.f);
 		}
 	}
 
 	auto player_speed = 5.f;
 	glm::vec3 vel(0.f);
 	if (glm::length(player_dir) != 0.f) vel = glm::normalize(player_dir) * player_speed;
-	player->controller->setHorizontalVelocity(vel);
+	player.controller->setHorizontalVelocity(vel);
 
 
 	auto& phys_system = Engine::world().phys_system;
@@ -264,12 +294,12 @@ void EditorLayer::update() noexcept
 		transform.rotation.w = rot.GetW();
 	}
 
-	player->controller->update(dt, phys_system);
+	player.controller->update(dt, phys_system);
 
-	auto player_pos = player->controller->player_body->GetPosition();
-	auto player_rot = player->controller->player_body->GetRotation();
+	auto player_pos = player.controller->body->GetPosition();
+	auto player_rot = player.controller->body->GetRotation();
 
-	auto& player_transform = Engine::world().registry.getComponent<TransformComponent>(player->ent);
+	// auto& player_transform = Engine::world().registry.getComponent<TransformComponent>(player_ent);
 	player_transform.position.x = player_pos.GetX();
 	player_transform.position.y = player_pos.GetY();
 	player_transform.position.z = player_pos.GetZ();
@@ -314,7 +344,7 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 
 	// Calculate raycast
 	auto screen_coords = glm::vec2(m_button.x, m_button.y);
-	auto pos = cam->getPosition();
+	auto pos = curr_cam->getPosition();
 	auto dir = glm::normalize(screenToWorld(screen_coords) - pos);
 	
 	auto& phys_system = Engine::world().phys_system;
@@ -363,18 +393,18 @@ void EditorLayer::drawAABB(JPH::BodyID body_id) noexcept
 			glm::vec3 bbr = center + glm::vec3(extents.x, -extents.y, extents.z);
 
 			std::array<Uint8, 4> green = { 0, 255, 0, 255 };
-			Engine::renderer()->drawLine(tfl, tfr, green, cam.get());
-			Engine::renderer()->drawLine(tfl, tbl, green, cam.get());
-			Engine::renderer()->drawLine(tfl, bfl, green, cam.get());
-			Engine::renderer()->drawLine(bbl, bfl, green, cam.get());
-			Engine::renderer()->drawLine(bbl, tbl, green, cam.get());
-			Engine::renderer()->drawLine(bbl, bbr, green, cam.get());
-			Engine::renderer()->drawLine(bfr, bbr, green, cam.get());
-			Engine::renderer()->drawLine(bfr, tfr, green, cam.get());
-			Engine::renderer()->drawLine(bfr, bfl, green, cam.get());
-			Engine::renderer()->drawLine(tbr, tfr, green, cam.get());
-			Engine::renderer()->drawLine(tbr, bbr, green, cam.get());
-			Engine::renderer()->drawLine(tbr, tbl, green, cam.get());
+			Engine::renderer()->drawLine(tfl, tfr, green, curr_cam.get());
+			Engine::renderer()->drawLine(tfl, tbl, green, curr_cam.get());
+			Engine::renderer()->drawLine(tfl, bfl, green, curr_cam.get());
+			Engine::renderer()->drawLine(bbl, bfl, green, curr_cam.get());
+			Engine::renderer()->drawLine(bbl, tbl, green, curr_cam.get());
+			Engine::renderer()->drawLine(bbl, bbr, green, curr_cam.get());
+			Engine::renderer()->drawLine(bfr, bbr, green, curr_cam.get());
+			Engine::renderer()->drawLine(bfr, tfr, green, curr_cam.get());
+			Engine::renderer()->drawLine(bfr, bfl, green, curr_cam.get());
+			Engine::renderer()->drawLine(tbr, tfr, green, curr_cam.get());
+			Engine::renderer()->drawLine(tbr, bbr, green, curr_cam.get());
+			Engine::renderer()->drawLine(tbr, tbl, green, curr_cam.get());
 		}
 	}
 }
@@ -390,7 +420,7 @@ glm::vec3 EditorLayer::screenToWorld(glm::vec2 screen_coords) noexcept
 
 	// Ndc to view space
 	glm::mat4 inv_proj = glm::inverse(
-		cam->getProjectionMatrix(Engine::context()->getAspectRatio())
+		curr_cam->getProjectionMatrix(Engine::context()->getAspectRatio())
 	);
 
 	glm::vec4 clip(ndc, 1.f);
@@ -398,7 +428,7 @@ glm::vec3 EditorLayer::screenToWorld(glm::vec2 screen_coords) noexcept
 	glm::vec4 view(eye / eye.w);
 
 	// View to world
-	glm::mat4 inv_view = glm::inverse(cam->getViewMatrix());
+	glm::mat4 inv_view = glm::inverse(curr_cam->getViewMatrix());
 	glm::vec4 world = inv_view * view;
 
 	return glm::vec3(world);

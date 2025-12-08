@@ -14,14 +14,14 @@ namespace APE::Phys
 
 struct PlayerController
 {
-	std::unique_ptr<JPH::CharacterVirtual> player_body;
+	std::unique_ptr<JPH::CharacterVirtual> body;
 
 	PlayerController(
 		JPH::CharacterVirtualSettings& in_settings,
 		TransformComponent& transform,
 		PhysicsSystem& phys_system) noexcept
 	{
-		player_body = std::make_unique<JPH::CharacterVirtual>(
+		body = std::make_unique<JPH::CharacterVirtual>(
 			&in_settings, 
 			JPH::Vec3(transform.position.x, transform.position.y, transform.position.z),
 			JPH::Quat(transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w),
@@ -34,11 +34,11 @@ struct PlayerController
 		auto& ps = phys_system.phys_system;
 
 		// Apply Gravity
-		auto vel = player_body->GetLinearVelocity();
-		if (!player_body->IsSupported())
+		auto vel = body->GetLinearVelocity();
+		if (!body->IsSupported())
 		{
 			vel += ps.GetGravity() * dt;
-			player_body->SetLinearVelocity(vel);
+			body->SetLinearVelocity(vel);
 		}
 		else
 		{
@@ -46,7 +46,7 @@ struct PlayerController
 		}
 
 		// Update
-		player_body->Update(
+		body->Update(
 			dt,
 			ps.GetGravity(),
 			{},
@@ -59,30 +59,30 @@ struct PlayerController
 
 	void addVelocity(glm::vec3& vel) noexcept
 	{
-		auto jvel = player_body->GetLinearVelocity();
+		auto jvel = body->GetLinearVelocity();
 		jvel += JPH::Vec3(vel.x, vel.y, vel.z);
-		player_body->SetLinearVelocity(jvel);
+		body->SetLinearVelocity(jvel);
 	}
 
 	void setVelocity(glm::vec3& vel) noexcept
 	{
 		JPH::Vec3 jvel(vel.x, vel.y, vel.z);
-		player_body->SetLinearVelocity(jvel);
+		body->SetLinearVelocity(jvel);
 	}
 
 	void setHorizontalVelocity(glm::vec3& vel) noexcept
 	{
-		auto jvel = player_body->GetLinearVelocity();
+		auto jvel = body->GetLinearVelocity();
 		jvel.SetX(vel.x);
 		jvel.SetZ(vel.z);
-		player_body->SetLinearVelocity(jvel);
+		body->SetLinearVelocity(jvel);
 	}
 
 	void jump(float strength) noexcept
 	{
-		auto jvel = player_body->GetLinearVelocity();
+		auto jvel = body->GetLinearVelocity();
 		jvel.SetY(strength);
-		player_body->SetLinearVelocity(jvel);
+		body->SetLinearVelocity(jvel);
 	}
 };
 
