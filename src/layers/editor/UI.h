@@ -152,8 +152,7 @@ static inline void drawSceneHierarchyPanel(
 		auto [ent, x, pad] = stack.back();
 		stack.pop_back();
 
-		auto& hierarchy = 
-			world.registry.getComponent<HierarchyComponent>(ent);
+		auto& hierarchy = world.registry.getComponent<HierarchyComponent>(ent);
 
 		// Create a unique tag for each entity, indented past its parent
 		auto padded_tag = std::format(
@@ -200,8 +199,7 @@ static inline void drawManipulatorPanel(
 	// Tag
 	if (world.registry.hasComponent<HierarchyComponent>(ent)) {
 		ImGui::Text("Hierarchy");
-		auto& hierarchy = 
-			world.registry.getComponent<HierarchyComponent>(ent);
+		auto& hierarchy = world.registry.getComponent<HierarchyComponent>(ent);
 
 		char buf[128];
 		strncpy(buf, hierarchy.tag.c_str(), sizeof(buf));
@@ -209,16 +207,20 @@ static inline void drawManipulatorPanel(
 			hierarchy.tag = buf;
 		}
 
-		std::string children = 
-			std::format("Num Children: {}", hierarchy.children.size());
+		std::string children = std::format("Num Children: {}", hierarchy.children.size());
 		ImGui::Text("%s", children.c_str());
+	}
+
+	// Create child entity
+	if (ImGui::Button("Add child"))
+	{
+		world.createEntity(ent);
 	}
 
 	// Transform
 	if (world.registry.hasComponent<TransformComponent>(ent)) {
 		ImGui::Text("Transform");
-		auto& transform = 
-			world.registry.getComponent<TransformComponent>(ent);
+		auto& transform = world.registry.getComponent<TransformComponent>(ent);
 
 		// Select gizmo operation
 		if (ImGui::RadioButton("Translate", gizmo_op == ImGuizmo::TRANSLATE)) {
@@ -254,6 +256,10 @@ static inline void drawManipulatorPanel(
 			&matrix[0][0]
 		);
 		transform = TransformComponent::fromMatrix(matrix);
+	}
+	else if (ImGui::Button("Add Transform"))
+	{
+		world.registry.emplaceComponent<TransformComponent>(ent);
 	}
 
 	// Material
@@ -357,7 +363,7 @@ static inline void drawGizmo(
 			glm::value_ptr(view),
 			glm::value_ptr(proj),
 			gizmo_op,
-			ImGuizmo::MODE::WORLD,
+			ImGuizmo::MODE::LOCAL,
 			glm::value_ptr(world_mat),
 			NULL,
 			NULL
@@ -409,9 +415,18 @@ static inline void drawGizmo(
 			body_if.SetPosition(pbody.body_id, ppos, JPH::EActivation::Activate);
 			body_if.SetRotation(pbody.body_id, prot, JPH::EActivation::Activate);
 		}
+
+		if (world.registry.hasComponent<Phys::PlayerComponent>(ent))
+		{
+			auto& player_comp = world.registry.getComponent<Phys::PlayerComponent>(ent);
+			auto& controller = player_comp.controller;
+			controller->setPosition(transform.position);
+			controller->setRotation(transform.rotation);
+		}
 	}
 }
 
 
 
 };
+

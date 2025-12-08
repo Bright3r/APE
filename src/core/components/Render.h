@@ -45,11 +45,9 @@ struct CameraComponent
 {
 	static constexpr const char* Name = "Camera";
 	std::shared_ptr<Camera> camera;
-	glm::vec3 offset;
 
-	CameraComponent(std::shared_ptr<Camera> camera, glm::vec3 offset = glm::vec3(0.f)) noexcept
+	CameraComponent(std::shared_ptr<Camera> camera) noexcept
 		: camera(camera)
-		, offset(offset)
 	{
 
 	}

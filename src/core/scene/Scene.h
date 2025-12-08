@@ -10,13 +10,16 @@
 #include <Jolt/Physics/Body/BodyID.h>
 
 #include <format>
+#include <string>
 #include <sys/types.h>
 #include <unordered_map>
 #include <utility>
 
-namespace APE {
+namespace APE 
+{
 
-struct Scene {
+struct Scene 
+{
 	Phys::PhysicsSystem phys_system;
 	ECS::Registry registry;
 	ECS::EntityHandle root;
@@ -40,11 +43,28 @@ struct Scene {
 	}
 
 	Scene& operator=(Scene&& other) noexcept
-	{	
+	{
 		registry = std::move(other.registry);
 		root = std::move(other.root);
 
 		return *this;
+	}
+
+	ECS::EntityHandle createEntity(
+		ECS::EntityHandle parent,
+		std::string tag = "") noexcept
+	{
+		auto par_tag = registry.getComponent<HierarchyComponent>(parent);
+		if (tag.empty())
+		{
+			tag = "Child " + std::to_string(par_tag.children.size());
+		}
+
+		auto ent = registry.createEntity();
+		registry.emplaceComponent<HierarchyComponent>(ent, tag);
+		setParent(ent, parent);
+
+		return ent;
 	}
 
 	void setParent(ECS::EntityHandle child, ECS::EntityHandle parent) noexcept
@@ -54,8 +74,7 @@ struct Scene {
 		// Remove child from old parent
 		auto old_par = h_child.parent;
 		if (registry.hasComponent<HierarchyComponent>(old_par)) {
-			auto& h_old_par = 
-				registry.getComponent<HierarchyComponent>(old_par);
+			auto& h_old_par = registry.getComponent<HierarchyComponent>(old_par);
 
 			std::vector<ECS::EntityHandle> rem_children;
 			for (auto par_child : h_old_par.children) {
@@ -68,8 +87,7 @@ struct Scene {
 
 		// Add child to new parent
 		if (registry.hasComponent<HierarchyComponent>(parent)) {
-			auto& h_par = 
-				registry.getComponent<HierarchyComponent>(parent);
+			auto& h_par = registry.getComponent<HierarchyComponent>(parent);
 
 			h_par.children.push_back(child);
 		}
@@ -78,17 +96,58 @@ struct Scene {
 		h_child.parent = parent;
 	}
 
+	void setTag(ECS::EntityHandle ent, const std::string& tag) noexcept
+	{
+		auto& hierarchy = registry.getComponent<HierarchyComponent>(ent);
+		hierarchy.tag = tag;
+	}
+
+	ECS::EntityHandle getParent(ECS::EntityHandle ent) noexcept
+	{
+		auto& hierarchy = registry.getComponent<HierarchyComponent>(ent);
+		return hierarchy.parent;
+	}
+
+	std::vector<ECS::EntityHandle> getChildren(ECS::EntityHandle ent) noexcept
+	{
+		auto& hierarchy = registry.getComponent<HierarchyComponent>(ent);
+		return hierarchy.children;
+	}
+
+	TransformComponent getWorldTransform(ECS::EntityHandle ent) noexcept
+	{
+		auto model = getModelMatrix(ent);
+
+		TransformComponent transform {};
+		transform.position = glm::vec3(model[3]);
+		transform.scale = glm::vec3(
+			glm::length(glm::vec3(model[0][0], model[0][1], model[0][2])),
+			glm::length(glm::vec3(model[1][0], model[1][1], model[1][2])),
+			glm::length(glm::vec3(model[2][0], model[2][1], model[2][2]))
+		);
+
+		glm::mat3 r {};
+		r[0] = glm::vec3(model[0][0], model[0][1], model[0][2]) / transform.scale.x;
+		r[1] = glm::vec3(model[1][0], model[1][1], model[1][2]) / transform.scale.y;
+		r[2] = glm::vec3(model[2][0], model[2][1], model[2][2]) / transform.scale.z;
+		transform.rotation = glm::quat_cast(r);
+
+		return transform;
+	}
+
 	glm::mat4 getModelMatrix(ECS::EntityHandle ent) noexcept
 	{
 		std::vector<glm::mat4> stack;
-		while (registry.hasAllComponents<
-			TransformComponent, HierarchyComponent>(ent)) 
+		while (registry.hasComponent<HierarchyComponent>(ent))
 		{
-			auto [transform, hierarchy] = registry.getComponents<
-				TransformComponent, 
-				HierarchyComponent>(ent);
-
+			TransformComponent transform {};
+			if (registry.hasComponent<TransformComponent>(ent))
+			{
+				transform = registry.getComponent<TransformComponent>(ent);
+			}
 			stack.emplace_back(transform.getModelMatrix());
+
+			auto hierarchy = registry.getComponent<HierarchyComponent>(ent);
 			ent = hierarchy.parent;
 		}
 
@@ -108,15 +167,16 @@ struct Scene {
 			"Scene::addModel() Failed: model_handle data is null."
 		);
 
-		ECS::EntityHandle par = registry.createEntity();
-		registry.emplaceComponent<HierarchyComponent>(
-			par,
-			std::format("Model {}", par.id)
-		);
-		setParent(par, root);
+		ECS::EntityHandle model_ent = createEntity(root);
+		auto& model_hierarchy = registry.getComponent<HierarchyComponent>(model_ent);
+		model_hierarchy.tag = std::format("Model {}", model_ent.id);
+		// registry.replaceComponent<HierarchyComponent>(
+		// 	model_ent,
+		// 	std::format("Model {}", model_ent.id)
+		// );
 
 		registry.emplaceComponent<TransformComponent>(
-			par,
+			model_ent,
 			transform
 		);
 
@@ -124,12 +184,11 @@ struct Scene {
 		for (size_t idx = 0; idx < model->meshes.size(); ++idx) {
 			auto& mesh = model->meshes[idx];
 
-			ECS::EntityHandle ent = registry.createEntity();
-			registry.emplaceComponent<HierarchyComponent>(
-				ent,
-				std::format("Mesh {}", idx)
-			);
-			setParent(ent, par);
+			ECS::EntityHandle ent = createEntity(model_ent, std::format("Mesh {}", idx));
+			// registry.replaceComponent<HierarchyComponent>(
+			// 	ent,
+			// 	std::format("Mesh {}", idx)
+			// );
 
 			registry.emplaceComponent<Render::MeshComponent>(
 				ent,
@@ -145,7 +204,8 @@ struct Scene {
 				mesh.transform
 			);
 		}
-		return par;
+
+		return model_ent;
 	}
 
 	void registerPhysicsBody(ECS::EntityHandle ent, JPH::BodyID body_id) noexcept

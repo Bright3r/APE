@@ -57,20 +57,32 @@ struct PlayerController
 		);
 	}
 
-	void addVelocity(glm::vec3& vel) noexcept
+	void setPosition(const glm::vec3& pos) noexcept
+	{
+		JPH::Vec3 jpos { pos.x, pos.y, pos.z };
+		body->SetPosition(jpos);
+	}
+
+	void setRotation(const glm::quat& rot) noexcept
+	{
+		JPH::Quat jrot { rot.x, rot.y, rot.z, rot.w };
+		body->SetRotation(jrot);
+	}
+
+	void addVelocity(const glm::vec3& vel) noexcept
 	{
 		auto jvel = body->GetLinearVelocity();
 		jvel += JPH::Vec3(vel.x, vel.y, vel.z);
 		body->SetLinearVelocity(jvel);
 	}
 
-	void setVelocity(glm::vec3& vel) noexcept
+	void setVelocity(const glm::vec3& vel) noexcept
 	{
 		JPH::Vec3 jvel(vel.x, vel.y, vel.z);
 		body->SetLinearVelocity(jvel);
 	}
 
-	void setHorizontalVelocity(glm::vec3& vel) noexcept
+	void setHorizontalVelocity(const glm::vec3& vel) noexcept
 	{
 		auto jvel = body->GetLinearVelocity();
 		jvel.SetX(vel.x);
