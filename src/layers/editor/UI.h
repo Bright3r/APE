@@ -7,18 +7,22 @@
 #include "core/ecs/Registry.h"
 #include "core/scene/ImageLoader.h"
 #include "core/scene/Scene.h"
+#include "phys/Physics.h"
 #include "util/Files.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Math/Quat.h>
 #include <Jolt/Math/Vec3.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyID.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/EActivation.h>
 
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <glm/fwd.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui_impl_sdl3.h>
 #include <ImGuizmo.h>
@@ -270,19 +274,54 @@ static inline void drawManipulatorPanel(
 	}
 
 	// Physics
+	ImGui::Text("Physics");
+	auto& body_if = world.phys_system.phys_system.GetBodyInterface();
 	if (world.registry.hasComponent<Phys::PhysicsComponent>(ent))
 	{
 		auto& pbody = world.registry.getComponent<Phys::PhysicsComponent>(ent);
 
-		ImGui::Text("Physics");
-
 		static glm::vec3 vel {};
 		ImGui::SliderFloat3("Velocity Addition", glm::value_ptr(vel), -20.f, 20.f, "%.1f");
-
 		if (ImGui::Button("Add Velocity"))
 		{
-			auto& body_if = world.phys_system.phys_system.GetBodyInterface();
 			body_if.AddLinearVelocity(pbody.body_id, JPH::Vec3(vel.x, vel.y, vel.z));
+		}
+
+		if (ImGui::Button("Remove Body"))
+		{
+			body_if.RemoveBody(pbody.body_id);
+			Engine::world().registry.removeComponent<Phys::PhysicsComponent>(ent);
+		}
+	}
+	else
+	{
+		TransformComponent transform {};
+		if (Engine::world().registry.hasComponent<TransformComponent>(ent))
+		{
+			transform = Engine::world().registry.getComponent<TransformComponent>(ent);
+		}
+
+		static glm::vec3 bounds = transform.scale / 2.f;
+		ImGui::InputFloat3("Bounds", glm::value_ptr(bounds), "%.2f");
+
+		static glm::vec3 pos = transform.position;
+		ImGui::InputFloat3("Position", glm::value_ptr(pos), "%.2f");
+
+		static glm::quat rot = transform.rotation;
+		ImGui::InputFloat4("Orientation", glm::value_ptr(rot), "%.2f");
+
+		if (ImGui::Button("Create Body"))
+		{
+			JPH::BodyCreationSettings settings(
+				new JPH::BoxShape(JPH::Vec3(bounds.x, bounds.y, bounds.z)),
+				JPH::RVec3(pos.x, pos.y, pos.z),
+				JPH::Quat(rot.x, rot.y, rot.z, rot.w),
+				JPH::EMotionType::Dynamic,
+				Phys::Layers::MOVING
+			);
+
+			auto body_id = body_if.CreateAndAddBody(settings, JPH::EActivation::Activate);
+			Engine::world().registerPhysicsBody(ent, body_id);
 		}
 	}
 
