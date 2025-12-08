@@ -6,6 +6,7 @@
 #include "core/components/Render.h"
 #include "core/ecs/Registry.h"
 #include "core/scene/ImageLoader.h"
+#include "core/scene/ModelLoader.h"
 #include "core/scene/Scene.h"
 #include "phys/Physics.h"
 #include "util/Files.h"
@@ -317,6 +318,19 @@ static inline void drawManipulatorPanel(
 	else if (ImGui::Button("Add Transform"))
 	{
 		world.registry.emplaceComponent<TransformComponent>(ent);
+	}
+
+	// Create nested model
+	if (ImGui::Button("Add model"))
+	{
+		std::filesystem::path model_path;
+		auto status = Files::openDialog(model_path);
+		if (status == Files::Status::Sucess) 
+		{
+			auto model_handle = ModelLoader::load(model_path);
+			auto model = world.addModel(model_handle);
+			world.setParent(model, ent);
+		}
 	}
 
 	// Material
