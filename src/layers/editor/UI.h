@@ -191,29 +191,28 @@ static inline void drawSceneHierarchyPanel(
 	ImGui::End();
 }
 
-
-JPH::Shape* createColliderShape() noexcept
+enum ColliderShape
 {
-	enum ColliderShapes
-	{
-		Box = 0,
-		Sphere,
-		END
-	};
-	std::vector<std::string> collider_shapes {
-		"Box",
-		"Sphere"
-	};
+	Box = 0,
+	Sphere,
+	END
+};
+std::vector<std::string> collider_shapes {
+	"Box",
+	"Sphere"
+};
 
-	static int curr_shape = Box;
+ColliderShape getColliderShape() noexcept
+{
+	static ColliderShape curr_shape = Box;
 	if (ImGui::BeginCombo("Collider Shape", collider_shapes.data()[curr_shape].c_str()))
 	{
-		for (auto s = 0; s < ColliderShapes::END; ++s)
+		for (auto s = 0; s < ColliderShape::END; ++s)
 		{
 			bool is_selected = (curr_shape == s);
 			if (ImGui::Selectable(collider_shapes.data()[s].c_str(), is_selected))
 			{
-				curr_shape = s;
+				curr_shape = static_cast<ColliderShape>(s);
 			}
 
 			if (is_selected)
@@ -224,21 +223,31 @@ JPH::Shape* createColliderShape() noexcept
 		ImGui::EndCombo();
 	}
 
+	return curr_shape;
+}
+
+JPH::Shape* createColliderShape(ColliderShape selected_shape, bool make_shape) noexcept
+{
 	JPH::Shape* shape {};
-	switch (curr_shape)
+	switch (selected_shape)
 	{
 	case Box:
 	{
 		static glm::vec3 bounds(1.f);
 		ImGui::InputFloat3("Half Extents", glm::value_ptr(bounds), "%.2f");
-		shape = new JPH::BoxShape(JPH::Vec3(bounds.x, bounds.y, bounds.z));
+		if (make_shape) shape = new JPH::BoxShape(JPH::Vec3(bounds.x, bounds.y, bounds.z));
 		break;
 	}
 	case Sphere:
 	{
 		static float radius = 1.f;
 		ImGui::InputFloat("Radius", &radius);
-		shape = new JPH::SphereShape(radius);
+		if (make_shape) shape = new JPH::SphereShape(radius);
+		break;
+	}
+	default:
+	{
+		shape = nullptr;
 		break;
 	}
 	}
@@ -380,25 +389,40 @@ static inline void drawManipulatorPanel(
 			transform = Engine::world().registry.getComponent<TransformComponent>(ent);
 		}
 
+		static bool is_static = false;
+		if (ImGui::RadioButton("Static", is_static))
+		{
+			is_static = !is_static;
+		}
+
+		static bool is_moving = true;
+		if (ImGui::RadioButton("Movable", is_moving))
+		{
+			is_moving = !is_moving;
+		}
+
 		static glm::vec3 pos = transform.position;
 		ImGui::InputFloat3("Position", glm::value_ptr(pos), "%.2f");
 
 		static glm::quat rot = transform.rotation;
 		ImGui::InputFloat4("Orientation", glm::value_ptr(rot), "%.2f");
 
-		JPH::Shape* shape = createColliderShape();
+		auto selected_shape = getColliderShape();
+		createColliderShape(selected_shape, false);
+
 		if (ImGui::Button("Create Body"))
 		{
+			auto shape = createColliderShape(selected_shape, true);
 			JPH::BodyCreationSettings settings(
 				shape,
 				JPH::RVec3(pos.x, pos.y, pos.z),
 				JPH::Quat(rot.x, rot.y, rot.z, rot.w),
-				JPH::EMotionType::Dynamic,
-				Phys::Layers::MOVING
+				(is_static) ? JPH::EMotionType::Static : JPH::EMotionType::Dynamic,
+				(is_moving) ? Phys::Layers::MOVING : Phys::Layers::NON_MOVING
 			);
+			Engine::world().createAndRegisterPhysicsBody(ent, settings);
 
-			auto body_id = body_if.CreateAndAddBody(settings, JPH::EActivation::Activate);
-			Engine::world().registerPhysicsBody(ent, body_id);
+			Engine::world().phys_system.phys_system.OptimizeBroadPhase();
 		}
 	}
 

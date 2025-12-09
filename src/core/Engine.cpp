@@ -1,6 +1,7 @@
 #include "core/Engine.h"
 #include "core/scene/Serialize.h"
 #include "util/Logger.h"
+#include "phys/Physics.h"
 
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
@@ -142,6 +143,7 @@ void Engine::saveScene(std::filesystem::path save_path, Scene& world) noexcept
 bool Engine::loadScene(std::filesystem::path load_path, Scene& world) noexcept
 {
 	if (load_path.extension() == ".json") {
+		world = Scene();
 		world = Serialize::loadScene(load_path);
 		return true;
 	}

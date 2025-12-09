@@ -5,10 +5,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-class Camera {
-private:
+struct Camera 
+{
 	glm::vec3 m_position;
 	float m_pitch;		// rotation around x-axis
 	float m_yaw;		// rotation around y-axis
@@ -17,13 +18,14 @@ private:
 	float m_near_plane;
 	bool m_is_locked;
 
-public:
-	Camera(const glm::vec3 pos = { 0, 0, 1 },
+	Camera(
+		const glm::vec3& pos = { 0, 0, 1 },
 		float pitch = 0.f,
 		float yaw = -90.f,
 		float fov = 45.f,
 		float sensitivity = 0.3f,
-		float near_clip = 0.1f) noexcept
+		float near_clip = 0.1f
+	) noexcept
 		: m_position(pos)
 		, m_pitch(pitch)
 		, m_yaw(yaw)
@@ -31,7 +33,9 @@ public:
 		, m_sensitivity(sensitivity)
 		, m_near_plane(near_clip)
 		, m_is_locked(false)
-	{ }
+	{ 
+
+	}
 
 	[[nodiscard]] glm::vec3 getPosition() const noexcept
 	{

@@ -5,6 +5,7 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/BodyID.h>
+#include <memory>
 #include <utility>
 
 namespace APE::Phys

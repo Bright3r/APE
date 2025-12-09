@@ -7,8 +7,6 @@
 #include "core/render/Model.h"
 #include "phys/Physics.h"
 
-#include <Jolt/Physics/Body/BodyID.h>
-
 #include <format>
 #include <string>
 #include <sys/types.h>
@@ -20,10 +18,10 @@ namespace APE
 
 struct Scene 
 {
-	Phys::PhysicsSystem phys_system;
 	ECS::Registry registry;
 	ECS::EntityHandle root;
 
+	Phys::PhysicsSystem phys_system;
 	std::unordered_map<JPH::BodyID, ECS::EntityHandle> pbody_to_ent;
 
 	Scene() noexcept
@@ -208,10 +206,28 @@ struct Scene
 		return model_ent;
 	}
 
-	void registerPhysicsBody(ECS::EntityHandle ent, JPH::BodyID body_id) noexcept
+	JPH::BodyID createPhysicsBody(JPH::BodyCreationSettings body_settings) noexcept
 	{
-		registry.emplaceComponent<Phys::PhysicsComponent>(ent, body_id);
+		auto& body_if = phys_system.phys_system.GetBodyInterface();
+		auto body_id = body_if.CreateAndAddBody(
+			body_settings,
+			JPH::EActivation::Activate
+		);
+
+		return body_id;
+	}
+
+	JPH::BodyID createAndRegisterPhysicsBody(
+		ECS::EntityHandle ent,
+		JPH::BodyCreationSettings body_settings
+	) noexcept
+	{
+		auto body_id = createPhysicsBody(body_settings);
+
 		pbody_to_ent[body_id] = ent;
+		registry.emplaceComponent<Phys::PhysicsComponent>(ent, body_id);
+
+		return body_id;
 	}
 
 	ECS::EntityHandle getPhysicsBodyEntity(JPH::BodyID body_id) const noexcept

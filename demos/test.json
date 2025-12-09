@@ -76,9 +76,437 @@
                 },
                 {
                     "id": 24
+                },
+                {
+                    "id": 25
+                }
+            ],
+            "Hierarchy": [
+                {
+                    "entity": {
+                        "id": 25
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 23
+                        },
+                        "children": [],
+                        "tag": "Player Camera"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 24
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 23
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 23
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 24
+                            },
+                            {
+                                "id": 25
+                            }
+                        ],
+                        "tag": "Player"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 22
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 21
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 21
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 22
+                            }
+                        ],
+                        "tag": "Model 21"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 20
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 19
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 19
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 20
+                            }
+                        ],
+                        "tag": "Model 19"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 18
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 17
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 17
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 18
+                            }
+                        ],
+                        "tag": "Model 17"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 16
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 15
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 15
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 16
+                            }
+                        ],
+                        "tag": "Model 15"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 14
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 13
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 13
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 14
+                            }
+                        ],
+                        "tag": "Model 13"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 12
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 11
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 11
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 12
+                            }
+                        ],
+                        "tag": "Model 11"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 10
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 9
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 9
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 10
+                            }
+                        ],
+                        "tag": "Model 9"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 8
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 7
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 7
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 8
+                            }
+                        ],
+                        "tag": "Model 7"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 6
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 5
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 5
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 6
+                            }
+                        ],
+                        "tag": "Model 5"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 4
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 3
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 3
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 4
+                            }
+                        ],
+                        "tag": "Model 3"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 2
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 1
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 1
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 2
+                            }
+                        ],
+                        "tag": "Model 1"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 0
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 18446744073709551615
+                        },
+                        "children": [
+                            {
+                                "id": 1
+                            },
+                            {
+                                "id": 3
+                            },
+                            {
+                                "id": 5
+                            },
+                            {
+                                "id": 7
+                            },
+                            {
+                                "id": 9
+                            },
+                            {
+                                "id": 11
+                            },
+                            {
+                                "id": 13
+                            },
+                            {
+                                "id": 15
+                            },
+                            {
+                                "id": 17
+                            },
+                            {
+                                "id": 19
+                            },
+                            {
+                                "id": 21
+                            },
+                            {
+                                "id": 23
+                            }
+                        ],
+                        "tag": "Root Node"
+                    }
                 }
             ],
             "Transform": [
+                {
+                    "entity": {
+                        "id": 25
+                    },
+                    "component": {
+                        "position": {
+                            "x": -0.4000000059604645,
+                            "y": 0.4000000059604645,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
                 {
                     "entity": {
                         "id": 24
@@ -632,393 +1060,6 @@
                     }
                 }
             ],
-            "Hierarchy": [
-                {
-                    "entity": {
-                        "id": 24
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 23
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 23
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 24
-                            }
-                        ],
-                        "tag": "Model 23"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 22
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 21
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 21
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 22
-                            }
-                        ],
-                        "tag": "Model 21"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 20
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 19
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 19
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 20
-                            }
-                        ],
-                        "tag": "Model 19"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 18
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 17
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 17
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 18
-                            }
-                        ],
-                        "tag": "Model 17"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 16
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 15
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 15
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 16
-                            }
-                        ],
-                        "tag": "Model 15"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 14
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 13
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 13
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 14
-                            }
-                        ],
-                        "tag": "Model 13"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 12
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 11
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 11
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 12
-                            }
-                        ],
-                        "tag": "Model 11"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 10
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 9
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 9
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 10
-                            }
-                        ],
-                        "tag": "Model 9"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 8
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 7
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 7
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 8
-                            }
-                        ],
-                        "tag": "Model 7"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 6
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 5
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 5
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 6
-                            }
-                        ],
-                        "tag": "Model 5"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 4
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 3
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 3
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 4
-                            }
-                        ],
-                        "tag": "Model 3"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 2
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 1
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 1
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 0
-                        },
-                        "children": [
-                            {
-                                "id": 2
-                            }
-                        ],
-                        "tag": "Model 1"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 0
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 18446744073709551615
-                        },
-                        "children": [
-                            {
-                                "id": 1
-                            },
-                            {
-                                "id": 3
-                            },
-                            {
-                                "id": 5
-                            },
-                            {
-                                "id": 7
-                            },
-                            {
-                                "id": 9
-                            },
-                            {
-                                "id": 11
-                            },
-                            {
-                                "id": 13
-                            },
-                            {
-                                "id": 15
-                            },
-                            {
-                                "id": 17
-                            },
-                            {
-                                "id": 19
-                            },
-                            {
-                                "id": 21
-                            },
-                            {
-                                "id": 23
-                            }
-                        ],
-                        "tag": "Root Node"
-                    }
-                }
-            ],
             "Mesh": [
                 {
                     "entity": {
@@ -1419,7 +1460,278 @@
                     }
                 }
             ],
-            "Light": []
+            "Light": [],
+            "Camera": [
+                {
+                    "entity": {
+                        "id": 25
+                    },
+                    "component": {
+                        "camera": {
+                            "ptr_wrapper": {
+                                "id": 2147483649,
+                                "data": {
+                                    "position": {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0
+                                    },
+                                    "pitch": 0.0,
+                                    "yaw": -90.0,
+                                    "fov": 103.0,
+                                    "sensitivity": 0.30000001192092898,
+                                    "near_plane": 0.10000000149011612,
+                                    "is_locked": false
+                                }
+                            }
+                        }
+                    }
+                }
+            ],
+            "PhysicsObject": [
+                {
+                    "entity": {
+                        "id": 21
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "10,0.05,10",
+                        "position": {
+                            "x": 0.0,
+                            "y": -10.0,
+                            "z": 0.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Static",
+                        "layer": "Non_Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 19
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": 7.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 17
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": 2.5,
+                            "y": 0.0,
+                            "z": 2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 15
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -2.5,
+                            "y": 0.0,
+                            "z": 2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 13
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": 2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 11
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": 2.5,
+                            "y": 0.0,
+                            "z": -2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 9
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -2.5,
+                            "y": 0.0,
+                            "z": -2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 7
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": -2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 5
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": 2.5,
+                            "y": 0.0,
+                            "z": -7.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 3
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -2.5,
+                            "y": 0.0,
+                            "z": -7.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 1
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": -7.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                }
+            ]
         },
         "root": {
             "id": 0

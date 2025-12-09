@@ -46,7 +46,7 @@ struct CameraComponent
 	static constexpr const char* Name = "Camera";
 	std::shared_ptr<Camera> camera;
 
-	CameraComponent(std::shared_ptr<Camera> camera) noexcept
+	CameraComponent(std::shared_ptr<Camera> camera = nullptr) noexcept
 		: camera(camera)
 	{
 
