@@ -55,7 +55,7 @@ void EditorLayer::setup() noexcept
 
 	auto& world = Engine::world();
 	auto& phys_system = world.phys_system;
-	auto& body_if = phys_system.phys_system.GetBodyInterface();
+	auto& body_if = phys_system->phys_system.GetBodyInterface();
 
 	// Add boxes
 	constexpr int NUM_SHAPES = 10;
@@ -121,7 +121,11 @@ void EditorLayer::setup() noexcept
 	settings.mInnerBodyLayer = Phys::Layers::MOVING;
 
 	Phys::PlayerComponent player_comp { 
-		std::make_unique<Phys::PlayerController>(settings, player_transform, phys_system)
+		std::make_unique<Phys::PlayerController>(
+			settings,
+			player_transform,
+			*phys_system.get()
+		)
 	};
 	world.registry.emplaceComponent<Phys::PlayerComponent>(player_ent, std::move(player_comp));
 
@@ -135,7 +139,7 @@ void EditorLayer::setup() noexcept
 
 
 	// Optimize collision checks
-	phys_system.optimizeBroadPhase();
+	phys_system->optimizeBroadPhase();
 
 
 	// Create fly cam
@@ -167,14 +171,19 @@ void EditorLayer::update() noexcept
 	}
 
 	// Save
-	if (input.isKeyDown(SDLK_Y) && input.isFirstFramePressed(SDLK_Y)) {
-		APE_TRACE("SAVED SCENE");
+	if (input.isKeyDown(SDLK_Y) && input.isFirstFramePressed(SDLK_Y)) 
+	{
 		Engine::saveScene("demos/test.json", Engine::world());
+		APE_TRACE("SAVED SCENE");
 	}
 	// Load
-	if (input.isKeyDown(SDLK_U) && input.isFirstFramePressed(SDLK_U)) {
+	if (input.isKeyDown(SDLK_U) && input.isFirstFramePressed(SDLK_U)) 
+	{
+		Scene world;
+		Engine::loadScene("demos/test.json", world);
+
+		Engine::world() = std::move(world);
 		APE_TRACE("LOADED SCENE");
-		Engine::loadScene("demos/test.json", Engine::world());
 	}
 
 	// Camera Movement
@@ -218,6 +227,18 @@ void EditorLayer::update() noexcept
 	// Mouse motion events
 	for (auto& m_event : Engine::input().mouseMotionEvents()) {
 		Engine::getCamera().lock()->rotate(m_event.xrel, m_event.yrel);
+	}
+
+	if (input.isKeyDown(SDLK_G) && input.isFirstFramePressed(SDLK_G))
+	{
+		for (auto& [body_id, ent] : Engine::world().pbody_to_ent)
+		{
+			APE_TRACE("Entity ID: {}, Body ID: {}", ent.id, body_id.GetIndex());
+		}
+		APE_TRACE("Root ID: {}", Engine::world().root.id);
+
+		void* ptr = &Engine::world().pbody_to_ent;
+		APE_TRACE("Pbody_to_ent Addr: {}", ptr);
 	}
 
 
@@ -301,11 +322,11 @@ void EditorLayer::update() noexcept
 
 	// Physics simulation step
 	auto& phys_system = Engine::world().phys_system;
-	phys_system.update(dt);
+	phys_system->update(dt);
 
 
 	// Sync transforms with physics state
-	auto& body_if = phys_system.phys_system.GetBodyInterface();
+	auto& body_if = phys_system->phys_system.GetBodyInterface();
 	auto view = Engine::world().registry.view<TransformComponent, Phys::PhysicsComponent>();
 	for (auto& [ent, transform, pbody] : view.each())
 	{
@@ -385,7 +406,7 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 	auto dir = glm::normalize(screenToWorld(screen_coords) - pos);
 	
 	auto& phys_system = Engine::world().phys_system;
-	auto collector = phys_system.castRay(pos, dir);
+	auto collector = phys_system->castRay(pos, dir);
 	if (collector.HadHit())
 	{
 		APE_TRACE("RAY HIT");
@@ -398,7 +419,7 @@ void EditorLayer::handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept
 
 void EditorLayer::drawAABB(JPH::BodyID body_id) noexcept
 {
-	auto& lock_if = Engine::world().phys_system.phys_system.GetBodyLockInterface();
+	auto& lock_if = Engine::world().phys_system->phys_system.GetBodyLockInterface();
 	{
 		JPH::BodyLockRead lock(lock_if, body_id);
 		if (lock.Succeeded())

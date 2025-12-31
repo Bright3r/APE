@@ -475,7 +475,7 @@ template <class Archive>
 void save(Archive& ar, const APE::Phys::PhysicsComponent& phys_comp)
 {
 	auto body_id = phys_comp.body_id;
-	auto& body_if = s_scene_const->phys_system.phys_system.GetBodyInterface();
+	auto& body_if = s_scene_const->phys_system->phys_system.GetBodyInterface();
 	auto shape = body_if.GetShape(body_id);
 
 	auto shape_type_str = getShapeTypeString(shape);
@@ -573,7 +573,8 @@ void deserializePool(Archive& ar, APE::ECS::Registry& r) noexcept
 	std::vector<ECSPair<Component>> entries;
 	ar(cereal::make_nvp(Component::Name, entries));
 
-	for (auto& [ent, comp] : entries) {
+	for (auto& [ent, comp] : entries) 
+	{
 		APE::ECS::EntityHandle new_ent = s_old_to_new.at(&r).at(ent.id);
 		r.emplaceComponent<Component>(new_ent, comp);
 	}
@@ -664,7 +665,10 @@ void load(Archive& ar, APE::Scene& scene)
 	{
 		auto body_id = phys_comp.body_id;
 		scene.pbody_to_ent[body_id] = ent;
+
+		APE_TRACE("Entity ID: {}, Body ID: {}", ent.id, body_id.GetIndex());
 	}
+	APE_TRACE("Root ID: {}", scene.root.id);
 }
 
 };	// end of namespace

@@ -252,8 +252,22 @@ struct PhysicsSystem
 		);
 	}
 
+	// Delete copy ctor
+	PhysicsSystem(const PhysicsSystem&) = delete;
+	PhysicsSystem& operator=(const PhysicsSystem&) = delete;
+
+	// Delete move ctor
+	PhysicsSystem(PhysicsSystem&& other) = delete;
+	PhysicsSystem& operator=(PhysicsSystem&& other) = delete;
+
 	~PhysicsSystem() noexcept
 	{
+		JPH::BodyInterface& bi = phys_system.GetBodyInterface();
+		JPH::BodyIDVector body_ids;
+		phys_system.GetBodies(body_ids);
+		bi.RemoveBodies(body_ids.data(), body_ids.size());
+		bi.DestroyBodies(body_ids.data(), body_ids.size());
+
 		JPH::UnregisterTypes();
 
 		delete JPH::Factory::sInstance;

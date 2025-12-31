@@ -21,7 +21,7 @@ struct Scene
 	ECS::Registry registry;
 	ECS::EntityHandle root;
 
-	Phys::PhysicsSystem phys_system;
+	std::unique_ptr<Phys::PhysicsSystem> phys_system;
 	std::unordered_map<JPH::BodyID, ECS::EntityHandle> pbody_to_ent;
 
 	Scene() noexcept
@@ -32,18 +32,25 @@ struct Scene
 			"Root Node"
 		);
 		setParent(root, { registry.tombstone() });
+
+		phys_system = std::make_unique<Phys::PhysicsSystem>();
 	}
 
 	Scene(Scene&& other) noexcept
+		: registry(std::move(other.registry))
+		, root(std::move(other.root))
+		, pbody_to_ent(std::move(other.pbody_to_ent))
+		, phys_system(std::move(other.phys_system))
 	{
-		registry = std::move(other.registry);
-		root = std::move(other.root);
+
 	}
 
 	Scene& operator=(Scene&& other) noexcept
 	{
 		registry = std::move(other.registry);
 		root = std::move(other.root);
+		pbody_to_ent = std::move(other.pbody_to_ent);
+		phys_system = std::move(other.phys_system);
 
 		return *this;
 	}
@@ -208,7 +215,7 @@ struct Scene
 
 	JPH::BodyID createPhysicsBody(JPH::BodyCreationSettings body_settings) noexcept
 	{
-		auto& body_if = phys_system.phys_system.GetBodyInterface();
+		auto& body_if = phys_system->phys_system.GetBodyInterface();
 		auto body_id = body_if.CreateAndAddBody(
 			body_settings,
 			JPH::EActivation::Activate
@@ -219,20 +226,33 @@ struct Scene
 
 	JPH::BodyID createAndRegisterPhysicsBody(
 		ECS::EntityHandle ent,
-		JPH::BodyCreationSettings body_settings
-	) noexcept
+		JPH::BodyCreationSettings body_settings) noexcept
 	{
 		auto body_id = createPhysicsBody(body_settings);
 
 		pbody_to_ent[body_id] = ent;
-		registry.emplaceComponent<Phys::PhysicsComponent>(ent, body_id);
+		registry.emplaceOrReplaceComponent<Phys::PhysicsComponent>(ent, body_id);
 
 		return body_id;
 	}
 
+	void removePhysicsBody(ECS::EntityHandle ent) noexcept
+	{
+		auto phys_comp = registry.getComponent<Phys::PhysicsComponent>(ent);
+
+		auto& body_if = phys_system->phys_system.GetBodyInterface();
+		body_if.RemoveBody(phys_comp.body_id);
+		body_if.DestroyBody(phys_comp.body_id);
+
+		registry.removeComponent<Phys::PhysicsComponent>(ent);
+	}
+
 	ECS::EntityHandle getPhysicsBodyEntity(JPH::BodyID body_id) const noexcept
 	{
-		return pbody_to_ent.at(body_id);
+		auto ent = pbody_to_ent.at(body_id);
+		APE_TRACE("Selected Entity: {}", ent.id);
+
+		return ent;
 	}
 };
 

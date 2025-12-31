@@ -263,6 +263,10 @@ static inline void drawManipulatorPanel(
 {
 	ImGui::Begin("Manipulator Panel");
 
+	std::stringstream id_ss;
+	id_ss << "Entity ID: " << ent.id;
+	ImGui::Text("%s", id_ss.str().c_str());
+
 	// Tag
 	if (world.registry.hasComponent<HierarchyComponent>(ent)) {
 		ImGui::Text("Hierarchy");
@@ -361,7 +365,7 @@ static inline void drawManipulatorPanel(
 
 	// Physics
 	ImGui::Text("Physics");
-	auto& body_if = world.phys_system.phys_system.GetBodyInterface();
+	auto& body_if = world.phys_system->phys_system.GetBodyInterface();
 	if (world.registry.hasComponent<Phys::PhysicsComponent>(ent))
 	{
 		auto& pbody = world.registry.getComponent<Phys::PhysicsComponent>(ent);
@@ -422,7 +426,7 @@ static inline void drawManipulatorPanel(
 			);
 			Engine::world().createAndRegisterPhysicsBody(ent, settings);
 
-			Engine::world().phys_system.phys_system.OptimizeBroadPhase();
+			Engine::world().phys_system->phys_system.OptimizeBroadPhase();
 		}
 	}
 
@@ -494,7 +498,7 @@ static inline void drawGizmo(
 		// Sync physics state
 		if (world.registry.hasComponent<Phys::PhysicsComponent>(ent))
 		{
-			auto& body_if = world.phys_system.phys_system.GetBodyInterface();
+			auto& body_if = world.phys_system->phys_system.GetBodyInterface();
 
 			auto pbody = world.registry.getComponent<Phys::PhysicsComponent>(ent);
 			JPH::Vec3 ppos { 
