@@ -215,42 +215,8 @@ struct PhysicsSystem
 		const uint cMaxBodies = 65536,
 		const uint cNumBodyMutexes = 0,
 		const uint cMaxBodyPairs = 65536,
-		const uint cMaxContactConstraints = 10240) noexcept
-	{
-		// Memory Allocator
-		JPH::RegisterDefaultAllocator();
-
-		// Traces and Callbacks
-		JPH::Trace = TraceImpl;
-		JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = AssertFailedImpl;);
-
-		// Factory for creating class instances (required)
-		JPH::Factory::sInstance = new JPH::Factory();
-
-		// Register physics types with factory
-		JPH::RegisterTypes();
-
-		// Temp allocator (default 10 MB)
-		temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
-
-		// Job system
-		job_system = std::make_unique<JPH::JobSystemThreadPool>(
-			JPH::cMaxPhysicsJobs,
-			JPH::cMaxPhysicsBarriers,
-			std::thread::hardware_concurrency() - 1
-		);
-
-		// Init physics system
-		phys_system.Init(
-			cMaxBodies,
-			cNumBodyMutexes,
-			cMaxBodyPairs,
-			cMaxContactConstraints,
-			broad_phase_layer_interface,
-			object_vs_broadphase_layer_filter,
-			object_vs_object_layer_filter
-		);
-	}
+		const uint cMaxContactConstraints = 10240
+	) noexcept;
 
 	// Delete copy ctor
 	PhysicsSystem(const PhysicsSystem&) = delete;
@@ -260,50 +226,16 @@ struct PhysicsSystem
 	PhysicsSystem(PhysicsSystem&& other) = delete;
 	PhysicsSystem& operator=(PhysicsSystem&& other) = delete;
 
-	~PhysicsSystem() noexcept
-	{
-		JPH::BodyInterface& bi = phys_system.GetBodyInterface();
-		JPH::BodyIDVector body_ids;
-		phys_system.GetBodies(body_ids);
-		bi.RemoveBodies(body_ids.data(), body_ids.size());
-		bi.DestroyBodies(body_ids.data(), body_ids.size());
+	~PhysicsSystem() noexcept;
 
-		JPH::UnregisterTypes();
+	void update(float delta) noexcept;
 
-		delete JPH::Factory::sInstance;
-		JPH::Factory::sInstance = nullptr;
-	}
-
-	void update(float delta) noexcept
-	{
-		phys_system.Update(delta, 1, temp_allocator.get(), job_system.get());
-	}
-
-	void optimizeBroadPhase() noexcept
-	{
-		phys_system.OptimizeBroadPhase();
-	}
+	void optimizeBroadPhase() noexcept;
 
 	JPH::AllHitCollisionCollector<JPH::CastRayCollector> castRay(
 		glm::vec3 pos,
-		glm::vec3 dir) noexcept
-	{
-		// Create JPH Raycast Query
-		auto rpos = JPH::Vec3(pos.x, pos.y, pos.z);
-		auto rdir = JPH::Vec3(dir.x, dir.y, dir.z);
-		JPH::RRayCast ray { rpos, MAX_RAY_DIST * rdir };
-
-		JPH::RayCastSettings ray_settings;
-		ray_settings.SetBackFaceMode(JPH::EBackFaceMode::CollideWithBackFaces);
-
-		JPH::AllHitCollisionCollector<JPH::CastRayCollector> collector;
-
-		// Cast ray
-		phys_system.GetNarrowPhaseQuery().CastRay(ray, ray_settings, collector);
-		collector.Sort();
-
-		return collector;
-	}
+		glm::vec3 dir
+	) noexcept;
 };
 
 };	// end of namespace APE::Phys
