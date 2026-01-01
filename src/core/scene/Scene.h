@@ -175,10 +175,6 @@ struct Scene
 		ECS::EntityHandle model_ent = createEntity(root);
 		auto& model_hierarchy = registry.getComponent<HierarchyComponent>(model_ent);
 		model_hierarchy.tag = std::format("Model {}", model_ent.id);
-		// registry.replaceComponent<HierarchyComponent>(
-		// 	model_ent,
-		// 	std::format("Model {}", model_ent.id)
-		// );
 
 		registry.emplaceComponent<TransformComponent>(
 			model_ent,
@@ -186,14 +182,11 @@ struct Scene
 		);
 
 		auto& model = model_handle.data;
-		for (size_t idx = 0; idx < model->meshes.size(); ++idx) {
+		for (size_t idx = 0; idx < model->meshes.size(); ++idx) 
+		{
 			auto& mesh = model->meshes[idx];
 
 			ECS::EntityHandle ent = createEntity(model_ent, std::format("Mesh {}", idx));
-			// registry.replaceComponent<HierarchyComponent>(
-			// 	ent,
-			// 	std::format("Mesh {}", idx)
-			// );
 
 			registry.emplaceComponent<Render::MeshComponent>(
 				ent,
@@ -253,6 +246,125 @@ struct Scene
 		APE_TRACE("Selected Entity: {}", ent.id);
 
 		return ent;
+	}
+
+	ECS::EntityHandle addPlayer(
+		AssetHandle<Render::Model> model_handle,
+		const TransformComponent& transform,
+		JPH::Shape* shape
+	) noexcept
+	{
+		JPH::CharacterVirtualSettings settings;
+		settings.mShape = shape;
+		settings.mInnerBodyLayer = Phys::Layers::MOVING;
+		Phys::PlayerComponent player_comp { 
+			Phys::PlayerController(
+				settings,
+				transform,
+				*phys_system.get()
+			)
+		};
+
+		auto player_ent = addModel(model_handle, transform);
+		setTag(player_ent, "Player");
+		registry.emplaceComponent<Phys::PlayerComponent>(
+			player_ent,
+			std::move(player_comp)
+		);
+
+		return player_ent;
+	}
+
+	std::pair<ECS::EntityHandle, Phys::PlayerComponent*> getPlayer() noexcept
+	{
+		auto view = registry.view<Phys::PlayerComponent>().each();
+
+		if (view.empty()) return { registry.tombstone(), nullptr };
+
+		auto& [player_ent, player] = view.at(0);
+		return { player_ent, &player };
+	}
+
+	std::pair<ECS::EntityHandle, Render::CameraComponent*> getCamera(
+		ECS::EntityHandle parent
+	) noexcept
+	{
+		ECS::EntityHandle cam_ent {};
+		bool has_cam = false;
+		auto children = getChildren(parent);
+		for (auto& child : children)
+		{
+			if (registry.hasComponent<Render::CameraComponent>(child))
+			{
+				cam_ent = child;
+				has_cam = true;
+				break;
+			}
+		}
+
+		if (!has_cam) return { registry.tombstone(), nullptr };
+
+		auto& cam_comp = registry.getComponent<Render::CameraComponent>(cam_ent);
+		return { cam_ent, &cam_comp };
+	}
+
+	void stepPhysics(float dt) noexcept
+	{
+		phys_system->update(dt);
+	}
+
+	void stepPlayer(float dt) noexcept
+	{
+		auto [player_ent, player] = getPlayer();
+		player->controller.update(dt, *phys_system);
+	}
+
+	void syncWithPhysicsState() noexcept
+	{
+		auto& body_if = phys_system->phys_system.GetBodyInterface();
+
+		// Sync transforms
+		auto view = registry.view<TransformComponent, Phys::PhysicsComponent>();
+		for (auto& [ent, transform, pbody] : view.each())
+		{
+			auto pos = body_if.GetPosition(pbody.body_id);
+			transform.position.x = pos.GetX();
+			transform.position.y = pos.GetY();
+			transform.position.z = pos.GetZ();
+
+			auto rot = body_if.GetRotation(pbody.body_id);
+			transform.rotation.x = rot.GetX();
+			transform.rotation.y = rot.GetY();
+			transform.rotation.z = rot.GetZ();
+			transform.rotation.w = rot.GetW();
+		}
+
+		// Try to sync player
+		auto [player_ent, player] = getPlayer();
+		if (player_ent != registry.tombstone())
+		{
+			auto player_pos = player->controller.body->GetPosition();
+			auto player_rot = player->controller.body->GetRotation();
+
+			auto& player_transform = registry.getComponent<TransformComponent>(player_ent);
+			player_transform.position.x = player_pos.GetX();
+			player_transform.position.y = player_pos.GetY();
+			player_transform.position.z = player_pos.GetZ();
+
+			player_transform.rotation.x = player_rot.GetX();
+			player_transform.rotation.y = player_rot.GetY();
+			player_transform.rotation.z = player_rot.GetZ();
+			player_transform.rotation.w = player_rot.GetW();
+		}
+	}
+
+	void syncPlayerCamera() noexcept
+	{
+		auto [player_ent, player] = getPlayer();
+		auto [cam_ent, player_cam] = getCamera(player_ent);
+
+		auto cam_transform = getWorldTransform(cam_ent);
+		player_cam->camera->setPosition(cam_transform.position);
 	}
 };
 

@@ -24,7 +24,7 @@ struct PlayerController
 
 	PlayerController(
 		JPH::CharacterVirtualSettings& in_settings,
-		TransformComponent& transform,
+		const TransformComponent& transform,
 		PhysicsSystem& phys_system) noexcept
 	{
 		body = std::make_unique<JPH::CharacterVirtual>(
@@ -61,6 +61,20 @@ struct PlayerController
 			JPH::ShapeFilter(),
 			*phys_system.temp_allocator
 		);
+	}
+
+	void move(
+		const glm::vec3& dir,
+		float speed
+	) noexcept
+	{
+		glm::vec3 vel(0.f);
+		if (glm::length(dir) != 0.f) 
+		{
+			vel = glm::normalize(dir) * speed;
+		}
+
+		setHorizontalVelocity(vel);
 	}
 
 	void setPosition(const glm::vec3& pos) noexcept

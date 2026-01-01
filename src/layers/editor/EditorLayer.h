@@ -36,8 +36,6 @@ public:
 	void handleMouseButtonEvent(SDL_MouseButtonEvent m_button) noexcept;
 
 	void drawAABB(JPH::BodyID body_id) noexcept;
-
-	glm::vec3 screenToWorld(glm::vec2 screen_coords) noexcept;
 };
 
 };	// end of namespace

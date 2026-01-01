@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/Logger.h"
+#include "core/render/Context.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -216,6 +217,34 @@ struct Camera
 		return glm::normalize(
 			glm::cross(right_vec, forward_vec)
 		);
+	}
+
+	[[nodiscard]] glm::vec3 screenToWorld(
+		const glm::vec2& screen_coords,
+		const APE::Render::Context& context
+	) noexcept
+	{
+		// Screen coords to ndc
+		glm::vec3 ndc = {
+			(2.f * screen_coords.x) / context.window_width - 1.f,
+			1.f - (2.f * screen_coords.y) / context.window_height,
+			1.f
+		};
+
+		// Ndc to view space
+		glm::mat4 inv_proj = glm::inverse(
+			getProjectionMatrix(context.getAspectRatio())
+		);
+
+		glm::vec4 clip(ndc, 1.f);
+		glm::vec4 eye = inv_proj * clip;
+		glm::vec4 view(eye / eye.w);
+
+		// View to world
+		glm::mat4 inv_view = glm::inverse(getViewMatrix());
+		glm::vec4 world = inv_view * view;
+
+		return glm::vec3(world);
 	}
 
 	void print() noexcept {
