@@ -520,8 +520,8 @@ static inline void drawGizmo(
 		{
 			auto& player_comp = world.registry.getComponent<Phys::PlayerComponent>(ent);
 			auto& controller = player_comp.controller;
-			controller->setPosition(transform.position);
-			controller->setRotation(transform.rotation);
+			controller.setPosition(transform.position);
+			controller.setRotation(transform.rotation);
 		}
 	}
 }

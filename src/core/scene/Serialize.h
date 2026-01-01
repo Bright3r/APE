@@ -470,7 +470,6 @@ JPH::Shape* getShape(JPH::EShapeSubType shape_type, const std::string& info) noe
 }
 
 
-
 template <class Archive>
 void save(Archive& ar, const APE::Phys::PhysicsComponent& phys_comp)
 {
@@ -481,8 +480,8 @@ void save(Archive& ar, const APE::Phys::PhysicsComponent& phys_comp)
 	auto shape_type_str = getShapeTypeString(shape);
 	ar(cereal::make_nvp("shape_type", shape_type_str));
 
-	auto shape_info = getShapeString(shape);
-	ar(cereal::make_nvp("shape_info", shape_info));
+	auto shape_info_str = getShapeString(shape);
+	ar(cereal::make_nvp("shape_info", shape_info_str));
 
 	ar(cereal::make_nvp("position", body_if.GetPosition(body_id)));
 
@@ -532,6 +531,64 @@ void load(Archive& ar, APE::Phys::PhysicsComponent& phys_comp)
 	);
 	auto body_id = s_scene->createPhysicsBody(settings);
 	phys_comp.body_id = body_id;
+}
+
+
+template <class Archive>
+void save(Archive& ar, const APE::Phys::PlayerController& controller)
+{
+	auto& body = controller.body;
+
+	auto pos = body->GetPosition();
+	ar(cereal::make_nvp("position", pos));
+
+	auto rot = body->GetRotation();
+	ar(cereal::make_nvp("rotation", rot));
+
+	auto shape = body->GetShape();
+	auto shape_type_str = getShapeTypeString(shape);
+	ar(cereal::make_nvp("shape_type", shape_type_str));
+
+	auto shape_info_str = getShapeString(shape);
+	ar(cereal::make_nvp("shape_info", shape_info_str));
+}
+
+template <class Archive>
+void load(Archive& ar, APE::Phys::PlayerController& controller)
+{
+	JPH::Vec3 position;
+	ar(cereal::make_nvp("position", position));
+
+	JPH::Quat rotation;
+	ar(cereal::make_nvp("rotation", rotation));
+
+	std::string shape_type_str;
+	ar(cereal::make_nvp("shape_type", shape_type_str));
+	auto shape_type = getShapeType(shape_type_str);
+
+	std::string shape_info_str;
+	ar(cereal::make_nvp("shape_info", shape_info_str));
+	auto shape = getShape(shape_type, shape_info_str);
+
+	JPH::CharacterVirtualSettings settings;
+	settings.mShape = shape;
+	settings.mInnerBodyLayer = APE::Phys::Layers::MOVING;
+
+	APE::TransformComponent transform;
+	transform.position = glm::vec3(position.GetX(), position.GetY(), position.GetZ());
+	transform.rotation = glm::quat(rotation.GetW(), rotation.GetX(), rotation.GetY(), rotation.GetZ());
+	controller = APE::Phys::PlayerController(
+		settings,
+		transform,
+		*s_scene->phys_system
+	);
+}
+
+
+template <class Archive>
+void serialize(Archive& ar, APE::Phys::PlayerComponent& player_comp)
+{
+	ar(cereal::make_nvp("controller", player_comp.controller));
 }
 
 
@@ -599,7 +656,7 @@ void save(Archive& ar, const APE::ECS::Registry& r)
 
 	serializePool<Archive, APE::Render::CameraComponent>(ar, r);
 	serializePool<Archive, APE::Phys::PhysicsComponent>(ar, r);
-	// serializePool<Archive, APE::Phys::PlayerComponent>(ar, r);
+	serializePool<Archive, APE::Phys::PlayerComponent>(ar, r);
 }
 
 template <class Archive>
@@ -623,7 +680,7 @@ void load(Archive& ar, APE::ECS::Registry& r)
 
 	deserializePool<Archive, APE::Render::CameraComponent>(ar, r);
 	deserializePool<Archive, APE::Phys::PhysicsComponent>(ar, r);
-	// deserializePool<Archive, APE::Phys::PlayerComponent>(ar, r);
+	deserializePool<Archive, APE::Phys::PlayerComponent>(ar, r);
 }
 
 
@@ -665,10 +722,9 @@ void load(Archive& ar, APE::Scene& scene)
 	{
 		auto body_id = phys_comp.body_id;
 		scene.pbody_to_ent[body_id] = ent;
-
-		APE_TRACE("Entity ID: {}, Body ID: {}", ent.id, body_id.GetIndex());
 	}
-	APE_TRACE("Root ID: {}", scene.root.id);
+
+	scene.phys_system->optimizeBroadPhase();
 }
 
 };	// end of namespace

@@ -117,11 +117,16 @@ void EditorLayer::setup() noexcept
 	
 	// Controller
 	JPH::CharacterVirtualSettings settings;
-	settings.mShape = new JPH::BoxShape(JPH::Vec3(player_transform.scale.x / 2.f, player_transform.scale.y / 2.f, player_transform.scale.z / 2.f));
+	settings.mShape = new JPH::BoxShape(
+		JPH::Vec3(player_transform.scale.x / 2.f,
+		player_transform.scale.y / 2.f,
+		player_transform.scale.z / 2.f
+	    )
+	);
 	settings.mInnerBodyLayer = Phys::Layers::MOVING;
 
 	Phys::PlayerComponent player_comp { 
-		std::make_unique<Phys::PlayerController>(
+		Phys::PlayerController(
 			settings,
 			player_transform,
 			*phys_system.get()
@@ -229,95 +234,79 @@ void EditorLayer::update() noexcept
 		Engine::getCamera().lock()->rotate(m_event.xrel, m_event.yrel);
 	}
 
-	if (input.isKeyDown(SDLK_G) && input.isFirstFramePressed(SDLK_G))
-	{
-		for (auto& [body_id, ent] : Engine::world().pbody_to_ent)
-		{
-			APE_TRACE("Entity ID: {}, Body ID: {}", ent.id, body_id.GetIndex());
-		}
-		APE_TRACE("Root ID: {}", Engine::world().root.id);
 
-		void* ptr = &Engine::world().pbody_to_ent;
-		APE_TRACE("Pbody_to_ent Addr: {}", ptr);
+	// Switch Camera
+	// 
+	auto pview = Engine::world().registry.view<Phys::PlayerComponent>().each();
+	auto& [player_ent, player] = pview.at(0);
+
+	// Get player camera
+	ECS::EntityHandle cam_ent {};
+	auto player_children = Engine::world().getChildren(player_ent);
+	for (auto& child : player_children)
+	{
+		if (Engine::world().registry.hasComponent<Render::CameraComponent>(child))
+		{
+			cam_ent = child;
+			break;
+		}
 	}
 
-
-	// // Switch Camera
-	// // 
-	// auto pview = Engine::world().registry.view<Phys::PlayerComponent>().each();
-	// auto& [player_ent, player] = pview.at(0);
-	//
-	// // Get player camera
-	// ECS::EntityHandle cam_ent {};
-	// auto player_children = Engine::world().getChildren(player_ent);
-	// for (auto& child : player_children)
-	// {
-	// 	if (Engine::world().registry.hasComponent<Render::CameraComponent>(child))
-	// 	{
-	// 		cam_ent = child;
-	// 		break;
-	// 	}
-	// }
-	//
-	// auto cam_comp = Engine::world().registry.getComponent<Render::CameraComponent>(cam_ent);
-	// auto player_cam = cam_comp.camera;
-	//
-	//
-	//
-	//
-	// if (input.isKeyDown(SDLK_T) && input.isFirstFramePressed(SDLK_T)) {
-	// 	std::shared_ptr<Render::Camera> cam = fly_cam;
-	// 	if (Engine::getCamera().lock() == fly_cam)
-	// 	{
-	// 		cam = player_cam;
-	// 	}
-	// 	Engine::setCamera(cam);
-	// }
+	auto cam_comp = Engine::world().registry.getComponent<Render::CameraComponent>(cam_ent);
+	auto player_cam = cam_comp.camera;
+	if (input.isKeyDown(SDLK_T) && input.isFirstFramePressed(SDLK_T)) {
+		std::shared_ptr<Render::Camera> cam = fly_cam;
+		if (Engine::getCamera().lock() == fly_cam)
+		{
+			cam = player_cam;
+		}
+		Engine::setCamera(cam);
+	}
 
 
 
 	// TEMPORARY - UPDATE PHYSICS
 	if (!b_play_simulation) return;
 
-	// glm::vec3 player_dir(0.f);
-	// if (Engine::getCamera().lock() == player_cam)
-	// {
-	// 	auto forward = player_cam->getForwardVector();
-	// 	forward.y = 0;
-	// 	forward = glm::normalize(forward);
-	//
-	// 	auto right = player_cam->getRightVector();
-	// 	right.y = 0;
-	// 	right = glm::normalize(right);
-	//
-	// 	if (input.isKeyDown(SDLK_W)) {
-	// 		player_dir += forward;
-	// 	}
-	// 	if (input.isKeyDown(SDLK_S)) {
-	// 		player_dir -= forward;
-	// 	}
-	// 	if (input.isKeyDown(SDLK_A)) {
-	// 		player_dir -= right;
-	// 	}
-	// 	if (input.isKeyDown(SDLK_D)) {
-	// 		player_dir += right;
-	// 	}
-	//
-	// 	if (input.isKeyDown(SDLK_SPACE)) {
-	// 		if (player.controller->body->IsSupported())
-	// 		{
-	// 			player.controller->jump(5.f);
-	// 		}
-	// 	}
-	// }
-	//
-	// auto player_speed = 5.f;
-	// glm::vec3 vel(0.f);
-	// if (glm::length(player_dir) != 0.f) 
-	// {
-	// 	vel = glm::normalize(player_dir) * player_speed;
-	// }
-	// player.controller->setHorizontalVelocity(vel);
+	glm::vec3 player_dir(0.f);
+	if (Engine::getCamera().lock() == player_cam)
+	{
+		auto forward = player_cam->getForwardVector();
+		forward.y = 0;
+		forward = glm::normalize(forward);
+
+		auto right = player_cam->getRightVector();
+		right.y = 0;
+		right = glm::normalize(right);
+
+		if (input.isKeyDown(SDLK_W)) {
+			player_dir += forward;
+		}
+		if (input.isKeyDown(SDLK_S)) {
+			player_dir -= forward;
+		}
+		if (input.isKeyDown(SDLK_A)) {
+			player_dir -= right;
+		}
+		if (input.isKeyDown(SDLK_D)) {
+			player_dir += right;
+		}
+
+		if (input.isKeyDown(SDLK_SPACE)) {
+			if (player.controller.body->IsSupported())
+			{
+				player.controller.jump(5.f);
+			}
+		}
+	}
+
+	auto player_speed = 5.f;
+	glm::vec3 vel(0.f);
+	if (glm::length(player_dir) != 0.f) 
+	{
+		vel = glm::normalize(player_dir) * player_speed;
+	}
+	player.controller.setHorizontalVelocity(vel);
 
 
 	// Physics simulation step
@@ -342,30 +331,30 @@ void EditorLayer::update() noexcept
 		transform.rotation.w = rot.GetW();
 	}
 
-	// player.controller->update(dt, phys_system);
-	//
-	// auto player_pos = player.controller->body->GetPosition();
-	// auto player_rot = player.controller->body->GetRotation();
-	//
-	// auto& player_transform = Engine::world().registry.getComponent<TransformComponent>(player_ent);
-	// player_transform.position.x = player_pos.GetX();
-	// player_transform.position.y = player_pos.GetY();
-	// player_transform.position.z = player_pos.GetZ();
-	//
-	// player_transform.rotation.x = player_rot.GetX();
-	// player_transform.rotation.y = player_rot.GetY();
-	// player_transform.rotation.z = player_rot.GetZ();
-	// player_transform.rotation.w = player_rot.GetW();
-	//
-	//
-	// // Sync player camera with player position
-	// auto cam_transform = Engine::world().getWorldTransform(cam_ent);
-	// APE_TRACE("Camera Pos: ({}, {}, {})", 
-	// 	cam_transform.position.x,
-	// 	cam_transform.position.y,
-	// 	cam_transform.position.z
-	// );
-	// player_cam->setPosition(cam_transform.position);
+	player.controller.update(dt, *phys_system);
+
+	auto player_pos = player.controller.body->GetPosition();
+	auto player_rot = player.controller.body->GetRotation();
+
+	auto& player_transform = Engine::world().registry.getComponent<TransformComponent>(player_ent);
+	player_transform.position.x = player_pos.GetX();
+	player_transform.position.y = player_pos.GetY();
+	player_transform.position.z = player_pos.GetZ();
+
+	player_transform.rotation.x = player_rot.GetX();
+	player_transform.rotation.y = player_rot.GetY();
+	player_transform.rotation.z = player_rot.GetZ();
+	player_transform.rotation.w = player_rot.GetW();
+
+
+	// Sync player camera with player position
+	auto cam_transform = Engine::world().getWorldTransform(cam_ent);
+	APE_TRACE("Camera Pos: ({}, {}, {})", 
+		cam_transform.position.x,
+		cam_transform.position.y,
+		cam_transform.position.z
+	);
+	player_cam->setPosition(cam_transform.position);
 }
 
 void EditorLayer::draw() noexcept

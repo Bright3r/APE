@@ -1731,6 +1731,30 @@
                         "layer": "Moving"
                     }
                 }
+            ],
+            "PlayerComponent": [
+                {
+                    "entity": {
+                        "id": 23
+                    },
+                    "component": {
+                        "controller": {
+                            "position": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            },
+                            "rotation": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 1.0
+                            },
+                            "shape_type": "Box",
+                            "shape_info": "0.5,1,0.5"
+                        }
+                    }
+                }
             ]
         },
         "root": {

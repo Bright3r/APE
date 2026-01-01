@@ -28,9 +28,11 @@ struct PlayerComponent
 {
 	static constexpr const char* Name = "PlayerComponent";
 
-	std::unique_ptr<Phys::PlayerController> controller;
+	Phys::PlayerController controller;
 
-	PlayerComponent(std::unique_ptr<Phys::PlayerController> controller) noexcept
+	PlayerComponent(
+		Phys::PlayerController controller = {}
+	) noexcept
 		: controller(std::move(controller))
 	{
 

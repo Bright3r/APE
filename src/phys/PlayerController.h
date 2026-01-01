@@ -14,7 +14,13 @@ namespace APE::Phys
 
 struct PlayerController
 {
-	std::unique_ptr<JPH::CharacterVirtual> body;
+	std::shared_ptr<JPH::CharacterVirtual> body;
+
+	PlayerController() noexcept
+		: body(nullptr)
+	{
+
+	}
 
 	PlayerController(
 		JPH::CharacterVirtualSettings& in_settings,
