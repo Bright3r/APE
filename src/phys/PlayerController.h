@@ -14,6 +14,7 @@ namespace APE::Phys
 
 struct PlayerController
 {
+	// could be unique_ptr but shared_ptr instead for trivial copy
 	std::shared_ptr<JPH::CharacterVirtual> body;
 
 	PlayerController() noexcept

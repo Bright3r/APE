@@ -3,6 +3,8 @@
 #include "core/render/Image.h"
 #include "core/scene/AssetHandle.h"
 
+#include <glm/glm.hpp>
+
 #include <filesystem>
 
 namespace APE {

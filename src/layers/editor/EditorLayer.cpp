@@ -47,6 +47,9 @@ void EditorLayer::setup() noexcept
 	// auto car_model_handle = ModelLoader::load(CAR_PATH);
 	// auto car = Engine::world().addModel(car_model_handle);
 	
+	auto air_fryer_handle = ModelLoader::load("res/models/ultimate-interior/Air Fryer.glb");
+	auto air_fryer = Engine::world().addModel(air_fryer_handle);
+	
 	std::vector<AssetHandle<Render::Model>> models;
 	models.push_back(ModelLoader::load(CUBE_PATH));
 	// models.push_back(ModelLoader::load(SPHERE_PATH));

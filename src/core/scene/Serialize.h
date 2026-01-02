@@ -614,8 +614,10 @@ template <class Archive, typename Component>
 void serializePool(Archive& ar, const APE::ECS::Registry& r) noexcept
 {
 	std::vector<ECSPair<Component>> entries;
-	if (r.hasComponent<Component>()) {
-		for (auto [ent, comp] : r.getPool<Component>()) {
+	if (r.hasComponent<Component>()) 
+	{
+		for (auto [ent, comp] : r.getPool<Component>()) 
+		{
 			entries.emplace_back(ent, comp);
 		}
 	}

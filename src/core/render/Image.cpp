@@ -116,6 +116,23 @@ void Image::loadImage(std::filesystem::path path) noexcept
 	stbi_image_free(data);
 }
 
+void Image::createSolidColor(const glm::vec4& color) noexcept
+{
+	m_texture_buffer = nullptr;
+	m_path.clear();
+
+	m_width = 1;
+	m_height = 1;
+	m_num_channels = 4;
+
+	m_pixels.resize(4);
+	for (auto i = 0; i < 4; ++i)
+	{
+		m_pixels[i] = static_cast<std::byte>(
+			glm::clamp(color[i], 0.f, 1.f) * 255.f
+		);
+	}
+}
 
 void Image::loadCheckerboard() noexcept
 {

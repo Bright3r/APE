@@ -2,6 +2,7 @@
 
 #include "core/render/SafeGPU.h"
 
+#include <glm/glm.hpp>
 #include <SDL3/SDL_stdinc.h>
 
 #include <cstddef>
@@ -32,13 +33,16 @@ public:
 	Image(std::filesystem::path path, 
 		int width,
 		int height,
-		const std::byte* data) noexcept;
+		const std::byte* data
+       ) noexcept;
 
 	[[nodiscard]] std::filesystem::path getPath() const noexcept;
 
 	[[nodiscard]] static std::filesystem::path getDefaultPath() noexcept;
 
 	void loadImage(std::filesystem::path path) noexcept;
+
+	void createSolidColor(const glm::vec4& color) noexcept;
 
 	void loadCheckerboard() noexcept;
 

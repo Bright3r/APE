@@ -77,20 +77,58 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 	const aiScene* scene,
 	std::filesystem::path model_path) noexcept
 {
-	// Check for diffuse texture
-	if (ai_mat->GetTextureCount(aiTextureType_DIFFUSE) <=  0) {
-		// Return default texture on failure
-		APE_ERROR(
-			"ModelLoader::convertAiMaterial() Failed: Diffuse texture not found."
-		);
-		return ImageLoader::defaultImage();
+	// Check for diffuse or base color texture
+	aiTextureType tex_type = aiTextureType_DIFFUSE;
+	if (ai_mat->GetTextureCount(tex_type) <=  0)
+	{
+		tex_type = aiTextureType_BASE_COLOR;
 	}
+	if (ai_mat->GetTextureCount(tex_type) <=  0)
+	{
+		tex_type = aiTextureType_AMBIENT;
+	}
+	if (ai_mat->GetTextureCount(tex_type) <=  0)
+	{
+		aiColor4D base_color;
+		auto has_mat_color = aiGetMaterialColor(
+			ai_mat,
+			AI_MATKEY_BASE_COLOR,
+			&base_color
+		);
+		if (has_mat_color != AI_SUCCESS)
+		{
+			// Return default texture on failure
+			APE_ERROR(
+				"ModelLoader::convertAiMaterial() Failed: Diffuse texture not found."
+			);
+			return ImageLoader::defaultImage();
+		}
+
+		AssetKey key { model_path, ai_mat->GetName().C_Str() };
+		glm::vec4 color(
+			base_color.r,
+			base_color.g,
+			base_color.b,
+			base_color.a
+		);
+
+		auto img = std::make_unique<Render::Image>();
+		img->createSolidColor(color);
+		return AssetManager::upload<Render::Image>(
+			key,
+			AssetClass::Texture,
+			std::move(img)
+		);
+	}
+
 
 	// Get diffuse texture path
 	aiString path;
-	if (ai_mat->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+	if (ai_mat->GetTexture(tex_type, 0, &path) == AI_SUCCESS) 
+	{
 		// Check if texture is embedded in model file
-		if (path.length > 0 && path.data[0] == '*') {
+		if (path.length > 0 && path.data[0] == '*') 
+		{
 			int tex_idx = std::atoi(path.C_Str() + 1);
 			aiTexture* ai_tex = scene->mTextures[tex_idx];
 
@@ -108,9 +146,10 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 			);
 		}
 		// Otherwise create texture from file
-		else {
+		else 
+		{
 			std::string tex_path { 
-				model_path.parent_path().append(path.C_Str())
+				model_path.parent_path() / path.C_Str()
 			};
 			return ImageLoader::load(tex_path);
 		}
