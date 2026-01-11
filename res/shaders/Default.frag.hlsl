@@ -2,15 +2,18 @@
 cbuffer DebugMode : register(b0, space3)
 {
 	bool uShowNormals;
-	float3 pad;
+	float3 pad1;
 };
 
 
-struct Light {
+Texture2D uTexture : register(t0, space2);
+
+SamplerState uSampler : register(s0, space2);
+
+struct Light 
+{
 	float4 position;
-
 	float4 attenuation;
-
 	float4 ambientColor;
 	float4 diffuseColor;
 	float4 specularColor;
@@ -19,29 +22,25 @@ struct Light {
 	float3 dir;
 };
 
-cbuffer uLight : register(b1, space3)
+StructuredBuffer<Light> uLights : register(t1, space2);
+
+cbuffer LightData : register(b1, space3)
 {
-	float4 uLightPosition;
-	float4 uLightAttenuation;
-
-	float4 uLightAmbientColor;
-	float4 uLightDiffuseColor;
-	float4 uLightSpecularColor;
-
-	int uLightType;
-	float3 uLightDir;
-};
-
-Texture2D uTexture : register(t0, space2);
-SamplerState uSampler : register(s0, space2);
+	int uLightCount;
+	float3 pad2;
+}
 
 
-struct Material {
+struct Material 
+{
 	float4 ambientColor;
 	float4 diffuseColor;
 	float4 specularColor;
+
 	float shininess;
+	float3 pad;
 };
+
 
 float4 calcPointLight(Light light, float3 normal, float3 fragPos, float3 viewDir, Material mat)
 {
@@ -106,20 +105,19 @@ float4 main(Input input) : SV_Target0
 	mat.specularColor = float4(1.f, 1.f, 1.f, 1.f);
 	mat.shininess = 2.5;
 
-	Light light;
-	light.position = uLightPosition;
-	light.attenuation = uLightAttenuation;
-	light.ambientColor = uLightAmbientColor;
-	light.diffuseColor = uLightDiffuseColor;
-	light.specularColor = uLightSpecularColor;
-	light.type = uLightType;
-	light.dir = uLightDir;
+	float4 color = float4(0, 0, 0, 1);
+	for (uint i = 0; i < uLightCount; ++i)
+	{
+		Light light = uLights[i];
 
-	if (light.type == 0) {
-		return calcPointLight(light, N, input.FragPos, V, mat);
+		if (light.type == 0) {
+			color += calcPointLight(light, N, input.FragPos, V, mat);
+		}
+		else {
+			color += calcDirectionalLight(light, N, V, mat);
+		}
 	}
-	else {
-		return calcDirectionalLight(light, N, V, mat);
-	}
+
+	return color;
 }
 

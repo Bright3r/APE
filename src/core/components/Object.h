@@ -65,6 +65,11 @@ struct TransformComponent {
 		return T * R * S;
 	}
 
+	[[nodiscard]] glm::vec3 getLookatDirection() const noexcept
+	{
+		return rotation * glm::vec3(0, 0, -1);
+	}
+
 	[[nodiscard]] TransformComponent operator*(
 		const TransformComponent& other) const noexcept
 	{

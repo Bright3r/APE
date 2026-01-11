@@ -90,14 +90,31 @@ void EditorLayer::setup() noexcept
 		}
 	}
 
-	// Add floor
+
+	// Add light
 	auto box_handle = ModelLoader::load(CUBE_PATH);
 
+	TransformComponent light_transform {};
+	light_transform.position.y = 10;
+
+	Render::LightComponent light {};
+
+	auto light_ent = world.addModel(box_handle, light_transform);
+	world.setTag(light_ent, "Light 0");
+	world.registry.emplaceComponent<Render::LightComponent>(light_ent, light);
+
+	auto light_ent2 = world.addModel(box_handle, light_transform);
+	world.setTag(light_ent2, "Light 1");
+	world.registry.emplaceComponent<Render::LightComponent>(light_ent2, light);
+
+
+
+	// Add floor
 	TransformComponent box_transform {};
 	box_transform.position.y = -10.f;
 	box_transform.scale = glm::vec3(20.f, 0.1f, 20.f);
 
-	auto ent = world.addModel(box_handle, box_transform);
+	auto floor_ent = world.addModel(box_handle, box_transform);
 	
 	JPH::BodyCreationSettings floor_settings(
 		new JPH::BoxShape(JPH::Vec3(box_transform.scale.x / 2.f, box_transform.scale.y / 2.f, box_transform.scale.z / 2.f)), 
@@ -106,7 +123,7 @@ void EditorLayer::setup() noexcept
 		JPH::EMotionType::Static,
 		Phys::Layers::NON_MOVING
 	);
-	world.createAndRegisterPhysicsBody(ent, floor_settings);
+	world.createAndRegisterPhysicsBody(floor_ent, floor_settings);
 
 
 	// Add Player

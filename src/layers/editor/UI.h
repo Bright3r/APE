@@ -121,17 +121,6 @@ static inline void drawDebugPanel(
 		renderer->wireframe_mode = !renderer->wireframe_mode;
 	}
 
-
-	ImGui::Text("Lighting");
-	auto& light = renderer->light;
-	ImGui::SliderInt("type", reinterpret_cast<int*>(&light.type), 0, Render::LightType::Size);
-	ImGui::InputFloat3("position", glm::value_ptr(light.position));
-	ImGui::InputFloat3("attenuation", glm::value_ptr(light.attenuation));
-	ImGui::InputFloat3("direction", glm::value_ptr(light.dir));
-	ImGui::ColorPicker4("ambient", glm::value_ptr(light.ambient_color));
-	ImGui::ColorPicker4("diffuse", glm::value_ptr(light.diffuse_color));
-	ImGui::ColorPicker4("specular", glm::value_ptr(light.specular_color));
-
 	ImGui::End();
 }
 
@@ -361,6 +350,19 @@ static inline void drawManipulatorPanel(
 					);
 			}
 		}
+	}
+
+	// Lighting
+	ImGui::Text("Lighting");
+	if (world.registry.hasComponent<Render::LightComponent>(ent))
+	{
+		auto& light = world.registry.getComponent<Render::LightComponent>(ent);
+
+		ImGui::SliderInt("type", reinterpret_cast<int*>(&light.type), 0, Render::LightType::Size);
+		ImGui::InputFloat3("attenuation", glm::value_ptr(light.attenuation));
+		ImGui::ColorPicker4("ambient", glm::value_ptr(light.ambient_color));
+		ImGui::ColorPicker4("diffuse", glm::value_ptr(light.diffuse_color));
+		ImGui::ColorPicker4("specular", glm::value_ptr(light.specular_color));
 	}
 
 	// Physics

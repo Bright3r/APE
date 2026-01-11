@@ -19,8 +19,13 @@ struct Context {
 	int window_height;
 	int window_flags;
 
-	Context(std::string_view title, int window_width, 
-		int window_height, int window_flags) noexcept;
+	Context(
+		std::string_view title,
+		int window_width,
+		int window_height,
+		int window_flags
+	 ) noexcept;
+
 	~Context();
 
 	Context(const Context& other) = delete;

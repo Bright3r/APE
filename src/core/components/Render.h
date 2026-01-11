@@ -62,38 +62,58 @@ enum LightType
 	Size
 };
 
-enum class AreaLightShape 
-{
-	Rectangle,
-	Disk
-};
-
 struct LightComponent 
 {
 	static constexpr const char* Name = "Light";
 	LightType type;
-	float intensity;
-	glm::vec3 color;
+	glm::vec4 ambient_color;
+	glm::vec4 diffuse_color;
+	glm::vec4 specular_color;
+	glm::vec4 attenuation;
 
-	// Spotlight only
-	float cutoff_angle;
-
-	// Area light only
-	AreaLightShape shape;
-	glm::vec2 extent;
-
-	LightComponent(LightType type = LightType::Direction,
-		float intensity = 10.f,
-		glm::vec3 color = glm::vec3(1.f),
-		float cutoff_angle = 45.f,
-		AreaLightShape shape = AreaLightShape::Rectangle,
-		glm::vec2 extent = glm::vec2(5.f)) noexcept
+	LightComponent(
+		const LightType& type = LightType::Direction,
+		const glm::vec4& ambient_color = glm::vec4(1.f),
+		const glm::vec4& diffuse_color = glm::vec4(1.f),
+		const glm::vec4& specular_color = glm::vec4(1.f),
+		const glm::vec4& attenuation = glm::vec4(1.f, 0.09f, 0.032f, 0.f)
+	) noexcept
 		: type(type)
-		, intensity(intensity)
-		, color(color)
-		, cutoff_angle(cutoff_angle)
-		, shape(shape)
-		, extent(extent)
+		, ambient_color(ambient_color)
+		, diffuse_color(diffuse_color)
+		, specular_color(specular_color)
+		, attenuation(attenuation)
+	{
+
+	}
+};
+
+struct RenderLight
+{
+	glm::vec4 position;
+	glm::vec4 attenuation;
+	glm::vec4 ambient_color;
+	glm::vec4 diffuse_color;
+	glm::vec4 specular_color;
+	LightType type;
+	glm::vec3 dir;
+
+	RenderLight(
+		const glm::vec4& position = glm::vec4(0),
+		const glm::vec4& attenuation = glm::vec4(1.f, 0.09f, 0.032f, 0.f),
+		const glm::vec4& ambient_color = glm::vec4(1.f),
+		const glm::vec4& diffuse_color = glm::vec4(1.f),
+		const glm::vec4& specular_color = glm::vec4(1.f),
+		const LightType& type = LightType::Direction,
+		const glm::vec3& dir = glm::vec3(0, -1, 0)
+	) noexcept
+		: position(position)
+		, attenuation(attenuation)
+		, ambient_color(ambient_color)
+		, diffuse_color(diffuse_color)
+		, specular_color(specular_color)
+		, type(type)
+		, dir(dir)
 	{
 
 	}

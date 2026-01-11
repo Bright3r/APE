@@ -27,7 +27,6 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	, m_cmd_buf(nullptr)
 	, m_is_drawing(false)
 	, debug_mode(false)
-	, light({})
 	, m_imgui_session(nullptr)
 {
 	// Construct default shader
@@ -60,7 +59,6 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	, m_cmd_buf(nullptr)
 	, m_is_drawing(false)
 	, debug_mode(false)
-	, light({})
 	, m_imgui_session(nullptr)
 {
 	m_debug_shader = std::make_unique<Shader>(
@@ -322,11 +320,12 @@ void Renderer::draw(
 	MeshComponent& mesh,
 	MaterialComponent& material,
 	std::weak_ptr<Camera> camera,
-	const glm::mat4& model_matrix) noexcept
+	const glm::mat4& model_matrix,
+	const std::vector<RenderLight>& lights) noexcept
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
-		"Renderer::draw(Model& mesh) Failed: beginDrawing() not called"
+		"Renderer::draw() Failed: beginDrawing() not called"
 	);
 
 	// Check that camera is valid
@@ -417,6 +416,7 @@ void Renderer::draw(
 		sizeof(cam_uniform)
 	);
 
+
 	// Bind MVP matrix uniform
 	ModelViewProjUniform mvp_uniform { 
 		glm::transpose(model_matrix),
@@ -439,15 +439,33 @@ void Renderer::draw(
 		sizeof(debug_mode)
 	);
 
-	// Bind Light Uniform
+
+	// Bind LightInfo Uniform
+	LightInfoUniform light_info;
+	light_info.light_count = lights.size();
 	SDL_PushGPUFragmentUniformData(
 		m_cmd_buf,
 		1,
-		&light,
-		sizeof(light)
+		&light_info,
+		sizeof(light_info)
 	);
 
 
+	// Fragment Shader Storage Buffers
+	std::vector<SDL_GPUBuffer*> storage_buffers;
+
+	// Bind Light SSBO
+	SafeGPU::UniqueGPUBuffer light_buffer = uploadBuffer(
+		vectorToRawBytes(lights),
+		SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ
+	);
+	storage_buffers.emplace_back(light_buffer.get());
+	SDL_BindGPUFragmentStorageBuffers(
+		m_render_pass,
+		0,
+		storage_buffers.data(),
+		storage_buffers.size()
+	);
 
 
 	// Draw mesh

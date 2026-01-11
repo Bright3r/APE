@@ -215,11 +215,10 @@ void serialize(Archive& ar, APE::Render::LightComponent& l)
 {
 	ar(
 		cereal::make_nvp("type", l.type), 
-		cereal::make_nvp("intensity", l.intensity),
-		cereal::make_nvp("color", l.color),
-		cereal::make_nvp("cutoff_angle", l.cutoff_angle),
-		cereal::make_nvp("shape", l.shape),
-		cereal::make_nvp("extent", l.extent)
+		cereal::make_nvp("ambient_color", l.ambient_color),
+		cereal::make_nvp("diffuse_color", l.diffuse_color),
+		cereal::make_nvp("specular_color", l.specular_color),
+		cereal::make_nvp("attenuation", l.attenuation)
 	);
 }
 
