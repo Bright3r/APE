@@ -3,6 +3,93 @@
         "registry": {
             "entities": [
                 {
+                    "id": 0
+                },
+                {
+                    "id": 1
+                },
+                {
+                    "id": 2
+                },
+                {
+                    "id": 3
+                },
+                {
+                    "id": 4
+                },
+                {
+                    "id": 5
+                },
+                {
+                    "id": 6
+                },
+                {
+                    "id": 7
+                },
+                {
+                    "id": 8
+                },
+                {
+                    "id": 9
+                },
+                {
+                    "id": 10
+                },
+                {
+                    "id": 11
+                },
+                {
+                    "id": 12
+                },
+                {
+                    "id": 13
+                },
+                {
+                    "id": 14
+                },
+                {
+                    "id": 15
+                },
+                {
+                    "id": 16
+                },
+                {
+                    "id": 17
+                },
+                {
+                    "id": 18
+                },
+                {
+                    "id": 19
+                },
+                {
+                    "id": 20
+                },
+                {
+                    "id": 21
+                },
+                {
+                    "id": 22
+                },
+                {
+                    "id": 23
+                },
+                {
+                    "id": 24
+                },
+                {
+                    "id": 25
+                },
+                {
+                    "id": 26
+                },
+                {
+                    "id": 27
+                },
+                {
+                    "id": 28
+                },
+                {
                     "id": 29
                 },
                 {
@@ -22,169 +109,19 @@
                 },
                 {
                     "id": 35
-                },
-                {
-                    "id": 36
-                },
-                {
-                    "id": 37
-                },
-                {
-                    "id": 38
-                },
-                {
-                    "id": 39
-                },
-                {
-                    "id": 40
-                },
-                {
-                    "id": 41
-                },
-                {
-                    "id": 42
-                },
-                {
-                    "id": 43
-                },
-                {
-                    "id": 44
-                },
-                {
-                    "id": 45
-                },
-                {
-                    "id": 46
-                },
-                {
-                    "id": 47
-                },
-                {
-                    "id": 48
-                },
-                {
-                    "id": 49
-                },
-                {
-                    "id": 50
-                },
-                {
-                    "id": 51
-                },
-                {
-                    "id": 52
-                },
-                {
-                    "id": 53
-                },
-                {
-                    "id": 54
                 }
             ],
             "Hierarchy": [
                 {
                     "entity": {
-                        "id": 29
+                        "id": 35
                     },
                     "component": {
                         "parent": {
-                            "id": 18446744073709551615
-                        },
-                        "children": [
-                            {
-                                "id": 30
-                            },
-                            {
-                                "id": 32
-                            },
-                            {
-                                "id": 34
-                            },
-                            {
-                                "id": 36
-                            },
-                            {
-                                "id": 38
-                            },
-                            {
-                                "id": 40
-                            },
-                            {
-                                "id": 42
-                            },
-                            {
-                                "id": 44
-                            },
-                            {
-                                "id": 46
-                            },
-                            {
-                                "id": 48
-                            },
-                            {
-                                "id": 50
-                            },
-                            {
-                                "id": 52
-                            }
-                        ],
-                        "tag": "Root Node"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 30
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 31
-                            }
-                        ],
-                        "tag": "Model 1"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 31
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 30
+                            "id": 33
                         },
                         "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 32
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 33
-                            }
-                        ],
-                        "tag": "Model 3"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 33
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 32
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
+                        "tag": "Player Camera"
                     }
                 },
                 {
@@ -193,23 +130,7 @@
                     },
                     "component": {
                         "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 35
-                            }
-                        ],
-                        "tag": "Model 5"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 35
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 34
+                            "id": 33
                         },
                         "children": [],
                         "tag": "Mesh 0"
@@ -217,242 +138,18 @@
                 },
                 {
                     "entity": {
-                        "id": 36
+                        "id": 33
                     },
                     "component": {
                         "parent": {
-                            "id": 29
+                            "id": 0
                         },
                         "children": [
                             {
-                                "id": 37
-                            }
-                        ],
-                        "tag": "Model 7"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 37
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 36
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 38
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 39
-                            }
-                        ],
-                        "tag": "Model 9"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 39
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 38
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 40
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 41
-                            }
-                        ],
-                        "tag": "Model 11"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 41
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 40
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 42
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 43
-                            }
-                        ],
-                        "tag": "Model 13"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 43
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 42
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 44
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 45
-                            }
-                        ],
-                        "tag": "Model 15"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 45
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 44
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 46
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 47
-                            }
-                        ],
-                        "tag": "Model 17"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 47
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 46
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 48
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 49
-                            }
-                        ],
-                        "tag": "Model 19"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 49
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 48
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 50
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 51
-                            }
-                        ],
-                        "tag": "Model 21"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 51
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 50
-                        },
-                        "children": [],
-                        "tag": "Mesh 0"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 52
-                    },
-                    "component": {
-                        "parent": {
-                            "id": 29
-                        },
-                        "children": [
-                            {
-                                "id": 53
+                                "id": 34
                             },
                             {
-                                "id": 54
+                                "id": 35
                             }
                         ],
                         "tag": "Player"
@@ -460,11 +157,11 @@
                 },
                 {
                     "entity": {
-                        "id": 53
+                        "id": 32
                     },
                     "component": {
                         "parent": {
-                            "id": 52
+                            "id": 31
                         },
                         "children": [],
                         "tag": "Mesh 0"
@@ -472,95 +169,512 @@
                 },
                 {
                     "entity": {
-                        "id": 54
+                        "id": 31
                     },
                     "component": {
                         "parent": {
-                            "id": 52
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 32
+                            }
+                        ],
+                        "tag": "Model 31"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 30
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 29
                         },
                         "children": [],
-                        "tag": "Player Camera"
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 29
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 30
+                            }
+                        ],
+                        "tag": "Light 1"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 28
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 27
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 27
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 28
+                            }
+                        ],
+                        "tag": "Light 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 26
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 25
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 25
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 26
+                            }
+                        ],
+                        "tag": "Model 25"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 24
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 23
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 23
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 24
+                            }
+                        ],
+                        "tag": "Model 23"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 22
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 21
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 21
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 22
+                            }
+                        ],
+                        "tag": "Model 21"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 20
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 19
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 19
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 20
+                            }
+                        ],
+                        "tag": "Model 19"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 18
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 17
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 17
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 18
+                            }
+                        ],
+                        "tag": "Model 17"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 16
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 15
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 15
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 16
+                            }
+                        ],
+                        "tag": "Model 15"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 14
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 13
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 13
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 14
+                            }
+                        ],
+                        "tag": "Model 13"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 12
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 11
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 11
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 12
+                            }
+                        ],
+                        "tag": "Model 11"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 10
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 9
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 9
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 10
+                            }
+                        ],
+                        "tag": "Model 9"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 8
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 7
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 7
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 8
+                            }
+                        ],
+                        "tag": "Model 7"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 6
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 1
+                        },
+                        "children": [],
+                        "tag": "Mesh 4"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 5
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 1
+                        },
+                        "children": [],
+                        "tag": "Mesh 3"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 4
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 1
+                        },
+                        "children": [],
+                        "tag": "Mesh 2"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 3
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 1
+                        },
+                        "children": [],
+                        "tag": "Mesh 1"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 2
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 1
+                        },
+                        "children": [],
+                        "tag": "Mesh 0"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 1
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 0
+                        },
+                        "children": [
+                            {
+                                "id": 2
+                            },
+                            {
+                                "id": 3
+                            },
+                            {
+                                "id": 4
+                            },
+                            {
+                                "id": 5
+                            },
+                            {
+                                "id": 6
+                            }
+                        ],
+                        "tag": "Model 1"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 0
+                    },
+                    "component": {
+                        "parent": {
+                            "id": 18446744073709551615
+                        },
+                        "children": [
+                            {
+                                "id": 1
+                            },
+                            {
+                                "id": 7
+                            },
+                            {
+                                "id": 9
+                            },
+                            {
+                                "id": 11
+                            },
+                            {
+                                "id": 13
+                            },
+                            {
+                                "id": 15
+                            },
+                            {
+                                "id": 17
+                            },
+                            {
+                                "id": 19
+                            },
+                            {
+                                "id": 21
+                            },
+                            {
+                                "id": 23
+                            },
+                            {
+                                "id": 25
+                            },
+                            {
+                                "id": 27
+                            },
+                            {
+                                "id": 29
+                            },
+                            {
+                                "id": 31
+                            },
+                            {
+                                "id": 33
+                            }
+                        ],
+                        "tag": "Root Node"
                     }
                 }
             ],
             "Transform": [
                 {
                     "entity": {
-                        "id": 30
+                        "id": 35
                     },
                     "component": {
                         "position": {
-                            "x": -7.499998569488525,
-                            "y": -9.47000789642334,
-                            "z": -7.4999284744262699
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": -4.309562484650087e-8,
-                            "y": -0.00005429057273431681,
-                            "z": -5.618641125693102e-7,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 31
-                    },
-                    "component": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 32
-                    },
-                    "component": {
-                        "position": {
-                            "x": -2.499999523162842,
-                            "y": -9.47000789642334,
-                            "z": -7.4999284744262699
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": -2.6328004310016697e-7,
-                            "y": -0.0000542905654583592,
-                            "z": -6.385505457728869e-8,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 33
-                    },
-                    "component": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
+                            "x": -0.4000000059604645,
+                            "y": 0.4000000059604645,
                             "z": 0.0
                         },
                         "scale": {
@@ -582,9 +696,9 @@
                     },
                     "component": {
                         "position": {
-                            "x": 2.500000476837158,
-                            "y": -9.47000789642334,
-                            "z": -7.4999284744262699
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
                         },
                         "scale": {
                             "x": 1.0,
@@ -592,16 +706,39 @@
                             "z": 1.0
                         },
                         "rotation": {
-                            "x": 2.040160040905903e-8,
-                            "y": -0.000054290081607177856,
-                            "z": -1.9924269167859166e-7,
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
                             "w": 1.0
                         }
                     }
                 },
                 {
                     "entity": {
-                        "id": 35
+                        "id": 33
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 2.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 32
                     },
                     "component": {
                         "position": {
@@ -624,329 +761,7 @@
                 },
                 {
                     "entity": {
-                        "id": 36
-                    },
-                    "component": {
-                        "position": {
-                            "x": -7.499998569488525,
-                            "y": -9.47000789642334,
-                            "z": -2.4999279975891115
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": -4.046673041102622e-7,
-                            "y": -0.000054290616390062499,
-                            "z": -5.0108212690247458e-8,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 37
-                    },
-                    "component": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 38
-                    },
-                    "component": {
-                        "position": {
-                            "x": -2.499999523162842,
-                            "y": -9.470006942749024,
-                            "z": -2.4999279975891115
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": -4.4306162294560638e-7,
-                            "y": -0.00005429617885965854,
-                            "z": 2.570691890468879e-7,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 39
-                    },
-                    "component": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 40
-                    },
-                    "component": {
-                        "position": {
-                            "x": 2.500000476837158,
-                            "y": -9.47000789642334,
-                            "z": -2.4999279975891115
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": -3.605980793963681e-7,
-                            "y": -0.000054291504056891429,
-                            "z": -1.4159809325064998e-8,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 41
-                    },
-                    "component": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 42
-                    },
-                    "component": {
-                        "position": {
-                            "x": -7.499998569488525,
-                            "y": -9.47000789642334,
-                            "z": 2.5000720024108888
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": -1.9115050520213118e-7,
-                            "y": -0.00005429088923847303,
-                            "z": -1.3229990258878389e-7,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 43
-                    },
-                    "component": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 44
-                    },
-                    "component": {
-                        "position": {
-                            "x": -2.499999523162842,
-                            "y": -9.47000789642334,
-                            "z": 2.5000720024108888
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": 4.0973844761538205e-7,
-                            "y": -0.00005428932490758598,
-                            "z": 3.7450092804647286e-8,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 45
-                    },
-                    "component": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 46
-                    },
-                    "component": {
-                        "position": {
-                            "x": 2.5000052452087404,
-                            "y": -9.470006942749024,
-                            "z": 2.5000672340393068
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": -3.355449607056471e-8,
-                            "y": -0.00005428676740848459,
-                            "z": 3.8695969806212818e-7,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 47
-                    },
-                    "component": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 48
-                    },
-                    "component": {
-                        "position": {
-                            "x": -7.499998569488525,
-                            "y": -9.47000789642334,
-                            "z": 7.5000715255737309
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": -1.8144415037113505e-7,
-                            "y": -0.00005429126395029016,
-                            "z": -1.3275135302137643e-7,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 49
-                    },
-                    "component": {
-                        "position": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 50
+                        "id": 31
                     },
                     "component": {
                         "position": {
@@ -969,7 +784,7 @@
                 },
                 {
                     "entity": {
-                        "id": 51
+                        "id": 30
                     },
                     "component": {
                         "position": {
@@ -992,17 +807,17 @@
                 },
                 {
                     "entity": {
-                        "id": 52
+                        "id": 29
                     },
                     "component": {
                         "position": {
-                            "x": 0.1852594017982483,
-                            "y": -8.950000762939454,
-                            "z": -3.119813919067383
+                            "x": 0.0,
+                            "y": 7.691266059875488,
+                            "z": 0.0
                         },
                         "scale": {
                             "x": 1.0,
-                            "y": 2.0,
+                            "y": 1.0,
                             "z": 1.0
                         },
                         "rotation": {
@@ -1015,7 +830,7 @@
                 },
                 {
                     "entity": {
-                        "id": 53
+                        "id": 28
                     },
                     "component": {
                         "position": {
@@ -1038,12 +853,610 @@
                 },
                 {
                     "entity": {
-                        "id": 54
+                        "id": 27
                     },
                     "component": {
                         "position": {
-                            "x": -0.4000000059604645,
-                            "y": 0.4000000059604645,
+                            "x": 0.0,
+                            "y": 10.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 26
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 25
+                    },
+                    "component": {
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": 7.5
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 24
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 23
+                    },
+                    "component": {
+                        "position": {
+                            "x": 2.5,
+                            "y": 0.0,
+                            "z": 2.5
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 22
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 21
+                    },
+                    "component": {
+                        "position": {
+                            "x": -2.5,
+                            "y": 0.0,
+                            "z": 2.5
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 20
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 19
+                    },
+                    "component": {
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": 2.5
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 18
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 17
+                    },
+                    "component": {
+                        "position": {
+                            "x": 2.5,
+                            "y": 0.0,
+                            "z": -2.5
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 16
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 15
+                    },
+                    "component": {
+                        "position": {
+                            "x": -2.5,
+                            "y": 0.0,
+                            "z": -2.5
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 14
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 13
+                    },
+                    "component": {
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": -2.5
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 12
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 11
+                    },
+                    "component": {
+                        "position": {
+                            "x": 2.5,
+                            "y": 0.0,
+                            "z": -7.5
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 10
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 9
+                    },
+                    "component": {
+                        "position": {
+                            "x": -2.5,
+                            "y": 0.0,
+                            "z": -7.5
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 8
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 7
+                    },
+                    "component": {
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": -7.5
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 6
+                    },
+                    "component": {
+                        "position": {
+                            "x": -1.2417634698280722e-9,
+                            "y": 0.2883550822734833,
+                            "z": 0.21692848205566407
+                        },
+                        "scale": {
+                            "x": 100.0,
+                            "y": 99.99999237060547,
+                            "z": 99.99999237060547
+                        },
+                        "rotation": {
+                            "x": -0.7071068286895752,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.7071067094802856
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 5
+                    },
+                    "component": {
+                        "position": {
+                            "x": -1.2417634698280722e-9,
+                            "y": 0.13749909400939942,
+                            "z": 0.23885011672973634
+                        },
+                        "scale": {
+                            "x": 100.0,
+                            "y": 100.0,
+                            "z": 100.0
+                        },
+                        "rotation": {
+                            "x": -0.6427875757217407,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.7660444378852844
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 4
+                    },
+                    "component": {
+                        "position": {
+                            "x": 2.756714856388953e-9,
+                            "y": -0.040442951023578647,
+                            "z": 0.20531746745109559
+                        },
+                        "scale": {
+                            "x": 100.0,
+                            "y": 99.99999237060547,
+                            "z": 99.99999237060547
+                        },
+                        "rotation": {
+                            "x": -0.7071068286895752,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.7071067094802856
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 3
+                    },
+                    "component": {
+                        "position": {
+                            "x": 2.756714856388953e-9,
+                            "y": -0.040442951023578647,
+                            "z": 0.20531746745109559
+                        },
+                        "scale": {
+                            "x": 100.0,
+                            "y": 99.99999237060547,
+                            "z": 99.99999237060547
+                        },
+                        "rotation": {
+                            "x": -0.7071068286895752,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.7071067094802856
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 2
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 100.0,
+                            "y": 99.99999237060547,
+                            "z": 99.99999237060547
+                        },
+                        "rotation": {
+                            "x": -0.7071068286895752,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.7071067094802856
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 1
+                    },
+                    "component": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
                             "z": 0.0
                         },
                         "scale": {
@@ -1063,7 +1476,7 @@
             "Mesh": [
                 {
                     "entity": {
-                        "id": 31
+                        "id": 34
                     },
                     "component": {
                         "model_handle": {
@@ -1080,7 +1493,7 @@
                 },
                 {
                     "entity": {
-                        "id": 33
+                        "id": 32
                     },
                     "component": {
                         "model_handle": {
@@ -1097,7 +1510,7 @@
                 },
                 {
                     "entity": {
-                        "id": 35
+                        "id": 30
                     },
                     "component": {
                         "model_handle": {
@@ -1114,7 +1527,7 @@
                 },
                 {
                     "entity": {
-                        "id": 37
+                        "id": 28
                     },
                     "component": {
                         "model_handle": {
@@ -1131,7 +1544,7 @@
                 },
                 {
                     "entity": {
-                        "id": 39
+                        "id": 26
                     },
                     "component": {
                         "model_handle": {
@@ -1148,7 +1561,7 @@
                 },
                 {
                     "entity": {
-                        "id": 41
+                        "id": 24
                     },
                     "component": {
                         "model_handle": {
@@ -1165,7 +1578,7 @@
                 },
                 {
                     "entity": {
-                        "id": 43
+                        "id": 22
                     },
                     "component": {
                         "model_handle": {
@@ -1182,7 +1595,7 @@
                 },
                 {
                     "entity": {
-                        "id": 45
+                        "id": 20
                     },
                     "component": {
                         "model_handle": {
@@ -1199,7 +1612,7 @@
                 },
                 {
                     "entity": {
-                        "id": 47
+                        "id": 18
                     },
                     "component": {
                         "model_handle": {
@@ -1216,7 +1629,7 @@
                 },
                 {
                     "entity": {
-                        "id": 49
+                        "id": 16
                     },
                     "component": {
                         "model_handle": {
@@ -1233,7 +1646,7 @@
                 },
                 {
                     "entity": {
-                        "id": 51
+                        "id": 14
                     },
                     "component": {
                         "model_handle": {
@@ -1250,13 +1663,132 @@
                 },
                 {
                     "entity": {
-                        "id": 53
+                        "id": 12
                     },
                     "component": {
                         "model_handle": {
                             "asset_key": {
                                 "path": {
                                     "path": "res/models/cube.obj"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 1
+                        },
+                        "mesh_index": 0
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 10
+                    },
+                    "component": {
+                        "model_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/cube.obj"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 1
+                        },
+                        "mesh_index": 0
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 8
+                    },
+                    "component": {
+                        "model_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/cube.obj"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 1
+                        },
+                        "mesh_index": 0
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 6
+                    },
+                    "component": {
+                        "model_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/ultimate-interior/Air Fryer.glb"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 1
+                        },
+                        "mesh_index": 4
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 5
+                    },
+                    "component": {
+                        "model_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/ultimate-interior/Air Fryer.glb"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 1
+                        },
+                        "mesh_index": 3
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 4
+                    },
+                    "component": {
+                        "model_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/ultimate-interior/Air Fryer.glb"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 1
+                        },
+                        "mesh_index": 2
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 3
+                    },
+                    "component": {
+                        "model_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/ultimate-interior/Air Fryer.glb"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 1
+                        },
+                        "mesh_index": 1
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 2
+                    },
+                    "component": {
+                        "model_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/ultimate-interior/Air Fryer.glb"
                                 },
                                 "sub_index": ""
                             },
@@ -1269,7 +1801,7 @@
             "Material": [
                 {
                     "entity": {
-                        "id": 31
+                        "id": 34
                     },
                     "component": {
                         "texture_handle": {
@@ -1285,7 +1817,7 @@
                 },
                 {
                     "entity": {
-                        "id": 33
+                        "id": 32
                     },
                     "component": {
                         "texture_handle": {
@@ -1301,7 +1833,7 @@
                 },
                 {
                     "entity": {
-                        "id": 35
+                        "id": 30
                     },
                     "component": {
                         "texture_handle": {
@@ -1317,7 +1849,7 @@
                 },
                 {
                     "entity": {
-                        "id": 37
+                        "id": 28
                     },
                     "component": {
                         "texture_handle": {
@@ -1333,7 +1865,7 @@
                 },
                 {
                     "entity": {
-                        "id": 39
+                        "id": 26
                     },
                     "component": {
                         "texture_handle": {
@@ -1349,7 +1881,7 @@
                 },
                 {
                     "entity": {
-                        "id": 41
+                        "id": 24
                     },
                     "component": {
                         "texture_handle": {
@@ -1365,7 +1897,7 @@
                 },
                 {
                     "entity": {
-                        "id": 43
+                        "id": 22
                     },
                     "component": {
                         "texture_handle": {
@@ -1381,7 +1913,7 @@
                 },
                 {
                     "entity": {
-                        "id": 45
+                        "id": 20
                     },
                     "component": {
                         "texture_handle": {
@@ -1397,7 +1929,7 @@
                 },
                 {
                     "entity": {
-                        "id": 47
+                        "id": 18
                     },
                     "component": {
                         "texture_handle": {
@@ -1413,7 +1945,7 @@
                 },
                 {
                     "entity": {
-                        "id": 49
+                        "id": 16
                     },
                     "component": {
                         "texture_handle": {
@@ -1429,7 +1961,7 @@
                 },
                 {
                     "entity": {
-                        "id": 51
+                        "id": 14
                     },
                     "component": {
                         "texture_handle": {
@@ -1445,7 +1977,7 @@
                 },
                 {
                     "entity": {
-                        "id": 53
+                        "id": 12
                     },
                     "component": {
                         "texture_handle": {
@@ -1454,17 +1986,194 @@
                                     "path": "res/textures/checkerboard.png"
                                 },
                                 "sub_index": ""
+                            },
+                            "asset_class": 2
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 10
+                    },
+                    "component": {
+                        "texture_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/textures/checkerboard.png"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 2
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 8
+                    },
+                    "component": {
+                        "texture_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/textures/checkerboard.png"
+                                },
+                                "sub_index": ""
+                            },
+                            "asset_class": 2
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 6
+                    },
+                    "component": {
+                        "texture_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/ultimate-interior/Air Fryer.glb"
+                                },
+                                "sub_index": "TimerControl1Airfryer1"
+                            },
+                            "asset_class": 2
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 5
+                    },
+                    "component": {
+                        "texture_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/ultimate-interior/Air Fryer.glb"
+                                },
+                                "sub_index": "MetalTemperatureControl1Airfryer1"
+                            },
+                            "asset_class": 2
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 4
+                    },
+                    "component": {
+                        "texture_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/ultimate-interior/Air Fryer.glb"
+                                },
+                                "sub_index": "MetalBasket1Airfryer1"
+                            },
+                            "asset_class": 2
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 3
+                    },
+                    "component": {
+                        "texture_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/ultimate-interior/Air Fryer.glb"
+                                },
+                                "sub_index": "SteelBasket1Airfryer1"
+                            },
+                            "asset_class": 2
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 2
+                    },
+                    "component": {
+                        "texture_handle": {
+                            "asset_key": {
+                                "path": {
+                                    "path": "res/models/ultimate-interior/Air Fryer.glb"
+                                },
+                                "sub_index": "MetalAirfryer1"
                             },
                             "asset_class": 2
                         }
                     }
                 }
             ],
-            "Light": [],
+            "Light": [
+                {
+                    "entity": {
+                        "id": 29
+                    },
+                    "component": {
+                        "type": 1,
+                        "ambient_color": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        },
+                        "diffuse_color": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        },
+                        "specular_color": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        },
+                        "attenuation": {
+                            "x": 1.0,
+                            "y": 0.09000000357627869,
+                            "z": 0.03200000151991844,
+                            "w": 0.0
+                        }
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 27
+                    },
+                    "component": {
+                        "type": 0,
+                        "ambient_color": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        },
+                        "diffuse_color": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        },
+                        "specular_color": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        },
+                        "attenuation": {
+                            "x": 1.0,
+                            "y": 0.09000000357627869,
+                            "z": 0.03200000151991844,
+                            "w": 0.0
+                        }
+                    }
+                }
+            ],
             "Camera": [
                 {
                     "entity": {
-                        "id": 54
+                        "id": 35
                     },
                     "component": {
                         "camera": {
@@ -1472,9 +2181,9 @@
                                 "id": 2147483649,
                                 "data": {
                                     "position": {
-                                        "x": -0.2147406041622162,
-                                        "y": -8.15000057220459,
-                                        "z": -3.119813919067383
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0
                                     },
                                     "pitch": 0.0,
                                     "yaw": -90.0,
@@ -1491,227 +2200,7 @@
             "PhysicsObject": [
                 {
                     "entity": {
-                        "id": 30
-                    },
-                    "component": {
-                        "shape_type": "Box",
-                        "shape_info": "0.5,0.5,0.5",
-                        "position": {
-                            "x": -7.499998569488525,
-                            "y": -9.47000789642334,
-                            "z": -7.4999284744262699
-                        },
-                        "rotation": {
-                            "x": -4.309562484650087e-8,
-                            "y": -0.00005429057273431681,
-                            "z": -5.618641125693102e-7,
-                            "w": 1.0
-                        },
-                        "motion_type": "Dynamic",
-                        "layer": "Moving"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 32
-                    },
-                    "component": {
-                        "shape_type": "Box",
-                        "shape_info": "0.5,0.5,0.5",
-                        "position": {
-                            "x": -2.499999523162842,
-                            "y": -9.47000789642334,
-                            "z": -7.4999284744262699
-                        },
-                        "rotation": {
-                            "x": -2.6328004310016697e-7,
-                            "y": -0.0000542905654583592,
-                            "z": -6.385505457728869e-8,
-                            "w": 1.0
-                        },
-                        "motion_type": "Dynamic",
-                        "layer": "Moving"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 34
-                    },
-                    "component": {
-                        "shape_type": "Box",
-                        "shape_info": "0.5,0.5,0.5",
-                        "position": {
-                            "x": 2.500000476837158,
-                            "y": -9.47000789642334,
-                            "z": -7.4999284744262699
-                        },
-                        "rotation": {
-                            "x": 2.040160040905903e-8,
-                            "y": -0.000054290081607177856,
-                            "z": -1.9924269167859166e-7,
-                            "w": 1.0
-                        },
-                        "motion_type": "Dynamic",
-                        "layer": "Moving"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 36
-                    },
-                    "component": {
-                        "shape_type": "Box",
-                        "shape_info": "0.5,0.5,0.5",
-                        "position": {
-                            "x": -7.499998569488525,
-                            "y": -9.47000789642334,
-                            "z": -2.4999279975891115
-                        },
-                        "rotation": {
-                            "x": -4.046673041102622e-7,
-                            "y": -0.000054290616390062499,
-                            "z": -5.0108212690247458e-8,
-                            "w": 1.0
-                        },
-                        "motion_type": "Dynamic",
-                        "layer": "Moving"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 38
-                    },
-                    "component": {
-                        "shape_type": "Box",
-                        "shape_info": "0.5,0.5,0.5",
-                        "position": {
-                            "x": -2.499999523162842,
-                            "y": -9.470006942749024,
-                            "z": -2.4999279975891115
-                        },
-                        "rotation": {
-                            "x": -4.4306162294560638e-7,
-                            "y": -0.00005429617885965854,
-                            "z": 2.570691890468879e-7,
-                            "w": 1.0
-                        },
-                        "motion_type": "Dynamic",
-                        "layer": "Moving"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 40
-                    },
-                    "component": {
-                        "shape_type": "Box",
-                        "shape_info": "0.5,0.5,0.5",
-                        "position": {
-                            "x": 2.500000476837158,
-                            "y": -9.47000789642334,
-                            "z": -2.4999279975891115
-                        },
-                        "rotation": {
-                            "x": -3.605980793963681e-7,
-                            "y": -0.000054291504056891429,
-                            "z": -1.4159809325064998e-8,
-                            "w": 1.0
-                        },
-                        "motion_type": "Dynamic",
-                        "layer": "Moving"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 42
-                    },
-                    "component": {
-                        "shape_type": "Box",
-                        "shape_info": "0.5,0.5,0.5",
-                        "position": {
-                            "x": -7.499998569488525,
-                            "y": -9.47000789642334,
-                            "z": 2.5000720024108888
-                        },
-                        "rotation": {
-                            "x": -1.9115050520213118e-7,
-                            "y": -0.00005429088923847303,
-                            "z": -1.3229990258878389e-7,
-                            "w": 1.0
-                        },
-                        "motion_type": "Dynamic",
-                        "layer": "Moving"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 44
-                    },
-                    "component": {
-                        "shape_type": "Box",
-                        "shape_info": "0.5,0.5,0.5",
-                        "position": {
-                            "x": -2.499999523162842,
-                            "y": -9.47000789642334,
-                            "z": 2.5000720024108888
-                        },
-                        "rotation": {
-                            "x": 4.0973844761538205e-7,
-                            "y": -0.00005428932490758598,
-                            "z": 3.7450092804647286e-8,
-                            "w": 1.0
-                        },
-                        "motion_type": "Dynamic",
-                        "layer": "Moving"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 46
-                    },
-                    "component": {
-                        "shape_type": "Box",
-                        "shape_info": "0.5,0.5,0.5",
-                        "position": {
-                            "x": 2.5000052452087404,
-                            "y": -9.470006942749024,
-                            "z": 2.5000672340393068
-                        },
-                        "rotation": {
-                            "x": -3.355449607056471e-8,
-                            "y": -0.00005428676740848459,
-                            "z": 3.8695969806212818e-7,
-                            "w": 1.0
-                        },
-                        "motion_type": "Dynamic",
-                        "layer": "Moving"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 48
-                    },
-                    "component": {
-                        "shape_type": "Box",
-                        "shape_info": "0.5,0.5,0.5",
-                        "position": {
-                            "x": -7.499998569488525,
-                            "y": -9.47000789642334,
-                            "z": 7.5000715255737309
-                        },
-                        "rotation": {
-                            "x": -1.8144415037113505e-7,
-                            "y": -0.00005429126395029016,
-                            "z": -1.3275135302137643e-7,
-                            "w": 1.0
-                        },
-                        "motion_type": "Dynamic",
-                        "layer": "Moving"
-                    }
-                },
-                {
-                    "entity": {
-                        "id": 50
+                        "id": 31
                     },
                     "component": {
                         "shape_type": "Box",
@@ -1730,19 +2219,239 @@
                         "motion_type": "Static",
                         "layer": "Non_Moving"
                     }
+                },
+                {
+                    "entity": {
+                        "id": 25
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": 7.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 23
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": 2.5,
+                            "y": 0.0,
+                            "z": 2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 21
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -2.5,
+                            "y": 0.0,
+                            "z": 2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 19
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": 2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 17
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": 2.5,
+                            "y": 0.0,
+                            "z": -2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 15
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -2.5,
+                            "y": 0.0,
+                            "z": -2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 13
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": -2.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 11
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": 2.5,
+                            "y": 0.0,
+                            "z": -7.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 9
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -2.5,
+                            "y": 0.0,
+                            "z": -7.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
+                },
+                {
+                    "entity": {
+                        "id": 7
+                    },
+                    "component": {
+                        "shape_type": "Box",
+                        "shape_info": "0.5,0.5,0.5",
+                        "position": {
+                            "x": -7.5,
+                            "y": 0.0,
+                            "z": -7.5
+                        },
+                        "rotation": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        },
+                        "motion_type": "Dynamic",
+                        "layer": "Moving"
+                    }
                 }
             ],
             "PlayerComponent": [
                 {
                     "entity": {
-                        "id": 52
+                        "id": 33
                     },
                     "component": {
                         "controller": {
                             "position": {
-                                "x": 0.1852594017982483,
-                                "y": -8.950000762939454,
-                                "z": -3.119813919067383
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
                             },
                             "rotation": {
                                 "x": 0.0,
@@ -1758,7 +2467,7 @@
             ]
         },
         "root": {
-            "id": 29
+            "id": 0
         }
     }
 }

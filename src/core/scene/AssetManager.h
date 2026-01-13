@@ -30,18 +30,18 @@ private:
 public:
 	AssetManager() noexcept = default;
 
-	[[nodiscard]] static bool 
-	contains(const AssetKey& key) noexcept
+	[[nodiscard]] static bool contains(const AssetKey& key) noexcept
 	{
 		if (!s_assets.contains(key)) return false;
 		return s_assets.at(key).data != nullptr;
 	}
 
 	template <typename Asset>
-	static AssetHandle<Asset> 
-	upload(const AssetKey& key,
+	static AssetHandle<Asset> upload(
+		const AssetKey& key,
 		AssetClass asset_class,
-		std::unique_ptr<Asset> data) noexcept
+		std::unique_ptr<Asset> data
+	) noexcept
 	{
 		APE_CHECK((!contains(key)),
 			"AssetManager::upload() Failed: Cannot reupload asset {}.",
@@ -60,16 +60,30 @@ public:
 	}
 
 	template <typename Asset>
-	[[nodiscard]] static AssetHandle<Asset> 
-	get(const AssetKey& key) noexcept
+	[[nodiscard]] static AssetHandle<Asset> get(const AssetKey& key) noexcept
 	{
 		return makeHandle<Asset>(key);
 	}
 
+	template <typename Asset>
+	static AssetHandle<Asset> 
+	getOrUpload(
+		const AssetKey& key,
+		AssetClass asset_class,
+		std::unique_ptr<Asset> data
+	) noexcept
+	{
+		if (!contains(key))
+		{
+			return upload(key, asset_class, std::move(data));
+		}
+
+		return get<Asset>(key);
+	}
+
 private:
 	template <typename Asset>
-	[[nodiscard]] static AssetHandle<Asset>
-	makeHandle(const AssetKey& key) noexcept
+	[[nodiscard]] static AssetHandle<Asset> makeHandle(const AssetKey& key) noexcept
 	{
 		auto it = s_assets.find(key);
 		APE_CHECK((it != s_assets.end()),

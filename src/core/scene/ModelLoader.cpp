@@ -44,7 +44,7 @@ ModelLoader::load(AssetKey asset_key) noexcept
 	auto m = std::make_unique<Render::Model>(asset_key.path);
 	processNode(scene->mRootNode, scene, *m, asset_key.path);
 
-	auto handle = AssetManager::upload<Render::Model>(
+	auto handle = AssetManager::getOrUpload<Render::Model>(
 		asset_key,
 		AssetClass::Model,
 		std::move(m)
@@ -114,7 +114,7 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 
 		auto img = std::make_unique<Render::Image>();
 		img->createSolidColor(color);
-		return AssetManager::upload<Render::Image>(
+		return AssetManager::getOrUpload<Render::Image>(
 			key,
 			AssetClass::Texture,
 			std::move(img)
@@ -139,7 +139,7 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 				ai_tex->mHeight,
 				reinterpret_cast<std::byte*>(ai_tex->pcData)
 			);
-			return AssetManager::upload<Render::Image>(
+			return AssetManager::getOrUpload<Render::Image>(
 				key,
 				AssetClass::Texture,
 				std::move(img)

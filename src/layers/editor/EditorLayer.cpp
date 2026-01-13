@@ -47,8 +47,11 @@ void EditorLayer::setup() noexcept
 	// auto car_model_handle = ModelLoader::load(CAR_PATH);
 	// auto car = Engine::world().addModel(car_model_handle);
 	
-	auto air_fryer_handle = ModelLoader::load("res/models/ultimate-interior/Air Fryer.glb");
-	auto air_fryer = Engine::world().addModel(air_fryer_handle);
+	// auto air_fryer_handle = ModelLoader::load("res/models/ultimate-interior/Air Fryer.glb");
+	// auto air_fryer = Engine::world().addModel(air_fryer_handle);
+
+	auto sponza_handle = ModelLoader::load("res/models/main_sponza/NewSponza_Main_glTF_003.gltf");
+	auto sponza = Engine::world().addModel(sponza_handle);
 	
 	std::vector<AssetHandle<Render::Model>> models;
 	models.push_back(ModelLoader::load(CUBE_PATH));
@@ -314,6 +317,19 @@ void EditorLayer::update() noexcept
 
 void EditorLayer::draw() noexcept
 {
+	auto renderer = Engine::renderer();
+	auto cam = Engine::getCamera().lock();
+	std::array<Uint8, 4> green = { 0, 255, 0, 255 };
+
+	auto& world = Engine::world();
+	for (auto& [ent, light] : world.registry.view<Render::LightComponent>().each())
+	{
+		auto transform = world.getWorldTransform(ent);
+		auto p1 = transform.position;
+		auto p2 = p1 + transform.getLookatDirection();
+		renderer->drawLine(p1, p2, green, cam.get());
+	}
+
 	if (b_show_hitboxes)
 	{
 		auto& world = Engine::world();

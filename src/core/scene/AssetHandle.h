@@ -17,10 +17,13 @@ struct AssetKey {
 
 	AssetKey(
 		std::filesystem::path path = "",
-		std::string sub_index = "") noexcept
+		std::string sub_index = ""
+	) noexcept
 		: path(path)
 		, sub_index(sub_index)
-	{ }
+	{ 
+
+	}
 
 	bool operator==(const AssetKey& other) const noexcept
 	{

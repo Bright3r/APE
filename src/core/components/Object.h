@@ -67,7 +67,9 @@ struct TransformComponent {
 
 	[[nodiscard]] glm::vec3 getLookatDirection() const noexcept
 	{
-		return rotation * glm::vec3(0, 0, -1);
+		glm::vec3 lookat = glm::normalize(rotation * glm::vec3(0, 0, -1));
+		// APE_TRACE("LookAt: ({},{},{})", lookat.x, lookat.y, lookat.z);
+		return lookat;
 	}
 
 	[[nodiscard]] TransformComponent operator*(

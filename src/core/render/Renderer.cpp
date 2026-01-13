@@ -599,7 +599,8 @@ void Renderer::endDrawing() noexcept
 
 SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	const std::vector<std::byte>& data,
-	Uint32 usage) noexcept
+	Uint32 usage
+) noexcept
 {
 	// Create GPU buffer
 	Uint32 buffer_size = data.size();
@@ -629,6 +630,9 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 		m_context->device, 
 		&transfer_info
 	);
+	APE_CHECK((transfer_buffer != nullptr),
+	   "Renderer::uploadBuffer Failed: failed to create GPU transfer buffer."
+	);
 
 	// Write data to transfer buffer
 	std::byte* mapped = static_cast<std::byte*>(
@@ -637,6 +641,9 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 			transfer_buffer, 
 			false
 		)
+	);
+	APE_CHECK((mapped != nullptr),
+	   "Renderer::uploadBuffer Failed: failed to map GPU transfer buffer."
 	);
 
 	std::memcpy(mapped, data.data(), buffer_size);
@@ -659,12 +666,14 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 		.size = buffer_size,
 	};
 	SDL_UploadToGPUBuffer(copy_pass, &src, &dest, false);
+	SDL_EndGPUCopyPass(copy_pass);
 
 	// Execute copy pass
-	SDL_EndGPUCopyPass(copy_pass);
-	SDL_SubmitGPUCommandBuffer(cmd_buffer);
+	SDL_GPUFence* fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmd_buffer);
+	SDL_WaitForGPUFences(m_context->device, false, &fence, 1);
 
 	// Cleanup resources
+	SDL_ReleaseGPUFence(m_context->device, fence);
 	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buffer);
 
 	return safe_buffer;
@@ -764,12 +773,12 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image) noexcept
 void Renderer::createSampler() noexcept
 {
 	SDL_GPUSamplerCreateInfo sampler_desc = {
-		.min_filter = SDL_GPU_FILTER_NEAREST,
-		.mag_filter = SDL_GPU_FILTER_NEAREST,
-		.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
-		.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
-		.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
-		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+		.min_filter = SDL_GPU_FILTER_LINEAR,
+		.mag_filter = SDL_GPU_FILTER_LINEAR,
+		.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
+		.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
 	};
 	SDL_GPUSampler* sampler = SDL_CreateGPUSampler(
 		m_context->device,
