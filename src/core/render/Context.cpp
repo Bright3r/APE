@@ -5,12 +5,15 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-Context::Context(std::string_view title,
+Context::Context(
+	std::string_view title,
 	 int window_width,
 	 int window_height,
-	 int window_flags) noexcept
+	 int window_flags
+) noexcept
 	: title(title)
 	, window_width(window_width)
 	, window_height(window_height)

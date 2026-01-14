@@ -16,9 +16,11 @@
 #include <memory>
 #include <string_view>
 
-namespace APE {
+namespace APE 
+{
 
-class Engine {
+class Engine 
+{
 private:
 	// Application State
 	//
@@ -45,7 +47,8 @@ public:
 	static void init(
 		std::string_view window_title,
 		int window_width,
-		int window_height) noexcept;
+		int window_height
+	) noexcept;
 
 	static void pushLayer(std::unique_ptr<Application> layer) noexcept;
 
@@ -61,11 +64,13 @@ public:
 
 	static void saveScene(
 		std::filesystem::path save_path,
-		Scene& world) noexcept;
+		Scene& world
+	) noexcept;
 
 	static bool loadScene(
 		std::filesystem::path load_path,
-		Scene& world) noexcept;
+		Scene& world
+	) noexcept;
 
 
 	// Graphics Functions

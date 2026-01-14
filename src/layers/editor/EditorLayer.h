@@ -12,11 +12,11 @@
 
 #include <memory>
 
-namespace APE::Editor {
+namespace APE::Editor 
+{
 
-void run() noexcept;
-
-class EditorLayer : public Application {
+class EditorLayer : public Application 
+{
 	std::shared_ptr<Render::Camera> fly_cam;
 	ECS::EntityHandle selected_ent;
 	ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;

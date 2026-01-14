@@ -32,7 +32,8 @@
 #include <utility>
 #include <vector>
 
-namespace APE::Editor {
+namespace APE::Editor 
+{
 
 void EditorLayer::setup() noexcept
 {
@@ -44,14 +45,14 @@ void EditorLayer::setup() noexcept
 	static constexpr std::string_view CONE_PATH = "res/models/cone.obj";
 	static constexpr std::string_view CYLINDER_PATH = "res/models/cylinder.obj";
 
-	// auto car_model_handle = ModelLoader::load(CAR_PATH);
-	// auto car = Engine::world().addModel(car_model_handle);
+	auto car_model_handle = ModelLoader::load(CAR_PATH);
+	auto car = Engine::world().addModel(car_model_handle);
 	
 	// auto air_fryer_handle = ModelLoader::load("res/models/ultimate-interior/Air Fryer.glb");
 	// auto air_fryer = Engine::world().addModel(air_fryer_handle);
 
-	auto sponza_handle = ModelLoader::load("res/models/main_sponza/NewSponza_Main_glTF_003.gltf");
-	auto sponza = Engine::world().addModel(sponza_handle);
+	// auto sponza_handle = ModelLoader::load("res/models/main_sponza/NewSponza_Main_glTF_003.gltf");
+	// auto sponza = Engine::world().addModel(sponza_handle);
 	
 	std::vector<AssetHandle<Render::Model>> models;
 	models.push_back(ModelLoader::load(CUBE_PATH));
@@ -173,20 +174,21 @@ void EditorLayer::setup() noexcept
 	);
 	Engine::setCamera(fly_cam);
 	Engine::setTabIn(true);
-	Engine::setFramerate(60);
+	Engine::setFramerate(1000);
 
 	selected_ent = world.root;
 }
 
 void EditorLayer::update() noexcept
 {
-	std::string fps = std::to_string(1000.0 / Engine::getLastFrameTimeMS().count());
+	std::string fps = std::to_string(1.0 / Engine::getLastFrameTimeSec().count());
 	std::string window_title = "FPS: " + fps;
 	Engine::setWindowTitle(window_title);
 	
 	// Quit
 	auto& input = Engine::input();
-	if (input.isKeyDown(SDLK_Q)) {
+	if (input.isKeyDown(SDLK_Q)) 
+	{
 		Engine::setQuit(true);
 	}
 
@@ -210,39 +212,48 @@ void EditorLayer::update() noexcept
 	float speed = 10.f;
 	float dt = Engine::getLastFrameTimeSec().count();
 	auto cam = Engine::getCamera().lock();
-	if (input.isKeyDown(SDLK_SPACE)) {
+	if (input.isKeyDown(SDLK_SPACE)) 
+	{
 		cam->moveUp(speed, dt);
 	}
-	if (input.isKeyDown(SDLK_LCTRL)) {
+	if (input.isKeyDown(SDLK_LCTRL)) 
+	{
 		cam->moveDown(speed, dt);
 	}
-	if (input.isKeyDown(SDLK_A)) {
+	if (input.isKeyDown(SDLK_A)) 
+	{
 		cam->moveLeft(speed, dt);
 	}
-	if (input.isKeyDown(SDLK_D)) {
+	if (input.isKeyDown(SDLK_D)) 
+	{
 		cam->moveRight(speed, dt);
 	}
-	if (input.isKeyDown(SDLK_W)) {
+	if (input.isKeyDown(SDLK_W)) 
+	{
 		cam->moveForward(speed, dt);
 	}
-	if (input.isKeyDown(SDLK_S)) {
+	if (input.isKeyDown(SDLK_S)) 
+	{
 		cam->moveBackward(speed, dt);
 	}
 
 	// Camera Tab In
-	if (input.isKeyDown(SDLK_C) && input.isFirstFramePressed(SDLK_C)) {
+	if (input.isKeyDown(SDLK_C) && input.isFirstFramePressed(SDLK_C)) 
+	{
 		bool is_locked = cam->isLocked();
 		cam->setLocked(!is_locked);
 		Engine::setTabIn(is_locked);
 	}
 
 	// Mouse button events
-	for (auto& m_event : Engine::input().mouseButtonEvents()) {
+	for (auto& m_event : Engine::input().mouseButtonEvents()) 
+	{
 		handleMouseButtonEvent(m_event);
 	}
 
 	// Mouse motion events
-	for (auto& m_event : Engine::input().mouseMotionEvents()) {
+	for (auto& m_event : Engine::input().mouseMotionEvents()) 
+	{
 		cam->rotate(m_event.xrel, m_event.yrel);
 	}
 
@@ -251,7 +262,8 @@ void EditorLayer::update() noexcept
 	auto [player_ent, player] = Engine::world().getPlayer();
 	auto [cam_ent, player_cam_comp] = Engine::world().getCamera(player_ent);
 	auto player_cam = player_cam_comp->camera;
-	if (input.isKeyDown(SDLK_T) && input.isFirstFramePressed(SDLK_T)) {
+	if (input.isKeyDown(SDLK_T) && input.isFirstFramePressed(SDLK_T)) 
+	{
 		std::shared_ptr<Render::Camera> curr_cam = fly_cam;
 		if (cam == fly_cam)
 		{
@@ -283,20 +295,25 @@ void EditorLayer::update() noexcept
 		right.y = 0;
 		right = glm::normalize(right);
 
-		if (input.isKeyDown(SDLK_W)) {
+		if (input.isKeyDown(SDLK_W)) 
+		{
 			player_dir += forward;
 		}
-		if (input.isKeyDown(SDLK_S)) {
+		if (input.isKeyDown(SDLK_S)) 
+		{
 			player_dir -= forward;
 		}
-		if (input.isKeyDown(SDLK_A)) {
+		if (input.isKeyDown(SDLK_A)) 
+		{
 			player_dir -= right;
 		}
-		if (input.isKeyDown(SDLK_D)) {
+		if (input.isKeyDown(SDLK_D)) 
+		{
 			player_dir += right;
 		}
 
-		if (input.isKeyDown(SDLK_SPACE)) {
+		if (input.isKeyDown(SDLK_SPACE)) 
+		{
 			if (player->controller.body->IsSupported())
 			{
 				player->controller.jump(5.f);

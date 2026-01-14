@@ -26,7 +26,8 @@ struct PlayerController
 	PlayerController(
 		JPH::CharacterVirtualSettings& in_settings,
 		const TransformComponent& transform,
-		PhysicsSystem& phys_system) noexcept
+		PhysicsSystem& phys_system
+	) noexcept
 	{
 		body = std::make_unique<JPH::CharacterVirtual>(
 			&in_settings, 

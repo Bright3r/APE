@@ -3,15 +3,18 @@
 #include <filesystem>
 #include <string>
 
-namespace APE {
+namespace APE 
+{
 
-enum class AssetClass {
+enum class AssetClass 
+{
 	None = 0,
 	Model,
 	Texture,
 };
 
-struct AssetKey {
+struct AssetKey 
+{
 	std::filesystem::path path;
 	std::string sub_index;
 
@@ -35,13 +38,15 @@ struct AssetKey {
 		return !(*this == other);
 	}
 
-	std::string to_string() const {
+	std::string to_string() const 
+	{
 		return path.string() + "::" + sub_index;
 	}
 };
 
 template <typename Asset>
-struct AssetHandle {
+struct AssetHandle 
+{
 	AssetKey key;
 	AssetClass asset_class;
 	std::shared_ptr<Asset> data;
@@ -49,11 +54,14 @@ struct AssetHandle {
 	AssetHandle(
 		AssetKey asset_key = {},
 		AssetClass asset_class = AssetClass::None,
-		std::shared_ptr<Asset> data = nullptr) noexcept
+		std::shared_ptr<Asset> data = nullptr
+	) noexcept
 		: key(asset_key)
 		, asset_class(asset_class)
 		, data(data)
-	{ }
+	{
+
+	}
 };
 
 };	// end of namespace

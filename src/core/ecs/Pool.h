@@ -10,7 +10,8 @@
 #include <utility>
 #include <vector>
 
-namespace APE::ECS {
+namespace APE::ECS 
+{
 
 template <typename EntityID>
 [[nodiscard]] static EntityID calcTombstone() noexcept
@@ -31,8 +32,8 @@ struct PoolInterface {
 };
 
 template <typename EntityID, typename T>
-class Pool : public PoolInterface<EntityID> {
-private:
+class Pool : public PoolInterface<EntityID> 
+{
 	// TODO - upgrade sparse list to a paginated vector
 	// Map entity id to component in dense array
 	std::unordered_map<EntityID, size_t> m_sparse;
@@ -86,13 +87,13 @@ public:
 
 	[[nodiscard]] bool contains(EntityID id) const noexcept
 	{
-		return (id != m_tombstone) && 
-			(m_sparse.find(id) != m_sparse.end());
+		return (id != m_tombstone) && (m_sparse.find(id) != m_sparse.end());
 	}
 
 	[[nodiscard]] bool remove(EntityID id) noexcept override
 	{
-		if (empty()) {
+		if (empty()) 
+		{
 			APE_ERROR(
 				"Pool::remove() Failed: cannot remove entity {} because set is empty.",
 				id
@@ -100,7 +101,8 @@ public:
 			return false;
 		}
 
-		if (!isValidID(id)) {
+		if (!isValidID(id)) 
+		{
 			APE_ERROR(
 				"Pool::remove() Failed: entity {} is not in the set.",
 				id
@@ -153,7 +155,8 @@ public:
 	template <typename... Args>
 	T& tryEmplace(EntityID id, Args&&... args) noexcept
 	{
-		if (contains(id)) {
+		if (contains(id)) 
+		{
 			return set(id, std::forward<Args>(args)...);
 		}
 
@@ -221,14 +224,16 @@ private:
 
 	[[nodiscard]] bool isValidID(EntityID id) const noexcept
 	{
-		if (id == m_tombstone) {
+		if (id == m_tombstone) 
+		{
 			APE_ERROR(
 				"Pool::isValidID() Failed: Cannot remove tombstone."
 			);
 			return false;
 		}
 
-		if (!contains(id)) {
+		if (!contains(id)) 
+		{
 			APE_ERROR(
 				"Pool::isValidID() Failed: entity {} is not in the set.",
 				id
@@ -240,14 +245,17 @@ private:
 	}
 
 public:
-	struct Entry {
+	struct Entry 
+	{
 		EntityID id;
 		T& component;
 
 		Entry(EntityID id, T& comp) noexcept
 			: id(id)
 			, component(comp)
-		{ }
+		{
+
+		}
 	};
 
 	/*
@@ -255,9 +263,9 @@ public:
 	* Iterates in reverse order under the hood so that Iterators are not
 	* invalidated from deletions
 	*/
-	class Iterator {
-	private:
-		Pool* m_set;
+	class Iterator 
+	{
+		Pool *m_set;
 		size_t m_idx;
 
 	public:
@@ -266,7 +274,7 @@ public:
 		using pointer = void;
 		using iterator_category = std::forward_iterator_tag;
 
-		Iterator(Pool* set, size_t idx) noexcept
+		Iterator(Pool *set, size_t idx) noexcept
 			: m_set(set)
 			, m_idx(idx)
 		{
@@ -307,19 +315,22 @@ public:
 		}
 	};
 
-	struct ConstEntry {
+	struct ConstEntry 
+	{
 		EntityID id;
 		const T& component;
 
 		ConstEntry(EntityID id, const T& comp) noexcept
 			: id(id)
 			, component(comp)
-		{ }
+		{
+
+		}
 	};
 
-	class ConstIterator {
-	private:
-		const Pool* m_set;
+	class ConstIterator 
+	{
+		const Pool *m_set;
 		size_t m_idx;
 
 	public:
@@ -328,7 +339,7 @@ public:
 		using pointer = void;
 		using iterator_category = std::forward_iterator_tag;
 
-		ConstIterator(const Pool* set, size_t idx) noexcept
+		ConstIterator(const Pool *set, size_t idx) noexcept
 			: m_set(set)
 			, m_idx(idx)
 		{

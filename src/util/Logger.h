@@ -5,10 +5,11 @@
 
 #include <memory>
 
-namespace APE {
+namespace APE 
+{
 
-class Logger {
-private:
+class Logger 
+{
 	inline static std::shared_ptr<spdlog::logger> s_core_logger;
 
 public:
@@ -41,3 +42,4 @@ public:
 #define APE_CHECK(boolVal, ...) if (!boolVal) APE_ABORT(__VA_ARGS__);
 
 };	// end of namespace APE
+

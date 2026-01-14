@@ -29,13 +29,14 @@
 #include <utility>
 
 
-namespace cereal {
+namespace cereal 
+{
 
 using EntityMap = std::unordered_map<APE::ECS::EntityID, APE::ECS::EntityHandle>;
 static inline std::unordered_map<APE::ECS::Registry*, EntityMap> s_old_to_new {};
 
-static inline APE::Scene* s_scene {};
-static inline const APE::Scene* s_scene_const {};
+static inline APE::Scene *s_scene {};
+static inline const APE::Scene *s_scene_const {};
 
 /*
 * GLM
@@ -186,7 +187,8 @@ void load(Archive& ar, APE::HierarchyComponent& h)
 	);
 
 	h.parent = s_old_to_new.at(&s_scene->registry).at(h.parent.id);
-	for (size_t i = 0; i < h.children.size(); ++i) {
+	for (size_t i = 0; i < h.children.size(); ++i) 
+	{
 		h.children[i] = s_old_to_new.at(&s_scene->registry).at(h.children[i].id);
 	}
 }
@@ -359,7 +361,7 @@ JPH::ObjectLayer getObjectLayer(const std::string& layer_str) noexcept
 }
 
 
-std::string getBoxShapeString(const JPH::BoxShape* box) noexcept
+std::string getBoxShapeString(const JPH::BoxShape *box) noexcept
 {
 	std::stringstream data;
 
@@ -386,7 +388,7 @@ JPH::BoxShape* getBoxShape(const std::string& info) noexcept
 }
 
 
-std::string getSphereShapeString(const JPH::SphereShape* sphere) noexcept
+std::string getSphereShapeString(const JPH::SphereShape *sphere) noexcept
 {
 	std::stringstream data;
 
@@ -408,7 +410,7 @@ JPH::SphereShape* getSphereShape(const std::string& info) noexcept
 }
 
 
-std::string getShapeTypeString(const JPH::Shape* shape) noexcept
+std::string getShapeTypeString(const JPH::Shape *shape) noexcept
 {
 	std::string shape_type = "Undefined";
 
@@ -436,7 +438,7 @@ JPH::EShapeSubType getShapeType(const std::string& shape_type_str) noexcept
 	return JPH::EShapeSubType::Empty;
 }
 
-std::string getShapeString(const JPH::Shape* shape) noexcept
+std::string getShapeString(const JPH::Shape *shape) noexcept
 {
 	std::string shape_info;
 
@@ -669,7 +671,8 @@ void load(Archive& ar, APE::ECS::Registry& r)
 	// Update mapping of old entities to new entities
 	std::vector<APE::ECS::EntityHandle> old_ents;
 	ar(cereal::make_nvp("entities", old_ents));
-	for (auto old_ent : old_ents) {
+	for (auto old_ent : old_ents) 
+	{
 		s_old_to_new[&r][old_ent.id] = r.createEntity();
 	}
 
@@ -736,7 +739,8 @@ namespace APE {
 struct Serialize {
 	static void saveScene(
 		std::filesystem::path save_path,
-		::APE::Scene& world) noexcept
+		::APE::Scene& world
+	) noexcept
 	{
 		std::ofstream os(save_path);
 		cereal::JSONOutputArchive archive(os);

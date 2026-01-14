@@ -7,9 +7,11 @@
 
 #include <filesystem>
 
-namespace APE {
+namespace APE 
+{
 
-struct ImageLoader {
+struct ImageLoader 
+{
 	[[nodiscard]] static AssetHandle<Render::Image>
 	load(std::filesystem::path path) noexcept;
 

@@ -5,7 +5,8 @@
 #include <functional>
 #include <memory>
 
-namespace APE::Render::SafeGPU {
+namespace APE::Render::SafeGPU 
+{
 
 // Unique Resources wrapped with deleter for memory safety
 template <typename SDL_T>
@@ -13,8 +14,9 @@ using UniqueGPUResource = std::unique_ptr<SDL_T, std::function<void(SDL_T*)>>;
 
 template <typename SDL_T>
 [[nodiscard]] inline UniqueGPUResource<SDL_T> makeUnique(
-	SDL_T* resource,
-	std::function<void(SDL_T*)> deleter) noexcept
+	SDL_T *resource,
+	std::function<void(SDL_T*)> deleter
+) noexcept
 {
 	return UniqueGPUResource<SDL_T>(resource, deleter);
 }
@@ -26,7 +28,8 @@ using SharedGPUResource = std::shared_ptr<SDL_T>;
 template <typename SDL_T>
 [[nodiscard]] inline SharedGPUResource<SDL_T> makeShared(
 	SDL_T* resource,
-	std::function<void(SDL_T*)> deleter) noexcept
+	std::function<void(SDL_T*)> deleter
+) noexcept
 {
 	return SharedGPUResource<SDL_T>(resource, deleter);
 }

@@ -1,11 +1,14 @@
 #include "core/input/Input.h"
+
 #include <algorithm>
 
-namespace APE::Input {
+namespace APE::Input 
+{
 
 bool State::isKeyDown(SDL_Keycode key) const noexcept
 {
-	if (m_key_state.contains(key)) {
+	if (m_key_state.contains(key)) 
+	{
 		return m_key_state.at(key).down;
 	}
 	return false;
@@ -18,7 +21,8 @@ bool State::isKeyUp(SDL_Keycode key) const noexcept
 
 bool State::isFirstFramePressed(SDL_Keycode key) const noexcept
 {
-	if (m_key_state.contains(key)) {
+	if (m_key_state.contains(key)) 
+	{
 		return m_key_state.at(key).time_pressed == m_timestamp;
 	}
 	return false;

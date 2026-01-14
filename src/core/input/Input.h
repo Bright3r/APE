@@ -8,19 +8,23 @@
 #include <vector>
 
 // Forward declare Engine
-namespace APE {
+namespace APE 
+{
 	class Engine;
 };	// end of namespace
 
 
-namespace APE::Input {
+namespace APE::Input 
+{
 
-struct KeyState {
+struct KeyState 
+{
 	bool down = false;
 	Uint64 time_pressed = 0;
 };
 
-class State {
+class State 
+{
 	friend class APE::Engine;
 
 	std::unordered_map<SDL_Keycode, KeyState> m_key_state;

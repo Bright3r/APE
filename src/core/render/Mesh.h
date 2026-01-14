@@ -9,10 +9,12 @@
 
 #include <vector>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
 template <typename VertexType, typename IndexType>
-struct Mesh {
+struct Mesh 
+{
 	std::vector<VertexType> vertices;
 	std::vector<IndexType> indices;
 	TransformComponent transform;
@@ -22,10 +24,12 @@ struct Mesh {
 
 	Mesh() noexcept = default;
 
-	Mesh(const std::vector<VertexType>& vertices,
+	Mesh(
+		const std::vector<VertexType>& vertices,
 		const std::vector<IndexType>& indices,
 		const TransformComponent& transform,
-		const AssetHandle<Image>& texture_handle) noexcept
+		const AssetHandle<Image>& texture_handle
+	) noexcept
 		: vertices(vertices)
 		, indices(indices)
 		, transform(transform)
@@ -40,7 +44,8 @@ struct Mesh {
 	[[nodiscard]] std::vector<Triangle> triangles() const noexcept
 	{
 		std::vector<Triangle> tris;
-		for (size_t i = 0; i < indices.size(); i += 3) {
+		for (size_t i = 0; i < indices.size(); i += 3) 
+		{
 			tris.push_back({ 
        				vertices[indices[i]].pos,
 				vertices[indices[i+1]].pos,

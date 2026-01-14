@@ -70,12 +70,15 @@ void Scene::setParent(ECS::EntityHandle child, ECS::EntityHandle parent) noexcep
 	
 	// Remove child from old parent
 	auto old_par = h_child.parent;
-	if (registry.hasComponent<HierarchyComponent>(old_par)) {
+	if (registry.hasComponent<HierarchyComponent>(old_par)) 
+	{
 		auto& h_old_par = registry.getComponent<HierarchyComponent>(old_par);
 
 		std::vector<ECS::EntityHandle> rem_children;
-		for (auto par_child : h_old_par.children) {
-			if (par_child != child) {
+		for (auto par_child : h_old_par.children) 
+		{
+			if (par_child != child) 
+			{
 				rem_children.push_back(par_child);
 			}
 		}
@@ -83,7 +86,8 @@ void Scene::setParent(ECS::EntityHandle child, ECS::EntityHandle parent) noexcep
 	}
 
 	// Add child to new parent
-	if (registry.hasComponent<HierarchyComponent>(parent)) {
+	if (registry.hasComponent<HierarchyComponent>(parent)) 
+	{
 		auto& h_par = registry.getComponent<HierarchyComponent>(parent);
 
 		h_par.children.push_back(child);
@@ -149,7 +153,8 @@ glm::mat4 Scene::getModelMatrix(ECS::EntityHandle ent) noexcept
 	}
 
 	glm::mat4 model_mat(1.f);
-	while (!stack.empty()) {
+	while (!stack.empty()) 
+	{
 		model_mat *= stack.back();
 		stack.pop_back();
 	}
@@ -245,7 +250,7 @@ ECS::EntityHandle Scene::getPhysicsBodyEntity(JPH::BodyID body_id) const noexcep
 ECS::EntityHandle Scene::addPlayer(
 	AssetHandle<Render::Model> model_handle,
 	const TransformComponent& transform,
-	JPH::Shape* shape
+	JPH::Shape *shape
 ) noexcept
 {
 	JPH::CharacterVirtualSettings settings;

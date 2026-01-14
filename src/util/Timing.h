@@ -4,7 +4,8 @@
 #include <thread>
 #include <type_traits>
 
-namespace APE::Timing {
+namespace APE::Timing 
+{
 
 // Type Aliases
 using seconds = std::chrono::duration<double>;
@@ -14,18 +15,21 @@ using millis = std::chrono::duration<double, std::milli>;
 template <typename F, typename Rep, typename Period>
 [[nodiscard]] decltype(auto) timeFunctionCall(
 	F&& f,
-	std::chrono::duration<Rep, Period>& execution_time) noexcept
+	std::chrono::duration<Rep, Period>& execution_time
+) noexcept
 {
 	// Time function execution time
 	auto start_time = std::chrono::high_resolution_clock::now();
 
-	if constexpr (std::is_void_v<std::invoke_result_t<F>>) {
+	if constexpr (std::is_void_v<std::invoke_result_t<F>>) 
+	{
 		// Return execution time
 		f();
 		auto end_time = std::chrono::high_resolution_clock::now();
 		execution_time = end_time - start_time;
 	}
-	else {
+	else 
+{
 		// Return execution time and function result
 		auto res = f();
 		auto end_time = std::chrono::high_resolution_clock::now();
@@ -39,8 +43,7 @@ void spinWait(const std::chrono::duration<Rep, Period>& wait_time) noexcept
 {
 	using namespace std::chrono;
 
-	if (wait_time <= milliseconds(0))
-		return;
+	if (wait_time <= milliseconds(0)) return;
 
 	auto start_time = high_resolution_clock::now();
 	while ((high_resolution_clock::now() - start_time) < wait_time) { }
@@ -51,13 +54,13 @@ void waitFor(const std::chrono::duration<Rep, Period>& wait_time) noexcept
 {
 	using namespace std::chrono;
 
-	if (wait_time <= duration<Rep, Period>::zero())
-		return;
+	if (wait_time <= duration<Rep, Period>::zero()) return;
 
 	auto start_time = high_resolution_clock::now();
 
 	// Wait until 1ms before end of wait
-	if (wait_time > milliseconds(1)) {
+	if (wait_time > milliseconds(1)) 
+	{
 		auto coarse_delay_time = wait_time - milliseconds(1);
 		std::this_thread::sleep_for(coarse_delay_time);
 	}

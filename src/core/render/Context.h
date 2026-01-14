@@ -9,9 +9,11 @@
 #include <string>
 #include <string_view>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-struct Context {
+struct Context 
+{
 	SDL_Window *window;
 	SDL_GPUDevice *device;
 	std::string title;
@@ -24,7 +26,7 @@ struct Context {
 		int window_width,
 		int window_height,
 		int window_flags
-	 ) noexcept;
+	) noexcept;
 
 	~Context();
 

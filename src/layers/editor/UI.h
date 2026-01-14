@@ -36,14 +36,16 @@
 #include <utility>
 #include <vector>
 
-namespace APE::Editor {
+namespace APE::Editor 
+{
 
 static inline void drawDebugPanel(
 	APE::Scene& world,
 	bool& b_lock_selection,
 	bool& b_show_hitboxes,
 	bool& b_play_simulation,
-	float& mouse_force) noexcept
+	float& mouse_force
+) noexcept
 {
 	ImGui::Begin("Debug", nullptr, ImGuiWindowFlags_MenuBar);
 
@@ -56,7 +58,8 @@ static inline void drawDebugPanel(
 				std::filesystem::path path;
 				Files::Status status = 
 					Files::openDialog(path);
-				if (status == Files::Status::Sucess) {
+				if (status == Files::Status::Sucess) 
+				{
 					Engine::loadScene(path, world);
 				}
 			}
@@ -65,7 +68,8 @@ static inline void drawDebugPanel(
 				std::filesystem::path path;
 				Files::Status status = 
 					Files::openDialog(path);
-				if (status == Files::Status::Sucess) {
+				if (status == Files::Status::Sucess) 
+				{
 					Engine::saveScene(path, world);
 				}
 			}
@@ -76,6 +80,9 @@ static inline void drawDebugPanel(
 		ImGui::EndMenuBar();
 	}
 
+	auto framerate = 1.0 / Engine::getLastFrameTimeSec().count();
+	auto framerate_str = std::to_string(framerate);
+	ImGui::Text("Framerate: %s", framerate_str.c_str());
 
 	ImGui::Text("Camera");
 	auto cam = Engine::getCamera().lock();
@@ -100,24 +107,30 @@ static inline void drawDebugPanel(
 	ImGui::SliderFloat("sensitivity", &sensitivity, 0.01f, 1.f, "%.2f");
 	cam->setSensitivity(sensitivity);
 
-	if (ImGui::RadioButton("lock camera", cam->isLocked())) {
+	if (ImGui::RadioButton("lock camera", cam->isLocked())) 
+	{
 		cam->setLocked(!cam->isLocked());
 	}
-	if (ImGui::RadioButton("lock selection", b_lock_selection)) {
+	if (ImGui::RadioButton("lock selection", b_lock_selection)) 
+	{
 		b_lock_selection = !b_lock_selection;
 	}
-	if (ImGui::RadioButton("show hitboxes", b_show_hitboxes)) {
+	if (ImGui::RadioButton("show hitboxes", b_show_hitboxes)) 
+	{
 		b_show_hitboxes = !b_show_hitboxes;
 	}
-	if (ImGui::RadioButton("play simulation", b_play_simulation)) {
+	if (ImGui::RadioButton("play simulation", b_play_simulation)) 
+	{
 		b_play_simulation = !b_play_simulation;
 	}
 
 	auto renderer = Engine::renderer();
-	if (ImGui::RadioButton("show normals", renderer->debug_mode.show_normals)) {
+	if (ImGui::RadioButton("show normals", renderer->debug_mode.show_normals)) 
+	{
 		renderer->debug_mode.show_normals = !renderer->debug_mode.show_normals;
 	}
-	if (ImGui::RadioButton("wireframe mode", renderer->wireframe_mode)) {
+	if (ImGui::RadioButton("wireframe mode", renderer->wireframe_mode)) 
+	{
 		renderer->wireframe_mode = !renderer->wireframe_mode;
 	}
 
@@ -126,7 +139,8 @@ static inline void drawDebugPanel(
 
 static inline void drawSceneHierarchyPanel(
 	Scene& world,
-	ECS::EntityHandle& selected_ent) noexcept
+	ECS::EntityHandle& selected_ent
+) noexcept
 {
 	ImGui::Begin("Scene Hierarchy Panel");
 
@@ -139,7 +153,8 @@ static inline void drawSceneHierarchyPanel(
 	std::vector<EntityWithPad> stack;
 	stack.push_back({ world.root, "", 0.f });
 	ImVec2 button_sz { 0.f, 0.f };
-	while (!stack.empty()) {
+	while (!stack.empty()) 
+	{
 		auto [ent, x, pad] = stack.back();
 		stack.pop_back();
 
@@ -160,19 +175,23 @@ static inline void drawSceneHierarchyPanel(
 
 		// Add padded children
 		float child_pad = pad + 1;
-		for (auto child : hierarchy.children) {
-			if (world.registry.hasComponent<HierarchyComponent>(child)) {
+		for (auto child : hierarchy.children) 
+		{
+			if (world.registry.hasComponent<HierarchyComponent>(child)) 
+			{
 				stack.push_back({ child, "", child_pad  });
 			}
 		}
 	}
 
 	// Draw a button to select each entity
-	for (auto [ent, padded_tag, pad] : draw_list) {
+	for (auto [ent, padded_tag, pad] : draw_list) 
+	{
 		ImVec2 cursor_pos = ImGui::GetCursorPos();
 		float cursor_offset = pad * button_sz.x;
 		ImGui::SetCursorPos({ cursor_pos.x + cursor_offset, cursor_pos.y });
-		if (ImGui::Button(padded_tag.c_str(), { button_sz.x, 2*button_sz.y })) {
+		if (ImGui::Button(padded_tag.c_str(), 
+		    { button_sz.x, 2*button_sz.y })) {
 			selected_ent = ent;
 		}
 	}
@@ -217,7 +236,7 @@ ColliderShape getColliderShape() noexcept
 
 JPH::Shape* createColliderShape(ColliderShape selected_shape, bool make_shape) noexcept
 {
-	JPH::Shape* shape {};
+	JPH::Shape *shape {};
 	switch (selected_shape)
 	{
 	case Box:
@@ -248,7 +267,8 @@ JPH::Shape* createColliderShape(ColliderShape selected_shape, bool make_shape) n
 static inline void drawManipulatorPanel(
 	Scene& world,
 	const ECS::EntityHandle& ent,
-	ImGuizmo::OPERATION& gizmo_op) noexcept
+	ImGuizmo::OPERATION& gizmo_op
+) noexcept
 {
 	ImGui::Begin("Manipulator Panel");
 
@@ -257,13 +277,15 @@ static inline void drawManipulatorPanel(
 	ImGui::Text("%s", id_ss.str().c_str());
 
 	// Tag
-	if (world.registry.hasComponent<HierarchyComponent>(ent)) {
+	if (world.registry.hasComponent<HierarchyComponent>(ent)) 
+	{
 		ImGui::Text("Hierarchy");
 		auto& hierarchy = world.registry.getComponent<HierarchyComponent>(ent);
 
 		char buf[128];
 		strncpy(buf, hierarchy.tag.c_str(), sizeof(buf));
-		if (ImGui::InputText("Entity Tag", buf, sizeof(buf))) {
+		if (ImGui::InputText("Entity Tag", buf, sizeof(buf))) 
+		{
 			hierarchy.tag = buf;
 		}
 
@@ -278,20 +300,24 @@ static inline void drawManipulatorPanel(
 	}
 
 	// Transform
-	if (world.registry.hasComponent<TransformComponent>(ent)) {
+	if (world.registry.hasComponent<TransformComponent>(ent)) 
+	{
 		ImGui::Text("Transform");
 		auto& transform = world.registry.getComponent<TransformComponent>(ent);
 
 		// Select gizmo operation
-		if (ImGui::RadioButton("Translate", gizmo_op == ImGuizmo::TRANSLATE)) {
+		if (ImGui::RadioButton("Translate", gizmo_op == ImGuizmo::TRANSLATE)) 
+		{
 			gizmo_op = ImGuizmo::TRANSLATE;
 		}
 		ImGui::SameLine();
-		if (ImGui::RadioButton("Rotate", gizmo_op == ImGuizmo::ROTATE)) {
+		if (ImGui::RadioButton("Rotate", gizmo_op == ImGuizmo::ROTATE)) 
+		{
 			gizmo_op = ImGuizmo::ROTATE;
 		}
 		ImGui::SameLine();
-		if (ImGui::RadioButton("Scale", gizmo_op == ImGuizmo::SCALE)) {
+		if (ImGui::RadioButton("Scale", gizmo_op == ImGuizmo::SCALE)) 
+		{
 			gizmo_op = ImGuizmo::SCALE;
 		}
 
@@ -336,18 +362,20 @@ static inline void drawManipulatorPanel(
 	}
 
 	// Material
-	if (world.registry.hasComponent<Render::MaterialComponent>(ent)) {
+	if (world.registry.hasComponent<Render::MaterialComponent>(ent)) 
+	{
 		ImGui::Text("Material");
-		if (ImGui::Button("Change Texture")) {
+		if (ImGui::Button("Change Texture")) 
+		{
 			std::filesystem::path tex_path;
 			auto status = Files::openDialog(tex_path);
-			if (status == Files::Status::Sucess) {
+			if (status == Files::Status::Sucess) 
+			{
 				auto tex_handle = ImageLoader::load(tex_path);
-				world.registry.replaceComponent<
-					Render::MaterialComponent>(
+				world.registry.replaceComponent<Render::MaterialComponent>(
 						ent,
 						tex_handle
-					);
+				);
 			}
 		}
 	}
@@ -358,7 +386,12 @@ static inline void drawManipulatorPanel(
 	{
 		auto& light = world.registry.getComponent<Render::LightComponent>(ent);
 
-		ImGui::SliderInt("type", reinterpret_cast<int*>(&light.type), 0, Render::LightType::Size);
+		ImGui::SliderInt(
+			"type",
+			reinterpret_cast<int*>(&light.type),
+			0,
+			Render::LightType::Size
+		);
 		ImGui::InputFloat3("attenuation", glm::value_ptr(light.attenuation));
 		ImGui::ColorPicker4("ambient", glm::value_ptr(light.ambient_color));
 		ImGui::ColorPicker4("diffuse", glm::value_ptr(light.diffuse_color));
@@ -439,9 +472,11 @@ static inline void drawManipulatorPanel(
 static inline void drawGizmo(
 	Scene& world,
 	const ECS::EntityHandle& ent,
-	ImGuizmo::OPERATION gizmo_op) noexcept 
+	ImGuizmo::OPERATION gizmo_op
+) noexcept 
 {
-	if (world.registry.hasAllComponents<TransformComponent, HierarchyComponent>(ent)) {
+	if (world.registry.hasAllComponents<TransformComponent, HierarchyComponent>(ent)) 
+	{
 		// Get transform
 		auto [transform, hierarchy] = world.registry.getComponents<
 			TransformComponent, HierarchyComponent>(ent);
@@ -487,8 +522,7 @@ static inline void drawGizmo(
 			return dot > (1.f - epsilon);
 		};
 
-		bool b_degenerate = 
-			!vec_equal(new_transform.scale, transform.scale) &&
+		bool b_degenerate = !vec_equal(new_transform.scale, transform.scale) &&
 			(!vec_equal(new_transform.position, transform.position) ||
 			!quat_equal(new_transform.rotation, transform.rotation));
 		if (!b_degenerate)

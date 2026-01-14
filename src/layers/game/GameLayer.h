@@ -2,9 +2,11 @@
 
 #include "core/Application.h"
 
-namespace APE::Game {
+namespace APE::Game 
+{
 
-class GameLayer : public Application {
+class GameLayer : public Application 
+{
 
 public:
 	void draw() noexcept override;

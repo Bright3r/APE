@@ -19,7 +19,6 @@ struct Scene
 {
 	ECS::Registry registry;
 	ECS::EntityHandle root;
-
 	std::unique_ptr<Phys::PhysicsSystem> phys_system;
 	std::unordered_map<JPH::BodyID, ECS::EntityHandle> pbody_to_ent;
 
@@ -47,7 +46,8 @@ struct Scene
 
 	ECS::EntityHandle addModel(
 		AssetHandle<Render::Model> model_handle,
-		const TransformComponent& transform = {}) noexcept;
+		const TransformComponent& transform = {}
+	) noexcept;
 
 	JPH::BodyID createPhysicsBody(JPH::BodyCreationSettings body_settings) noexcept;
 
@@ -63,7 +63,7 @@ struct Scene
 	ECS::EntityHandle addPlayer(
 		AssetHandle<Render::Model> model_handle,
 		const TransformComponent& transform,
-		JPH::Shape* shape
+		JPH::Shape *shape
 	) noexcept;
 
 	std::pair<ECS::EntityHandle, Phys::PlayerComponent*> getPlayer() noexcept;

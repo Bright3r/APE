@@ -6,14 +6,16 @@
 
 using namespace APE::ECS;
 
-class PoolTest : public testing::Test {
+class PoolTest : public testing::Test 
+{
 protected:
 	Pool<size_t, int> set;
 	Pool<size_t, int> filled_set;
 
 	PoolTest()
 	{
-		for (size_t i = 0; i < 50; ++i) {
+		for (size_t i = 0; i < 50; ++i) 
+		{
 			filled_set.emplace(i, 5*i);
 		}
 	}
@@ -120,12 +122,13 @@ TEST_F(PoolTest, RemoveFromMiddle)
 	EXPECT_EQ(filled_set.size(), 49) << "Set should be size 49.";
 	EXPECT_FALSE(filled_set.remove(25)) << "Set should no longer have entity 25.";
 
-	for (size_t i = 0; i < 50; ++i) {
-		if (i == 25) {
+	for (size_t i = 0; i < 50; ++i) 
+	{
+		if (i == 25) 
+		{
 			continue;
 		}
-		EXPECT_TRUE(filled_set.contains(i)) 
-			<< "Set should contain entity " << i;
+		EXPECT_TRUE(filled_set.contains(i)) << "Set should contain entity " << i;
 	}
 
 	EXPECT_DEATH({
@@ -135,14 +138,15 @@ TEST_F(PoolTest, RemoveFromMiddle)
 
 TEST_F(PoolTest, RemoveFromFront)
 {
-	for (size_t i = 0; i < 50; ++i) {
+	for (size_t i = 0; i < 50; ++i) 
+	{
 		ASSERT_TRUE(filled_set.remove(i)) << "Set should remove entity " << i;
 	}
 	ASSERT_TRUE(filled_set.empty()) << "Set should be empty.";
 
-	for (size_t i = 0; i < 50; ++i) {
-		ASSERT_TRUE(!filled_set.contains(i)) 
-			<< "Set should not contain entity " << i;
+	for (size_t i = 0; i < 50; ++i) 
+	{
+		ASSERT_TRUE(!filled_set.contains(i)) << "Set should not contain entity " << i;
 	}
 
 	filled_set.emplace(25, 100);
@@ -160,9 +164,9 @@ TEST_F(PoolTest, BasicClear)
 	EXPECT_TRUE(filled_set.empty()) << "Set should be empty.";
 	EXPECT_EQ(filled_set.size(), 0) << "Set should be size 0.";
 
-	for (size_t i = 0; i < 50; ++i) {
-		EXPECT_TRUE(!filled_set.contains(i)) 
-			<< "filled_set should not contain entity " << i;
+	for (size_t i = 0; i < 50; ++i) 
+	{
+		EXPECT_TRUE(!filled_set.contains(i)) << "filled_set should not contain entity " << i;
 	}
 }
 
@@ -233,7 +237,8 @@ TEST_F(PoolTest, BasicIteration)
 {
 	size_t expected_id = 49;
 	int expected_val = 5*expected_id;
-	for (auto [ id, val ] : filled_set) {
+	for (auto [ id, val ] : filled_set) 
+	{
 		EXPECT_EQ(id, expected_id);
 		EXPECT_EQ(val, expected_val);
 
@@ -244,9 +249,9 @@ TEST_F(PoolTest, BasicIteration)
 
 TEST_F(PoolTest, RemoveWhileIterating)
 {
-	for (auto [ id, val ] : filled_set) {
-		EXPECT_TRUE(filled_set.remove(id)) 
-			<< "Set should remove entity " << id;
+	for (auto [ id, val ] : filled_set) 
+	{
+		EXPECT_TRUE(filled_set.remove(id)) << "Set should remove entity " << id;
 	}
 
 	ASSERT_TRUE(filled_set.empty()) << "Set should be empty.";
@@ -256,7 +261,8 @@ TEST_F(PoolTest, ConstIteration)
 {
 	size_t expected_id = 49;
 	int expected_val = 5*expected_id;
-	for (const auto [ id, val ] : filled_set) {
+	for (const auto [ id, val ] : filled_set) 
+	{
 		EXPECT_EQ(id, expected_id);
 		EXPECT_EQ(val, expected_val);
 

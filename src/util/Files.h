@@ -7,11 +7,13 @@
 #include <utility>
 #include <vector>
 
-namespace APE::Files {
+namespace APE::Files 
+{
 
 using Filters = std::vector<std::pair<std::string, std::string>>;
 
-enum class Status {
+enum class Status 
+{
 	Sucess = 0,
 	Canceled,
 	Failure
@@ -19,16 +21,19 @@ enum class Status {
 
 [[nodiscard]] inline Status openDialog(
 	std::filesystem::path& out_path,
-	Filters filters = {}) noexcept
+	Filters filters = {}
+) noexcept
 {
 	static bool b_initialized = false;
-	if (!b_initialized) {
+	if (!b_initialized) 
+	{
 		NFD_Init();
 		b_initialized = true;
 	}
 
 	std::vector<nfdu8filteritem_t> nfd_filters;
-	for (auto& filter : filters) {
+	for (auto& filter : filters) 
+	{
 		nfdu8filteritem_t nfd_filter { 
 			filter.first.c_str(),
 			filter.second.c_str() 
@@ -40,15 +45,17 @@ enum class Status {
 	args.filterList = nfd_filters.data();
 	args.filterCount = nfd_filters.size();
 
-	nfdu8char_t* nfd_path;
+	nfdu8char_t *nfd_path;
 	nfdresult_t res = NFD_OpenDialogU8_With(&nfd_path, &args);
 	Status status = Status::Failure;
-	if (res == NFD_OKAY) {
+	if (res == NFD_OKAY) 
+	{
 		out_path = nfd_path;
 		NFD_FreePathU8(nfd_path);
 		status = Status::Sucess;
 	}
-	else if (res == NFD_CANCEL) {
+	else if (res == NFD_CANCEL) 
+	{
 		status = Status::Canceled;
 	}
 

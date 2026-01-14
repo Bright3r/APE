@@ -12,10 +12,12 @@
 #include <string_view>
 #include <vector>
 
-namespace APE {
+namespace APE 
+{
 
-struct HierarchyComponent {
-	static constexpr const char* Name = "Hierarchy";
+struct HierarchyComponent 
+{
+	static constexpr const char *Name = "Hierarchy";
 	ECS::EntityHandle parent;
 	std::vector<ECS::EntityHandle> children;
 	std::string tag;
@@ -28,15 +30,18 @@ struct HierarchyComponent {
 	}
 };
 
-struct TransformComponent {
-	static constexpr const char* Name = "Transform";
+struct TransformComponent 
+{
+	static constexpr const char *Name = "Transform";
 	glm::vec3 position;
 	glm::vec3 scale;
 	glm::quat rotation;
 
-	TransformComponent(glm::vec3 position = { 0, 0, 0 },
+	TransformComponent(
+		glm::vec3 position = { 0, 0, 0 },
 		glm::vec3 scale = { 1, 1, 1 },
-	   	glm::quat rotation = { 1, 0, 0, 0 } ) noexcept
+	   	glm::quat rotation = { 1, 0, 0, 0 }
+	) noexcept
 		: position(position)
 		, scale(scale)
 		, rotation(rotation)
@@ -73,7 +78,8 @@ struct TransformComponent {
 	}
 
 	[[nodiscard]] TransformComponent operator*(
-		const TransformComponent& other) const noexcept
+		const TransformComponent& other
+	) const noexcept
 	{
 		glm::vec3 scale = this->scale * other.scale;
 		glm::quat rot = this->rotation * other.rotation;

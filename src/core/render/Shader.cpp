@@ -5,11 +5,14 @@
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_stdinc.h>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-Shader::Shader(const ShaderDescription& vert_desc, 
-	       const ShaderDescription& frag_desc,
-	       SDL_GPUDevice* device) noexcept
+Shader::Shader(
+	const ShaderDescription& vert_desc, 
+	const ShaderDescription& frag_desc,
+	SDL_GPUDevice *device
+) noexcept
 	: m_vert_shader(nullptr)
 	, m_frag_shader(nullptr)
 	, m_device(device)
@@ -40,13 +43,12 @@ Shader::Shader(Shader&& other) noexcept
 
 Shader& Shader::operator=(Shader&& other) noexcept
 {
-	if (this != &other) {
+	if (this != &other) 
+	{
 		// Release our shaders
-		if (m_vert_shader)
-			SDL_ReleaseGPUShader(m_device, m_vert_shader);
+		if (m_vert_shader) SDL_ReleaseGPUShader(m_device, m_vert_shader);
 
-		if (m_frag_shader)
-			SDL_ReleaseGPUShader(m_device, m_frag_shader);
+		if (m_frag_shader) SDL_ReleaseGPUShader(m_device, m_frag_shader);
 
 		// Move other's pointers into ours
 		m_device = other.m_device;
@@ -66,12 +68,14 @@ Shader& Shader::operator=(Shader&& other) noexcept
 
 SDL_GPUShader* Shader::loadShader(
 	const ShaderDescription& shader_desc, 
-	SDL_GPUShaderStage stage) noexcept
+	SDL_GPUShaderStage stage
+) noexcept
 {
 	// Read shader code into buffer
 	size_t code_size;
 	void *code = SDL_LoadFile(shader_desc.filepath.c_str(), &code_size);
-	if (!code) {
+	if (!code) 
+	{
 		APE_ERROR("Failed to load shader code from {} - {}", 
 			shader_desc.filepath.c_str(), 
 			SDL_GetError()
@@ -84,19 +88,23 @@ SDL_GPUShader* Shader::loadShader(
 	SDL_GPUShaderFormat backend_formats = SDL_GetGPUShaderFormats(m_device);
 	SDL_GPUShaderFormat format = SDL_GPU_SHADERFORMAT_INVALID;
 
-	if (backend_formats & SDL_GPU_SHADERFORMAT_SPIRV) {
+	if (backend_formats & SDL_GPU_SHADERFORMAT_SPIRV) 
+	{
 		format = SDL_GPU_SHADERFORMAT_SPIRV;
 		entrypoint = "main";
 	}
-	else if (backend_formats & SDL_GPU_SHADERFORMAT_MSL) {
+	else if (backend_formats & SDL_GPU_SHADERFORMAT_MSL) 
+	{
 		format = SDL_GPU_SHADERFORMAT_MSL;
 		entrypoint = "main0";
 	}
-	else if (backend_formats & SDL_GPU_SHADERFORMAT_DXIL) {
+	else if (backend_formats & SDL_GPU_SHADERFORMAT_DXIL) 
+	{
 		format = SDL_GPU_SHADERFORMAT_DXIL;
 		entrypoint = "main";
 	}
-	else {
+	else 
+{
 		APE_ERROR(
 			"Failed to detect shader format from {} - {}",
 			shader_desc.filepath.c_str(),

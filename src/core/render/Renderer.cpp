@@ -12,7 +12,8 @@
 #include <array>
 #include <utility>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
 Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	: m_context(context)
@@ -28,6 +29,7 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	, m_is_drawing(false)
 	, debug_mode(false)
 	, m_imgui_session(nullptr)
+	, m_light_ssbo(nullptr)
 {
 	// Construct default shader
 	m_shader = std::make_shared<Shader>(
@@ -45,8 +47,10 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	reset();
 }
 
-Renderer::Renderer(std::shared_ptr<Context> context, 
-		   std::shared_ptr<Shader> shader) noexcept
+Renderer::Renderer(
+	std::shared_ptr<Context> context, 
+	std::shared_ptr<Shader> shader
+) noexcept
 	: m_context(context)
 	, wireframe_mode(false) 
 	, clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
@@ -60,6 +64,7 @@ Renderer::Renderer(std::shared_ptr<Context> context,
 	, m_is_drawing(false)
 	, debug_mode(false)
 	, m_imgui_session(nullptr)
+	, m_light_ssbo(nullptr)
 {
 	m_debug_shader = std::make_unique<Shader>(
 		debug_vert_shader_desc,
@@ -77,7 +82,8 @@ void Renderer::reset() noexcept
 		m_debug_shader.get(),
 		SDL_GPU_PRIMITIVETYPE_LINELIST
 	);
-	if (!debug_pipeline.fill || !debug_pipeline.line) {
+	if (!debug_pipeline.fill || !debug_pipeline.line) 
+	{
 		return;
 	}
 	m_debug_pipeline = std::move(debug_pipeline);
@@ -87,13 +93,45 @@ void Renderer::reset() noexcept
 		m_shader.get(),
 		SDL_GPU_PRIMITIVETYPE_TRIANGLELIST
 	);
-	if (!pipeline.fill || !pipeline.line) {
+	if (!pipeline.fill || !pipeline.line) 
+	{
 		return;
 	}
 	m_pipeline = std::move(pipeline);
 
+	// Disable vsync
+	SDL_GPUSwapchainComposition swapchain_comp = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
+	bool has_mailbox = SDL_WindowSupportsGPUPresentMode(
+		m_context->device,
+		m_context->window,
+		SDL_GPU_PRESENTMODE_MAILBOX
+	);
+	SDL_GPUPresentMode present_mode = has_mailbox ? 
+		SDL_GPU_PRESENTMODE_MAILBOX : 
+		SDL_GPU_PRESENTMODE_VSYNC;
+	SDL_SetGPUSwapchainParameters(
+		m_context->device,
+		m_context->window,
+		swapchain_comp,
+		present_mode
+	);
+
+	// Allocate resources
 	createSampler();
 	createDepthTexture();
+
+	SDL_GPUBufferCreateInfo light_buffer_info { 
+		.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ,
+		.size = static_cast<Uint32>(sizeof(RenderLight) * max_lights),
+	};
+	SDL_GPUBuffer *light_buffer = SDL_CreateGPUBuffer(m_context->device, &light_buffer_info);
+	m_light_ssbo = SafeGPU::makeUnique<SDL_GPUBuffer>(
+		light_buffer,
+		[=, this](SDL_GPUBuffer *buffer) {
+			SDL_ReleaseGPUBuffer(m_context->device, buffer);
+		}
+	);
+
 
 	// Ensure previous imgui session is destroyed before creating a new one
 	m_imgui_session = nullptr;
@@ -104,7 +142,8 @@ void Renderer::reset() noexcept
 
 std::unique_ptr<Shader> Renderer::createShader(
 	const ShaderDescription& vert_shader_desc,
-	const ShaderDescription& frag_shader_desc) const noexcept
+	const ShaderDescription& frag_shader_desc
+) const noexcept
 {
 	return std::make_unique<Shader>(
 		vert_shader_desc,
@@ -114,9 +153,10 @@ std::unique_ptr<Shader> Renderer::createShader(
 }
 
 SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
-	const SDL_GPUGraphicsPipelineCreateInfo& create_info) const noexcept
+	const SDL_GPUGraphicsPipelineCreateInfo& create_info
+) const noexcept
 {
-	SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(
+	SDL_GPUGraphicsPipeline *pipeline = SDL_CreateGPUGraphicsPipeline(
 		m_context->device, 
 		&create_info
 	);
@@ -127,16 +167,19 @@ SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
 
 	return SafeGPU::makeUnique<SDL_GPUGraphicsPipeline>(
 		pipeline,
-		[=, this](SDL_GPUGraphicsPipeline* pipeline) {
+		[=, this](SDL_GPUGraphicsPipeline *pipeline) {
 			SDL_ReleaseGPUGraphicsPipeline(m_context->device, pipeline);
 		}
 	);
 }
 
 SafePipeline Renderer::shaderToPipeline(
-	Shader* shader,
-	SDL_GPUPrimitiveType primitive_type) noexcept {
-	if (!shader) {
+	Shader *shader,
+	SDL_GPUPrimitiveType primitive_type
+) noexcept 
+{
+	if (!shader) 
+	{
 		APE_ERROR(
 			"Renderer::shaderToPipeline Failed: shader == nullptr"
 		);
@@ -153,6 +196,7 @@ SafePipeline Renderer::shaderToPipeline(
 
 	SDL_GPURasterizerState rasterizer_state = {
 		.cull_mode = SDL_GPU_CULLMODE_BACK,
+		// .cull_mode = SDL_GPU_CULLMODE_NONE,
 		.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE,
 	};
 
@@ -166,8 +210,7 @@ SafePipeline Renderer::shaderToPipeline(
 	
 	SDL_GPUGraphicsPipelineTargetInfo target_info = {
 		.color_target_descriptions = color_target_descriptions.data(),
-		.num_color_targets =
-			static_cast<Uint32>(color_target_descriptions.size()),
+		.num_color_targets = static_cast<Uint32>(color_target_descriptions.size()),
 		.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
 		.has_depth_stencil_target = true,
 	};
@@ -213,13 +256,13 @@ void Renderer::createDepthTexture() noexcept
 		.sample_count = SDL_GPU_SAMPLECOUNT_1,
 	};
 
-	SDL_GPUTexture* depth_tex = SDL_CreateGPUTexture(
+	SDL_GPUTexture *depth_tex = SDL_CreateGPUTexture(
 		m_context->device, 
 		&tex_desc
 	);
 	m_depth_texture = SafeGPU::makeUnique<SDL_GPUTexture>(
 		depth_tex,
-		[=, this](SDL_GPUTexture* tex) {
+		[=, this](SDL_GPUTexture *tex) {
 			SDL_ReleaseGPUTexture(m_context->device, tex);
 		}
 	);
@@ -260,11 +303,12 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 	);
 }
 
-void Renderer::bindPipeline(SafePipeline* pipeline) noexcept
+void Renderer::bindPipeline(SafePipeline *pipeline) noexcept
 {
 	// Bind render pipeline
-	SDL_GPUGraphicsPipeline* render_pipeline = 
-		wireframe_mode ? pipeline->line.get() : pipeline->fill.get();
+	SDL_GPUGraphicsPipeline *render_pipeline = wireframe_mode ?
+		pipeline->line.get() :
+		pipeline->fill.get();
 
 	APE_CHECK((render_pipeline != nullptr),
 		"Renderer::draw Failed: render_pipeline == nullptr"
@@ -321,7 +365,8 @@ void Renderer::draw(
 	MaterialComponent& material,
 	std::weak_ptr<Camera> camera,
 	const glm::mat4& model_matrix,
-	const std::vector<RenderLight>& lights) noexcept
+	const std::vector<RenderLight>& lights
+) noexcept
 {
 	// Check that we are already drawing
 	APE_CHECK(m_is_drawing,
@@ -336,7 +381,8 @@ void Renderer::draw(
 
 	// Check if gpu vertex buffer was already created
 	auto& raw_mesh = mesh.model_handle.data->meshes[mesh.mesh_index];
-	if (!raw_mesh.vertex_buffer) {
+	if (!raw_mesh.vertex_buffer) 
+	{
 		// Create GPU buffer with vertex data
 		SafeGPU::UniqueGPUBuffer vertex_buffer = uploadBuffer(
 			vectorToRawBytes(raw_mesh.vertices),
@@ -360,7 +406,8 @@ void Renderer::draw(
 
 
 	// Check if gpu index buffer was already created
-	if (!raw_mesh.index_buffer) {
+	if (!raw_mesh.index_buffer) 
+	{
 		// Create GPU buffer with index data
 		SafeGPU::UniqueGPUBuffer index_buffer = uploadBuffer(
 			vectorToRawBytes(raw_mesh.indices),
@@ -384,7 +431,8 @@ void Renderer::draw(
 
 	// Check if mesh texture was uploaded yet
 	auto& texture = material.texture_handle.data;
-	if (!texture->textureBuffer()) {
+	if (!texture->textureBuffer()) 
+	{
 		// Create GPU Texture
 		SafeGPU::UniqueGPUTexture gpu_tex = createTexture(
 			texture.get()
@@ -441,6 +489,9 @@ void Renderer::draw(
 
 
 	// Bind LightInfo Uniform
+	APE_CHECK((lights.size() <= max_lights),
+	   "Renderer::draw() Failed: lights > max_lights."
+	);
 	LightInfoUniform light_info;
 	light_info.light_count = lights.size();
 	SDL_PushGPUFragmentUniformData(
@@ -455,11 +506,12 @@ void Renderer::draw(
 	std::vector<SDL_GPUBuffer*> storage_buffers;
 
 	// Bind Light SSBO
-	SafeGPU::UniqueGPUBuffer light_buffer = uploadBuffer(
+	updateBuffer(
+		m_light_ssbo.get(),
 		vectorToRawBytes(lights),
 		SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ
 	);
-	storage_buffers.emplace_back(light_buffer.get());
+	storage_buffers.emplace_back(m_light_ssbo.get());
 	SDL_BindGPUFragmentStorageBuffers(
 		m_render_pass,
 		0,
@@ -480,10 +532,12 @@ void Renderer::drawLine(
 	const glm::vec3& p0,
 	const glm::vec3& p1,
 	std::array<Uint8, 4> color,
-	Camera* cam) noexcept
+	Camera *cam
+) noexcept
 {
 	// Draw in screen space if no camera is provided
-	if (!cam) {
+	if (!cam) 
+	{
 		m_debug_verts.emplace_back(p0, color[0], color[1], color[2], color[3]);
 		m_debug_verts.emplace_back(p1, color[0], color[1], color[2], color[3]);
 		return;
@@ -580,7 +634,7 @@ void Renderer::endDrawing() noexcept
 
 	// Build ImGUI drawing data
 	ImGui::Render();
-	ImDrawData* gui_data = ImGui::GetDrawData();
+	ImDrawData *gui_data = ImGui::GetDrawData();
 	Imgui_ImplSDLGPU3_PrepareDrawData(gui_data, m_cmd_buf);
 
 	// Dispatch render pass for ImGUI
@@ -615,7 +669,7 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	);
 	auto safe_buffer = SafeGPU::makeUnique<SDL_GPUBuffer>(
 		buffer,
-		[=, this](SDL_GPUBuffer* buf) {
+		[=, this](SDL_GPUBuffer *buf) {
 			SDL_ReleaseGPUBuffer(m_context->device, buf);
 		}
 	);
@@ -635,7 +689,7 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	);
 
 	// Write data to transfer buffer
-	std::byte* mapped = static_cast<std::byte*>(
+	std::byte *mapped = static_cast<std::byte*>(
 		SDL_MapGPUTransferBuffer(
 			m_context->device, 
 			transfer_buffer, 
@@ -669,7 +723,8 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	SDL_EndGPUCopyPass(copy_pass);
 
 	// Execute copy pass
-	SDL_GPUFence* fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmd_buffer);
+	// SDL_SubmitGPUCommandBuffer(cmd_buffer);
+	SDL_GPUFence *fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cmd_buffer);
 	SDL_WaitForGPUFences(m_context->device, false, &fence, 1);
 
 	// Cleanup resources
@@ -679,7 +734,72 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	return safe_buffer;
 }
 
-SDL_GPUTextureFormat Renderer::getTextureFormat(Image* image) noexcept
+
+void Renderer::updateBuffer(
+	SDL_GPUBuffer *buffer, 
+	const std::vector<std::byte>& data,
+	Uint32 usage
+) noexcept
+{
+	APE_CHECK((buffer != nullptr),
+	   "Renderer::updateBuffer Failed: cannot update nullptr."
+	);
+
+	// Create transfer buffer
+	Uint32 buffer_size = data.size();
+	SDL_GPUTransferBufferCreateInfo transfer_info = {
+		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+		.size = buffer_size,
+	};
+
+	SDL_GPUTransferBuffer *transfer_buffer = SDL_CreateGPUTransferBuffer(
+		m_context->device, 
+		&transfer_info
+	);
+	APE_CHECK((transfer_buffer != nullptr),
+	   "Renderer::updateBuffer Failed: failed to create GPU transfer buffer."
+	);
+
+	// Write data to transfer buffer
+	std::byte *mapped = static_cast<std::byte*>(
+		SDL_MapGPUTransferBuffer(
+			m_context->device, 
+			transfer_buffer, 
+			true
+		)
+	);
+	APE_CHECK((mapped != nullptr),
+	   "Renderer::updateBuffer Failed: failed to map GPU transfer buffer."
+	);
+
+	std::memcpy(mapped, data.data(), buffer_size);
+
+	SDL_UnmapGPUTransferBuffer(m_context->device, transfer_buffer);
+
+	// Upload transfer buffer to GPU read-only memory
+	SDL_GPUCommandBuffer *cmd_buffer = SDL_AcquireGPUCommandBuffer(
+		m_context->device
+	);
+	SDL_GPUCopyPass *copy_pass = SDL_BeginGPUCopyPass(cmd_buffer);
+
+	SDL_GPUTransferBufferLocation src = {
+		.transfer_buffer = transfer_buffer,
+		.offset = 0,
+	};
+	SDL_GPUBufferRegion dest = {
+		.buffer = buffer,
+		.offset = 0,
+		.size = buffer_size,
+	};
+	SDL_UploadToGPUBuffer(copy_pass, &src, &dest, true);
+	SDL_EndGPUCopyPass(copy_pass);
+	SDL_SubmitGPUCommandBuffer(cmd_buffer);
+
+	// Cleanup resources
+	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buffer);
+}
+
+SDL_GPUTextureFormat Renderer::getTextureFormat(Image *image) noexcept
 {
 	switch (image->getNumChannels()) {
 	case 1:
@@ -697,7 +817,7 @@ SDL_GPUTextureFormat Renderer::getTextureFormat(Image* image) noexcept
 	}
 }
 
-SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image) noexcept
+SafeGPU::UniqueGPUTexture Renderer::createTexture(Image *image) noexcept
 {
 	// Create texture
 	SDL_GPUTextureCreateInfo tex_desc = {
@@ -709,12 +829,12 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image) noexcept
 		.layer_count_or_depth = 1,
 		.num_levels = 1,
 	};
-	SDL_GPUTexture* texture = SDL_CreateGPUTexture(m_context->device, &tex_desc);
+	SDL_GPUTexture *texture = SDL_CreateGPUTexture(m_context->device, &tex_desc);
 
 	// Make safe wrapper around texture
 	SafeGPU::UniqueGPUTexture safe_tex = SafeGPU::makeUnique<SDL_GPUTexture>(
 		texture,
-		[=, this](SDL_GPUTexture* tex) {
+		[=, this](SDL_GPUTexture *tex) {
 			SDL_ReleaseGPUTexture(m_context->device, tex);
 		}
 	);
@@ -724,13 +844,13 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image) noexcept
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
 		.size = image->getSizeBytes(),
 	};
-	SDL_GPUTransferBuffer* transfer_buf = SDL_CreateGPUTransferBuffer(
+	SDL_GPUTransferBuffer *transfer_buf = SDL_CreateGPUTransferBuffer(
 		m_context->device,
 		&transfer_desc
 	);
 
 	// Write data to transfer buffer
-	std::byte* mapped = static_cast<std::byte*>(SDL_MapGPUTransferBuffer(
+	std::byte *mapped = static_cast<std::byte*>(SDL_MapGPUTransferBuffer(
 		m_context->device, 
 		transfer_buf, 
 		false
@@ -745,10 +865,10 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image* image) noexcept
 	SDL_UnmapGPUTransferBuffer(m_context->device, transfer_buf);
 
 	// Upload transfer buffer to gpu
-	SDL_GPUCommandBuffer* cmd_buf = SDL_AcquireGPUCommandBuffer(
+	SDL_GPUCommandBuffer *cmd_buf = SDL_AcquireGPUCommandBuffer(
 		m_context->device
 	);
-	SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd_buf);
+	SDL_GPUCopyPass *copy_pass = SDL_BeginGPUCopyPass(cmd_buf);
 
 	SDL_GPUTextureTransferInfo src = {
 		.transfer_buffer = transfer_buf,
@@ -779,15 +899,17 @@ void Renderer::createSampler() noexcept
 		.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
 		.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
 		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		.max_anisotropy = 8,
+		.enable_anisotropy = true,
 	};
-	SDL_GPUSampler* sampler = SDL_CreateGPUSampler(
+	SDL_GPUSampler *sampler = SDL_CreateGPUSampler(
 		m_context->device,
 		&sampler_desc
 	);
 
 	m_sampler = SafeGPU::makeUnique<SDL_GPUSampler>(
 		sampler,
-		[=, this](SDL_GPUSampler* sam) {
+		[=, this](SDL_GPUSampler *sam) {
 			SDL_ReleaseGPUSampler(m_context->device, sam);
 		}
 	);

@@ -14,12 +14,14 @@
 #include <filesystem>
 #include <chrono>
 
-namespace APE {
+namespace APE 
+{
 
 void Engine::init(
 	std::string_view window_title,
 	int window_width,
-	int window_height) noexcept 
+	int window_height
+) noexcept 
 {
 	APE_INFO("Launching Engine!");
 
@@ -53,7 +55,8 @@ void Engine::pollEvents() noexcept
 	s_input.nextFrame();
 
 	SDL_Event event;
-	while (SDL_PollEvent(&event) != 0) {
+	while (SDL_PollEvent(&event) != 0) 
+	{
 		ImGui_ImplSDL3_ProcessEvent(&event);
 
 		switch (event.type) {
@@ -84,7 +87,8 @@ void Engine::stepGameloop() noexcept
 	pollEvents();
 
 	// Update Application Layers
-	for (auto& app : s_layers) {
+	for (auto& app : s_layers) 
+	{
 		app->update();
 	}
 	s_input.flush();
@@ -93,12 +97,14 @@ void Engine::stepGameloop() noexcept
 	s_renderer->beginDrawing();
 
 	// 3D
-	for (auto& app : s_layers) {
+	for (auto& app : s_layers) 
+	{
 		app->draw();
 	}
 
 	// UI
-	for (auto& app : s_layers) {
+	for (auto& app : s_layers) 
+	{
 		app->drawGUI();
 	}
 
@@ -108,12 +114,14 @@ void Engine::stepGameloop() noexcept
 void Engine::run() noexcept 
 {
 	// Initial Setup
-	for (auto& app : s_layers) {
+	for (auto& app : s_layers) 
+	{
 		app->setup();
 	}
 
 	// Game Loop
-	while (!s_quit) {
+	while (!s_quit) 
+	{
 		auto start = std::chrono::high_resolution_clock::now();
 
 		// Time the execution of gameloop iteration
@@ -142,7 +150,8 @@ void Engine::saveScene(std::filesystem::path save_path, Scene& world) noexcept
 
 bool Engine::loadScene(std::filesystem::path load_path, Scene& world) noexcept
 {
-	if (load_path.extension() == ".json") {
+	if (load_path.extension() == ".json") 
+	{
 		world = Scene();
 		world = Serialize::loadScene(load_path);
 		return true;

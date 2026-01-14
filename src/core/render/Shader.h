@@ -9,9 +9,11 @@
 
 #include <filesystem>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-struct ShaderDescription {
+struct ShaderDescription 
+{
 	std::filesystem::path filepath;
 	Uint32 num_samplers;
 	Uint32 num_uniform_buffers;
@@ -20,11 +22,11 @@ struct ShaderDescription {
 	VertexFormat vertex_format;
 };
 
-class Shader {
-private:
-	SDL_GPUShader* m_vert_shader;
-	SDL_GPUShader* m_frag_shader;
-	SDL_GPUDevice* m_device;
+class Shader 
+{
+	SDL_GPUShader *m_vert_shader;
+	SDL_GPUShader *m_frag_shader;
+	SDL_GPUDevice *m_device;
 	ShaderDescription m_vert_desc;
 	ShaderDescription m_frag_desc;
 
@@ -32,7 +34,8 @@ public:
 	Shader(
 		const ShaderDescription& vert_shader_desc, 
 		const ShaderDescription& frag_shader_desc,
-		SDL_GPUDevice *device) noexcept;
+		SDL_GPUDevice *device
+	) noexcept;
 
 	~Shader() noexcept;
 	Shader(const Shader& other) noexcept = delete;
@@ -42,7 +45,8 @@ public:
 
 	[[nodiscard]] SDL_GPUShader* loadShader(
 		const ShaderDescription& shader_desc, 
-		SDL_GPUShaderStage stage) noexcept;
+		SDL_GPUShaderStage stage
+	) noexcept;
 
 	[[nodiscard]] SDL_GPUShader* getVertexShader() const noexcept;
 

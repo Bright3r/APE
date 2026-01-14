@@ -3,7 +3,8 @@
 #include "core/Engine.h"
 #include "core/components/Render.h"
 
-namespace APE::Game {
+namespace APE::Game 
+{
 
 void GameLayer::setup() noexcept
 {
@@ -42,7 +43,8 @@ void GameLayer::draw() noexcept
 		Render::MaterialComponent,
 		TransformComponent,
 		HierarchyComponent>();
-	for (auto [ent, mesh, material, transform, hierarchy] : view.each()) {
+	for (auto [ent, mesh, material, transform, hierarchy] : view.each()) 
+	{
 		glm::mat4 model_mat = world.getModelMatrix(ent);
 		Engine::renderer()->draw(
 			mesh,

@@ -10,12 +10,12 @@
 #include <string_view>
 #include <vector>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-class Image {
+class Image 
+{
 public:
-	static inline std::string_view DEFAULT_IMG_PATH = "res/textures/checkerboard.png";
-private:
 	static constexpr int DEFAULT_IMG_CHANNELS = 4;
 
 	int m_width;
@@ -26,14 +26,17 @@ private:
 	SafeGPU::UniqueGPUTexture m_texture_buffer;
 
 public:
+	static inline std::string_view DEFAULT_IMG_PATH = "res/textures/checkerboard.png";
+
 	Image() noexcept;
 
 	Image(std::filesystem::path path) noexcept;
 
-	Image(std::filesystem::path path, 
+	Image(
+		std::filesystem::path path, 
 		int width,
 		int height,
-		const std::byte* data
+		const std::byte *data
        ) noexcept;
 
 	[[nodiscard]] std::filesystem::path getPath() const noexcept;

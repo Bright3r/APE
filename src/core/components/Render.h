@@ -13,7 +13,7 @@ namespace APE::Render
 
 struct MeshComponent 
 {
-	static constexpr const char* Name = "Mesh";
+	static constexpr const char *Name = "Mesh";
 	AssetHandle<Model> model_handle;
 	size_t mesh_index;
 
@@ -30,11 +30,12 @@ struct MeshComponent
 
 struct MaterialComponent 
 {
-	static constexpr const char* Name = "Material";
+	static constexpr const char *Name = "Material";
 	AssetHandle<Image> texture_handle;
 
 	MaterialComponent(
-		AssetHandle<Image> texture_handle = ImageLoader::defaultImage()) noexcept
+		AssetHandle<Image> texture_handle = ImageLoader::defaultImage()
+	) noexcept
 		: texture_handle(texture_handle)
 	{
 
@@ -43,7 +44,7 @@ struct MaterialComponent
 
 struct CameraComponent
 {
-	static constexpr const char* Name = "Camera";
+	static constexpr const char *Name = "Camera";
 	std::shared_ptr<Camera> camera;
 
 	CameraComponent(std::shared_ptr<Camera> camera = nullptr) noexcept
@@ -64,7 +65,7 @@ enum LightType
 
 struct LightComponent 
 {
-	static constexpr const char* Name = "Light";
+	static constexpr const char *Name = "Light";
 	LightType type;
 	glm::vec4 ambient_color;
 	glm::vec4 diffuse_color;

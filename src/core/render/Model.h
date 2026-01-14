@@ -8,9 +8,11 @@
 #include <vector>
 #include <string_view>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-struct Model {
+struct Model 
+{
 	static inline std::string_view DEFAULT_MODEL_PATH = "res/models/cube.obj";
 
 	// Type aliases

@@ -7,15 +7,18 @@
 #include <glm/fwd.hpp>
 #include <vector>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-struct VertexFormat {
+struct VertexFormat 
+{
 	std::vector<SDL_GPUVertexAttribute> attributes;
 	std::vector<SDL_GPUVertexBufferDescription> buffer_descs;
 
-	VertexFormat(const std::vector<SDL_GPUVertexAttribute>& attributes,
-		const std::vector<SDL_GPUVertexBufferDescription>& buffer_descs)
-		noexcept
+	VertexFormat(
+		const std::vector<SDL_GPUVertexAttribute>& attributes,
+		const std::vector<SDL_GPUVertexBufferDescription>& buffer_descs
+	) noexcept
 		: attributes(attributes)
 		, buffer_descs(buffer_descs)
 	{
@@ -45,7 +48,8 @@ struct VertexFormat {
 	SDL_GPUVertexInputState getInputState() const && = delete;
 };
 
-struct PositionColorVertex {
+struct PositionColorVertex 
+{
 	glm::vec3 pos;
 	Uint8 r, g, b, a;
 
@@ -74,7 +78,8 @@ struct PositionColorVertex {
 	}
 };
 
-struct TextureVertex {
+struct TextureVertex 
+{
 	glm::vec3 pos;
 	glm::vec3 normal;
 	glm::vec2 uv;

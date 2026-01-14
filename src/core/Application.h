@@ -3,9 +3,11 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_gpu.h>
 
-namespace APE {
+namespace APE 
+{
 
-struct Application {
+struct Application 
+{
 	virtual ~Application() = default;
 
 	virtual void setup() = 0;

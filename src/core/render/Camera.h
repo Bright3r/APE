@@ -156,10 +156,12 @@ struct Camera
 		if (m_pitch < -89.f) m_pitch = -89.f;
 
 		// Clamp yaw
-		while (m_yaw > 360.f) {
+		while (m_yaw > 360.f) 
+		{
 			m_yaw -= 360.f;
 		}
-		while (m_yaw < -360.f) {
+		while (m_yaw < -360.f) 
+		{
 			m_yaw += 360.f;
 		}
 	}
@@ -171,7 +173,8 @@ struct Camera
 	}
 
 	[[nodiscard]] glm::mat4 getProjectionMatrix(
-		float aspect_ratio) const noexcept
+		float aspect_ratio
+	) const noexcept
 	{
 		return glm::perspective(
 			glm::radians(m_fov),
@@ -198,7 +201,8 @@ struct Camera
 	}
 
 	[[nodiscard]] glm::vec3 getRightVector(
-		const glm::vec3 forward_vec) const noexcept
+		const glm::vec3 forward_vec
+	) const noexcept
 	{
 		return glm::normalize(
 			glm::cross(forward_vec, getUpVector())
@@ -212,7 +216,8 @@ struct Camera
 
 	[[nodiscard]] glm::vec3 getUpVector(
 		const glm::vec3 forward_vec,
-		const glm::vec3 right_vec) const noexcept
+		const glm::vec3 right_vec
+	) const noexcept
 	{
 		return glm::normalize(
 			glm::cross(right_vec, forward_vec)
@@ -247,7 +252,8 @@ struct Camera
 		return glm::vec3(world);
 	}
 
-	void print() noexcept {
+	void print() noexcept 
+	{
 		APE_TRACE(
 			"Camera state:\n"
 			"  Position: ({}, {}, {})\n"

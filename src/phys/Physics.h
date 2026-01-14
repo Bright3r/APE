@@ -39,7 +39,7 @@
 namespace APE::Phys
 {
 
-static void TraceImpl(const char* in_fmt, ...)
+static void TraceImpl(const char *in_fmt, ...)
 {
 	va_list list;
 	va_start(list, in_fmt);
@@ -52,10 +52,11 @@ static void TraceImpl(const char* in_fmt, ...)
 
 #ifdef JPH_ENABLE_ASSERTS
 static bool AssertFailedImpl(
-	const char* in_expr,
-	const char* in_msg,
-	const char* in_file,
-	uint in_line)
+	const char *in_expr,
+	const char *in_msg,
+	const char *in_file,
+	uint in_line
+)
 {
 	if (in_expr && in_msg && in_file) APE_WARN("{}: {}: ( {} ) {}", in_file, in_line, in_expr, in_msg);
 	else APE_WARN("JPH ASSERTION FAILURE: NO MESSAGE");
@@ -75,7 +76,8 @@ struct ObjectLayerPairFilterImpl : public JPH::ObjectLayerPairFilter
 {
 	virtual bool ShouldCollide(
 		JPH::ObjectLayer in_obj1,
-		JPH::ObjectLayer in_obj2) const override
+		JPH::ObjectLayer in_obj2
+	) const override
 	{
 		switch (in_obj1)
 		{
@@ -135,7 +137,10 @@ public:
 
 struct ObjectVsBroadPhaseLayerFilterImpl : public JPH::ObjectVsBroadPhaseLayerFilter
 {
-	virtual bool ShouldCollide(JPH::ObjectLayer in_layer1, JPH::BroadPhaseLayer in_layer2) const override
+	virtual bool ShouldCollide(
+		JPH::ObjectLayer in_layer1,
+		JPH::BroadPhaseLayer in_layer2
+	) const override
 	{
 		switch (in_layer1)
 		{
@@ -155,7 +160,8 @@ struct MyContactListener : public JPH::ContactListener
 		const JPH::Body& in_body1,
 		const JPH::Body& in_body2,
 		JPH::RVec3Arg in_base_offset,
-		const JPH::CollideShapeResult& in_collision_res) override
+		const JPH::CollideShapeResult& in_collision_res
+	) override
 	{
 		APE_TRACE("Contact validate callback");
 		return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
@@ -165,7 +171,8 @@ struct MyContactListener : public JPH::ContactListener
 		const JPH::Body& in_body1,
 		const JPH::Body& in_body2,
 		const JPH::ContactManifold& in_manifold1,
-		JPH::ContactSettings& io_settings) override
+		JPH::ContactSettings& io_settings
+	) override
 	{
 		APE_TRACE("A contact was added");
 	}
@@ -174,7 +181,8 @@ struct MyContactListener : public JPH::ContactListener
 		const JPH::Body& in_body1,
 		const JPH::Body& in_body2,
 		const JPH::ContactManifold& in_manifold1,
-		JPH::ContactSettings& io_settings) override
+		JPH::ContactSettings& io_settings
+	) override
 	{
 		APE_TRACE("A contact was persisted");
 	}
@@ -187,12 +195,18 @@ struct MyContactListener : public JPH::ContactListener
 
 struct MyBodyActivationListener : public JPH::BodyActivationListener
 {
-	virtual void OnBodyActivated(const JPH::BodyID& in_body_id, JPH::uint64 in_body_user_data) override
+	virtual void OnBodyActivated(
+		const JPH::BodyID& in_body_id,
+		JPH::uint64 in_body_user_data
+	) override
 	{
 		APE_TRACE("A body was activated");
 	}
 
-	virtual void OnBodyDeactivated(const JPH::BodyID& in_body_id, JPH::uint64 in_body_user_data) override
+	virtual void OnBodyDeactivated(
+		const JPH::BodyID& in_body_id,
+		JPH::uint64 in_body_user_data
+	) override
 	{
 		APE_TRACE("A body went to sleep");
 	}

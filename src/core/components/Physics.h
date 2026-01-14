@@ -13,7 +13,7 @@ namespace APE::Phys
 
 struct PhysicsComponent 
 {
-	static constexpr const char* Name = "PhysicsObject";
+	static constexpr const char *Name = "PhysicsObject";
 
 	JPH::BodyID body_id;
 
@@ -26,7 +26,7 @@ struct PhysicsComponent
 
 struct PlayerComponent
 {
-	static constexpr const char* Name = "PlayerComponent";
+	static constexpr const char *Name = "PlayerComponent";
 
 	Phys::PlayerController controller;
 

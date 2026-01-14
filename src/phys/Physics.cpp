@@ -102,7 +102,8 @@ void PhysicsSystem::optimizeBroadPhase() noexcept
 
 JPH::AllHitCollisionCollector<JPH::CastRayCollector> PhysicsSystem::castRay(
 	glm::vec3 pos,
-	glm::vec3 dir) noexcept
+	glm::vec3 dir
+) noexcept
 {
 	// Create JPH Raycast Query
 	auto rpos = JPH::Vec3(pos.x, pos.y, pos.z);

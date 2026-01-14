@@ -7,7 +7,8 @@
 
 #include <utility>
 
-namespace APE {
+namespace APE 
+{
 
 AssetHandle<Render::Model> ModelLoader::load(
 	std::filesystem::path model_path) noexcept
@@ -19,12 +20,13 @@ AssetHandle<Render::Model> ModelLoader::load(
 AssetHandle<Render::Model> 
 ModelLoader::load(AssetKey asset_key) noexcept
 {
-	if (AssetManager::contains(asset_key)) {
+	if (AssetManager::contains(asset_key)) 
+	{
 		return AssetManager::get<Render::Model>(asset_key);
 	}
 
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(
+	const aiScene *scene = importer.ReadFile(
 		asset_key.path,
 		aiProcess_Triangulate | 
 		aiProcess_FlipUVs | 
@@ -58,7 +60,8 @@ AssetHandle<Render::Model> ModelLoader::defaultModel() noexcept
 }
 
 TransformComponent ModelLoader::convertAiTransform(
-	const aiMatrix4x4 ai_transform) noexcept
+	const aiMatrix4x4 ai_transform
+) noexcept
 {
 	aiVector3f ai_pos;
 	aiVector3f ai_scale;
@@ -73,9 +76,10 @@ TransformComponent ModelLoader::convertAiTransform(
 }
 
 AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
-	const aiMaterial* ai_mat,
-	const aiScene* scene,
-	std::filesystem::path model_path) noexcept
+	const aiMaterial *ai_mat,
+	const aiScene *scene,
+	std::filesystem::path model_path
+) noexcept
 {
 	// Check for diffuse or base color texture
 	aiTextureType tex_type = aiTextureType_DIFFUSE;
@@ -130,7 +134,7 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 		if (path.length > 0 && path.data[0] == '*') 
 		{
 			int tex_idx = std::atoi(path.C_Str() + 1);
-			aiTexture* ai_tex = scene->mTextures[tex_idx];
+			aiTexture *ai_tex = scene->mTextures[tex_idx];
 
 			AssetKey key { model_path, ai_mat->GetName().C_Str() };
 			auto img = std::make_unique<Render::Image>(
@@ -163,21 +167,23 @@ AssetHandle<Render::Image> ModelLoader::convertAiMaterial(
 }
 
 void ModelLoader::processNode(
-	const aiNode* node,
-	const aiScene* scene,
+	const aiNode *node,
+	const aiScene *scene,
 	Render::Model& model,
-	std::filesystem::path model_path) noexcept
+	std::filesystem::path model_path
+) noexcept
 {
 	TransformComponent local_transform = convertAiTransform(node->mTransformation);
 
 	// Convert nodes aiMeshes into our own Meshes
-	for (size_t i = 0; i < node->mNumMeshes; ++i) {
+	for (size_t i = 0; i < node->mNumMeshes; ++i) 
+	{
 		// Get aiMesh
 		unsigned int mesh_idx = node->mMeshes[i];
-		aiMesh* ai_mesh = scene->mMeshes[mesh_idx];
+		aiMesh *ai_mesh = scene->mMeshes[mesh_idx];
 
 		// Get texture for current mesh
-		aiMaterial* ai_mat = scene->mMaterials[ai_mesh->mMaterialIndex];
+		aiMaterial *ai_mat = scene->mMaterials[ai_mesh->mMaterialIndex];
 		AssetHandle<Render::Image> texture_handle = 
 			convertAiMaterial(ai_mat, scene, model_path);
 
@@ -189,19 +195,22 @@ void ModelLoader::processNode(
 	}
 
 	// Process child nodes
-	for (size_t i = 0; i < node->mNumChildren; ++i) {
+	for (size_t i = 0; i < node->mNumChildren; ++i) 
+	{
 		processNode(node->mChildren[i], scene, model, model_path);
 	}
 }
 
 Render::Model::ModelMesh ModelLoader::processAiMesh(
-	const aiMesh* ai_mesh,
+	const aiMesh *ai_mesh,
 	const AssetHandle<Render::Image>& texture_handle,
-	const TransformComponent& transform) noexcept
+	const TransformComponent& transform
+) noexcept
 {
 	std::vector<Render::Model::VertexType> vertices;
 	vertices.reserve(ai_mesh->mNumVertices);
-	for (size_t i = 0; i < ai_mesh->mNumVertices; ++i) {
+	for (size_t i = 0; i < ai_mesh->mNumVertices; ++i) 
+	{
 		aiVector3D ai_vertex = ai_mesh->mVertices[i];
 
 		// Get vertex pos
@@ -213,14 +222,16 @@ Render::Model::ModelMesh ModelLoader::processAiMesh(
 
 		// Get texture coords
 		glm::vec2 uv = { 0, 0 };
-		if (ai_mesh->HasTextureCoords(0)) {
+		if (ai_mesh->HasTextureCoords(0)) 
+		{
 			uv[0] = ai_mesh->mTextureCoords[0][i].x;
 			uv[1] = ai_mesh->mTextureCoords[0][i].y;
 		}
 
 		// Get vertex normal
 		glm::vec3 normal = { 0, 0, 0 };
-		if (ai_mesh->HasNormals()) {
+		if (ai_mesh->HasNormals()) 
+		{
 			normal.x = ai_mesh->mNormals[i].x;
 			normal.y = ai_mesh->mNormals[i].y;
 			normal.z = ai_mesh->mNormals[i].z;
@@ -235,10 +246,12 @@ Render::Model::ModelMesh ModelLoader::processAiMesh(
 
 	// Get indices for each face
 	std::vector<Render::Model::IndexType> indices;
-	for (size_t i = 0; i < ai_mesh->mNumFaces; ++i) {
+	for (size_t i = 0; i < ai_mesh->mNumFaces; ++i) 
+	{
 		// Process face's indices
 		aiFace face = ai_mesh->mFaces[i];
-		for (size_t j = 0; j < face.mNumIndices; ++j) {
+		for (size_t j = 0; j < face.mNumIndices; ++j) 
+		{
 			indices.push_back(face.mIndices[j]);
 		}
 	}

@@ -8,7 +8,8 @@
 #include <utility>
 #include <vector>
 
-namespace APE::ECS {
+namespace APE::ECS 
+{
 
 /*
  * Aliases + Constants
@@ -18,12 +19,15 @@ constexpr int MAX_NUM_COMPONENTS = 64;
 using EntityID = uint64_t;
 using TypeID = size_t;
 
-struct EntityHandle {
+struct EntityHandle 
+{
 	EntityID id;
 
 	EntityHandle(EntityID id = calcTombstone<EntityID>()) noexcept
 		: id(id)
-	{ }
+	{
+
+	}
 
 	bool operator==(const EntityHandle& other) const noexcept
 	{
@@ -41,7 +45,8 @@ using EntitySet = std::vector<EntityHandle>;
 /*
  * Registry
 */
-class Registry {
+class Registry 
+{
 	using Bitmask = std::bitset<MAX_NUM_COMPONENTS>;
 
 	using IPool = PoolInterface<EntityID>;
@@ -49,7 +54,8 @@ class Registry {
 	template <typename Component>
 	using CPool = Pool<EntityID, Component>;
 
-	struct Entity {
+	struct Entity 
+	{
 		EntityID id;
 		Bitmask component_mask;
 	};
@@ -71,17 +77,18 @@ public:
 
 
 	template <typename... Components>
-	class View {
+	class View 
+	{
 		using PoolsTuple = std::tuple<CPool<Components>*...>;
 		using ViewEntry = std::tuple<EntityHandle, Components&...>;
 
-		Registry* m_registry;
+		Registry *m_registry;
 		PoolsTuple m_pools;
 		std::vector<EntityID> m_driver_ents;
 		size_t m_size;
 
 	public:
-		View(Registry* registry, PoolsTuple pools)
+		View(Registry *registry, PoolsTuple pools)
 			: m_registry(registry)
 			, m_pools(pools)
 			, m_size(m_driver_ents.size())
@@ -98,7 +105,8 @@ public:
 		std::vector<ViewEntry> each() noexcept
 		{
 			std::vector<ViewEntry> res;
-			for (auto tup : *this) {
+			for (auto tup : *this) 
+			{
 				res.push_back(tup);
 			}
 			return res;
@@ -126,10 +134,11 @@ public:
 			return m_registry->hasAllComponents<Components...>({ id });
 		}
 
-		class Iterator {
+		class Iterator 
+		{
 			using Entry = ViewEntry;
 
-			View* m_view;
+			View *m_view;
 			size_t m_idx;
 
 		public:
@@ -163,7 +172,8 @@ public:
 			// Prefix
 			Iterator& operator++()
 			{
-				if (++m_idx >= m_view->m_size) {
+				if (++m_idx >= m_view->m_size) 
+				{
 					return *this;
 				}
 
@@ -202,7 +212,8 @@ public:
 			if (m_size == 0) return first;
 
 			EntityHandle e { m_driver_ents[0] };
-			if (!m_registry->hasAllComponents<Components...>(e)) {
+			if (!m_registry->hasAllComponents<Components...>(e)) 
+			{
 				++first;
 			}
 			return first;
@@ -228,12 +239,14 @@ public:
 
 	bool destroyEntity(EntityHandle ent) noexcept
 	{
-		if (!m_entities.remove(ent.id)) {
+		if (!m_entities.remove(ent.id)) 
+		{
 			APE_WARN("Tried to destroy untracked entity {}.", ent.id);
 			return false;
 		}
 
-		for (auto& [ type_id, pool ] : m_pools) {
+		for (auto& [ type_id, pool ] : m_pools) 
+		{
 			pool->remove(ent.id);
 		}
 		return true;
@@ -256,7 +269,8 @@ public:
 	void emplaceComponent(const EntitySet& ents, Args&&... args) noexcept
 	{
 		auto& pool = getPool<Component>();
-		for (auto ent : ents) {
+		for (auto ent : ents) 
+		{
 			maskEntity<Component>(ent);
 			pool.emplace(ent.id, std::forward<Args>(args)...);
 		}
@@ -273,15 +287,14 @@ public:
 	void replaceComponent(const EntitySet& ents, Args&&... args) noexcept
 	{
 		auto& pool = getPool<Component>();
-		for (auto ent : ents) {
+		for (auto ent : ents) 
+		{
 			pool.emplace(ent.id, std::forward<Args>(args)...);
 		}
 	}
 
 	template <typename Component, typename... Args>
-	Component& emplaceOrReplaceComponent(
-		EntityHandle ent,
-		Args&&... args) noexcept
+	Component& emplaceOrReplaceComponent(EntityHandle ent, Args&&... args) noexcept
 	{
 		maskEntity<Component>(ent);
 
@@ -293,7 +306,8 @@ public:
 	void emplaceOrReplaceComponent(const EntitySet& ents, Args... args) noexcept
 	{
 		auto& pool = getPool<Component>();
-		for (auto& ent : ents) {
+		for (auto& ent : ents) 
+		{
 			maskEntity<Component>(ent);
 			pool.tryEmplace(ent.id, std::forward<Args>(args)...);
 		}
@@ -315,7 +329,8 @@ public:
 	void clearComponent() noexcept
 	{
 		auto& pool = getPool<Component>();
-		for (auto ent_id : pool.entities()) {
+		for (auto ent_id : pool.entities()) 
+		{
 			unmaskEntity<Component>(EntityHandle(ent_id));
 		}
 		pool.clear();
@@ -344,7 +359,8 @@ public:
 	template <typename Component>
 	[[nodiscard]] bool hasComponent(const EntityHandle& ent) noexcept
 	{
-		if (!isValid(ent)) {
+		if (!isValid(ent)) 
+		{
 			return false;
 		}
 
@@ -381,9 +397,7 @@ public:
 	template <typename... Components>
 	[[nodiscard]] View<Components...> view() noexcept
 	{
-		auto pools = std::make_tuple(
-			&getPool<Components>()...
-		);
+		auto pools = std::make_tuple(&getPool<Components>()...);
 		return View<Components...>(this, pools);
 	}
 
@@ -391,9 +405,11 @@ public:
 	[[nodiscard]] EntitySet entitySet() noexcept
 	{
 		EntitySet ents;
-		for (auto ent_id : m_entities.entities()) {
+		for (auto ent_id : m_entities.entities()) 
+		{
 			EntityHandle ent { ent_id };
-			if (hasAllComponents<Components...>(ent)) {
+			if (hasAllComponents<Components...>(ent)) 
+			{
 				ents.push_back(ent);
 			}
 		}
@@ -404,7 +420,8 @@ public:
 	{
 		std::vector<EntityID> ids = m_entities.entities();
 		std::vector<EntityHandle> res;
-		for (auto id : ids) {
+		for (auto id : ids) 
+		{
 			res.emplace_back(id);
 		}
 		return res;
@@ -414,7 +431,8 @@ public:
 	[[nodiscard]] CPool<Component>& getPool() noexcept
 	{
 		TypeID type_id = typeID<Component>();
-		if (!m_pools.contains(type_id)) {
+		if (!m_pools.contains(type_id)) 
+		{
 			m_pools[type_id] = std::make_unique<CPool<Component>>();
 		}
 		return *static_cast<CPool<Component>*>(m_pools[type_id].get());

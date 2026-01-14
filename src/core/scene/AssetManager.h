@@ -7,9 +7,11 @@
 #include <memory>
 #include <typeindex>
 
-namespace APE {
+namespace APE 
+{
 
-class AssetManager {
+class AssetManager 
+{
 private:
 	struct InternalAsset {
 		AssetClass asset_class;
@@ -66,8 +68,7 @@ public:
 	}
 
 	template <typename Asset>
-	static AssetHandle<Asset> 
-	getOrUpload(
+	static AssetHandle<Asset> getOrUpload(
 		const AssetKey& key,
 		AssetClass asset_class,
 		std::unique_ptr<Asset> data

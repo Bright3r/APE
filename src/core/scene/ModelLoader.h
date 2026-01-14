@@ -7,9 +7,11 @@
 #include <assimp/material.h>
 #include <assimp/scene.h>
 
-namespace APE {
+namespace APE 
+{
 
-class ModelLoader {
+class ModelLoader 
+{
 public:
 	[[nodiscard]] static AssetHandle<Render::Model> 
 	load(std::filesystem::path model_path) noexcept;
@@ -26,21 +28,24 @@ private:
 
 	[[nodiscard]] static AssetHandle<Render::Image> 
 	convertAiMaterial(
-		const aiMaterial* ai_mat,
-		const aiScene* scene,
-		std::filesystem::path model_path) noexcept;
+		const aiMaterial *ai_mat,
+		const aiScene *scene,
+		std::filesystem::path model_path
+	) noexcept;
 
 	void static processNode(
-		const aiNode* node,
-		const aiScene* scene,
+		const aiNode *node,
+		const aiScene *scene,
 		Render::Model& model,
-		std::filesystem::path model_path) noexcept;
+		std::filesystem::path model_path
+	) noexcept;
 
 	[[nodiscard]] static Render::Model::ModelMesh 
 	processAiMesh(
-		const aiMesh* ai_mesh,
+		const aiMesh *ai_mesh,
 		const AssetHandle<Render::Image>& texture_handle,
-		const TransformComponent& transform) noexcept;
+		const TransformComponent& transform
+	) noexcept;
 };
 
 };	// end of namespace

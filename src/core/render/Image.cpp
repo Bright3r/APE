@@ -8,7 +8,8 @@
 #include "stb_image.h"
 
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
 Image::Image() noexcept
 {
@@ -20,17 +21,20 @@ Image::Image(std::filesystem::path path) noexcept
 	loadImage(path);
 }
 
-Image::Image(std::filesystem::path path, 
+Image::Image(
+	std::filesystem::path path, 
 	int width,
 	int height,
-	const std::byte* data) noexcept
+	const std::byte *data
+) noexcept
 {
 	m_texture_buffer = nullptr;
 	m_path = path;
 
 	// Assume data is R8G8BA8 format
 	int num_channels = DEFAULT_IMG_CHANNELS;
-	if (height > 0) {
+	if (height > 0) 
+	{
 		m_width = width;
 		m_height = height;
 		m_num_channels = num_channels;
@@ -43,17 +47,17 @@ Image::Image(std::filesystem::path path,
 	}
 
 	// if height is 0, image is compressed
-	unsigned char* decompressed_data = 
-		stbi_load_from_memory(
-			reinterpret_cast<const unsigned char*>(data),
-			width,	// num bytes of compressed image
-			&width,
-			&height,
-			&num_channels,
-			DEFAULT_IMG_CHANNELS	// force R8G8B8A8
-		);
+	unsigned char *decompressed_data = stbi_load_from_memory(
+		reinterpret_cast<const unsigned char*>(data),
+		width,	// num bytes of compressed image
+		&width,
+		&height,
+		&num_channels,
+		DEFAULT_IMG_CHANNELS	// force R8G8B8A8
+	);
 
-	if (decompressed_data == nullptr) {
+	if (decompressed_data == nullptr) 
+	{
 		// Fallback to default texture
 		APE_ERROR("Failed to load embedded texture.");
 		loadCheckerboard();
@@ -88,7 +92,7 @@ void Image::loadImage(std::filesystem::path path) noexcept
 
 	std::string abs_path = std::filesystem::absolute(path);
 	int width, height, num_channels;
-	std::byte* data = reinterpret_cast<std::byte*>(stbi_load(
+	std::byte *data = reinterpret_cast<std::byte*>(stbi_load(
 		abs_path.c_str(),
 		&width,
 		&height,
@@ -97,7 +101,8 @@ void Image::loadImage(std::filesystem::path path) noexcept
 	));
 
 	// Fallback to default texture if stbi_load fails
-	if (data == nullptr) {
+	if (data == nullptr) 
+	{
 		APE_ERROR("Failed to load image: {}", abs_path.c_str());
 
 		loadCheckerboard();
@@ -172,7 +177,8 @@ std::byte* Image::getPixels() noexcept
 void Image::trace() const noexcept
 {
 	std::string pixel_str;
-	for (size_t i = 0; i < m_pixels.size(); ++i) {
+	for (size_t i = 0; i < m_pixels.size(); ++i) 
+	{
 		pixel_str += std::to_string(static_cast<unsigned char>(m_pixels[i]));
 		pixel_str += " ";
 	}
@@ -187,3 +193,4 @@ void Image::trace() const noexcept
 }
 
 };	// end of namespace
+

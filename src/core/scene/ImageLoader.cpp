@@ -13,7 +13,8 @@ ImageLoader::load(std::filesystem::path path) noexcept
 AssetHandle<Render::Image> 
 ImageLoader::load(AssetKey asset_key) noexcept
 {
-	if (!AssetManager::contains(asset_key)) {
+	if (!AssetManager::contains(asset_key)) 
+	{
 		AssetManager::upload<Render::Image>(
 			asset_key,
 			AssetClass::Texture,

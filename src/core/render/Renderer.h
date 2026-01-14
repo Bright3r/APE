@@ -20,24 +20,29 @@
 #include <memory>
 #include <vector>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-struct CameraUniform {
+struct CameraUniform 
+{
 	glm::vec4 position;
 };
 
-struct ModelViewProjUniform {
+struct ModelViewProjUniform 
+{
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
 };
 
-struct DebugModeUniform {
+struct DebugModeUniform 
+{
 	int show_normals;
 	float pad[3];
 };
 
-struct LightInfoUniform {
+struct LightInfoUniform 
+{
 	int light_count;
 	float pad[3];
 };
@@ -79,25 +84,30 @@ static const ShaderDescription debug_frag_shader_desc {
 	.vertex_format = PositionColorVertex::getLayout(),
 };
 
-struct SafePipeline {
+struct SafePipeline 
+{
 	SafeGPU::UniqueGPUGraphicsPipeline fill = nullptr;
 	SafeGPU::UniqueGPUGraphicsPipeline line = nullptr;
 };
 
-class Renderer {
+class Renderer 
+{
 	std::shared_ptr<Context> m_context;
 	std::shared_ptr<Shader> m_shader;
 	SafePipeline m_pipeline;
 	std::unique_ptr<Shader> m_debug_shader;
 	SafePipeline m_debug_pipeline;
-	SDL_GPUTexture* m_swapchain_texture;
-	SDL_GPURenderPass* m_render_pass;
-	SDL_GPUCommandBuffer* m_cmd_buf;
+	SDL_GPUTexture *m_swapchain_texture;
+	SDL_GPURenderPass *m_render_pass;
+	SDL_GPUCommandBuffer *m_cmd_buf;
 	bool m_is_drawing;
 	SafeGPU::UniqueGPUSampler m_sampler;
 	SafeGPU::UniqueGPUTexture m_depth_texture;
 	std::unique_ptr<ImGuiSession> m_imgui_session;
 	std::vector<PositionColorVertex> m_debug_verts;
+
+	SafeGPU::UniqueGPUBuffer m_light_ssbo;
+	int max_lights = 16;
 
 public:
 	bool wireframe_mode;
@@ -124,7 +134,7 @@ public:
 	) const noexcept;
 
 	SafePipeline shaderToPipeline(
-		Shader* shader,
+		Shader *shader,
 		SDL_GPUPrimitiveType primitive_type
 	) noexcept;
 
@@ -144,13 +154,13 @@ public:
 		const glm::vec3& p0,
 		const glm::vec3& p1,
 		std::array<Uint8, 4> color,
-		Camera* cam
+		Camera *cam
 	) noexcept;
 
 	void endDrawing() noexcept;
 
 private:
-	void bindPipeline(SafePipeline* pipeline) noexcept;
+	void bindPipeline(SafePipeline *pipeline) noexcept;
 
 	void drawDebug() noexcept;
 
@@ -167,11 +177,17 @@ private:
 		Uint32 usage
 	) noexcept;
 
-	[[nodiscard]] static SDL_GPUTextureFormat getTextureFormat(
-		Image* image
+	void updateBuffer(
+		SDL_GPUBuffer *buffer,
+		const std::vector<std::byte>& data,
+		Uint32 usage
 	) noexcept;
 
-	[[nodiscard]] SafeGPU::UniqueGPUTexture createTexture(Image* image) noexcept;
+	[[nodiscard]] static SDL_GPUTextureFormat getTextureFormat(
+		Image *image
+	) noexcept;
+
+	[[nodiscard]] SafeGPU::UniqueGPUTexture createTexture(Image *image) noexcept;
 
 	template <typename T>
 	[[nodiscard]] static std::vector<std::byte> vectorToRawBytes(
@@ -179,7 +195,7 @@ private:
 	) noexcept
 	{
 		// Copy vertex data as a vector of bytes
-		const std::byte* raw_data = reinterpret_cast<const std::byte*>(data.data());
+		const std::byte *raw_data = reinterpret_cast<const std::byte*>(data.data());
 		size_t num_bytes = sizeof(T) * data.size();
 
 		return std::vector<std::byte>(raw_data, raw_data + num_bytes);

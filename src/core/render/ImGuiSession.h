@@ -6,10 +6,12 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlgpu3.h>
 
-namespace APE::Render {
+namespace APE::Render 
+{
 
-struct ImGuiSession {
-	ImGuiSession(Context* context) noexcept
+struct ImGuiSession 
+{
+	ImGuiSession(Context *context) noexcept
 	{
 		// Setup context
 		ImGui::CreateContext();

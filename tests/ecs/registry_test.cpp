@@ -12,7 +12,8 @@ using namespace APE::ECS;
 /*
  * Dummy Components
 */
-struct PosComp {
+struct PosComp 
+{
 	float x, y, z;
 
 	bool operator==(const PosComp& other) const
@@ -23,7 +24,8 @@ struct PosComp {
 	}
 };
 
-struct PhysComp {
+struct PhysComp 
+{
 	glm::vec3 pos;
 	glm::vec3 vel;
 	glm::vec3 accel;
@@ -36,14 +38,14 @@ struct PhysComp {
 	}
 };
 
-struct NameComp {
+struct NameComp 
+{
 	std::string first_name;
 	std::string last_name;
 
 	bool operator==(const NameComp& other) const
 	{
-		return first_name == other.first_name &&
-			last_name == other.last_name;
+		return first_name == other.first_name && last_name == other.last_name;
 	}
 };
 
@@ -52,7 +54,8 @@ template <typename... Components>
 [[nodiscard]] size_t viewSize(Registry::View<Components...>& view) noexcept
 {
 	size_t sz { 0 };
-	for (auto comps : view) {
+	for (auto comps : view) 
+	{
 		++sz;
 	}
 	return sz;
@@ -62,7 +65,8 @@ template <typename... Components>
 /*
  * Test Fixture
 */
-class RegistryTest : public testing::Test {
+class RegistryTest : public testing::Test 
+{
 protected:
 	Registry r;
 
@@ -87,9 +91,9 @@ TEST_F(RegistryTest, Init)
 	ASSERT_EQ(r_filled.numEntities(), ents_filled.size()) 
 		<< "r_filled's initial entities should be stored";
 
-	for (const auto ent : ents_filled) {
-		ASSERT_TRUE(r_filled.isValid(ent)) 
-			<< "r_filled's initial entities should be valid.";
+	for (const auto ent : ents_filled) 
+	{
+		ASSERT_TRUE(r_filled.isValid(ent)) << "r_filled's initial entities should be valid.";
 	}
 }
 
@@ -119,7 +123,8 @@ TEST_F(RegistryTest, BasicCreateEntity)
 	ent = r.createEntity();
 	EXPECT_EQ(r.numEntities(), 2) << "r should have 2 entities.";
 
-	for (int i = 3; i <= 10; ++i) {
+	for (int i = 3; i <= 10; ++i) 
+	{
 		ent = r.createEntity();
 	}
 	EXPECT_EQ(r.numEntities(), 10) << "r should have 10 entities.";
@@ -131,12 +136,10 @@ TEST_F(RegistryTest, BasicCreateEntity)
 */
 TEST_F(RegistryTest, BasicNumEntities)
 {
-	EXPECT_EQ(r.numEntities(), 0)
-		<< "r should have 0 entities.";
+	EXPECT_EQ(r.numEntities(), 0) << "r should have 0 entities.";
 
 	auto ent = r.createEntity();
-	EXPECT_EQ(r.numEntities(), 1)
-		<< "r should have 1 entity.";
+	EXPECT_EQ(r.numEntities(), 1) << "r should have 1 entity.";
 
 	EXPECT_EQ(r_filled.numEntities(), ents_filled.size())
 		<< "r_filled should have " << ents_filled.size() << " entities.";
@@ -149,14 +152,15 @@ TEST_F(RegistryTest, BasicRemoveEntity)
 {
 	size_t len { 10 };
 	std::vector<EntityHandle> ents;
-	for (int i = 0; i < len; ++i) {
+	for (int i = 0; i < len; ++i) 
+	{
 		ents.emplace_back(r.createEntity());
 	}
 	EXPECT_EQ(r.numEntities(), len) << "r should have 10 entities.";
 
-	for (int i = 0; i < len; ++i) {
-		EXPECT_TRUE(r.destroyEntity(ents.back())) 
-			<< "r's last entity should be destroyed.";
+	for (int i = 0; i < len; ++i) 
+	{
+		EXPECT_TRUE(r.destroyEntity(ents.back())) << "r's last entity should be destroyed.";
 		ents.pop_back();
 
 		EXPECT_EQ(r.numEntities(), ents.size())
@@ -173,12 +177,10 @@ TEST_F(RegistryTest, BasicEmplaceComponent)
 	auto ent = r.createEntity();
 	r.emplaceComponent<PosComp>(ent, -1, -2, -3);
 
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
-		<< "Entity should have Position Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent)) << "Entity should have Position Component.";
 
 	bool has_any = r.hasAnyComponent<PhysComp, NameComp>(ent);
-	EXPECT_FALSE(has_any)
-		<< "Entity should not have Physics or Name Components.";
+	EXPECT_FALSE(has_any) << "Entity should not have Physics or Name Components.";
 }
 
 TEST_F(RegistryTest, EmplaceComponentFromCopy)
@@ -187,12 +189,10 @@ TEST_F(RegistryTest, EmplaceComponentFromCopy)
 	PhysComp comp(glm::vec3(1, 2, 3), glm::vec3(4, 5, 6), glm::vec3(7, 8, 9));
 	r.emplaceComponent<PhysComp>(ent, comp);
 
-	EXPECT_TRUE(r.hasComponent<PhysComp>(ent))
-		<< "Entity should have Physics Component.";
+	EXPECT_TRUE(r.hasComponent<PhysComp>(ent)) << "Entity should have Physics Component.";
 
 	bool has_any = r.hasAnyComponent<PosComp, NameComp>(ent);
-	EXPECT_FALSE(has_any)
-		<< "Entity should not have Position or Name Components.";
+	EXPECT_FALSE(has_any) << "Entity should not have Position or Name Components.";
 }
 
 TEST_F(RegistryTest, EmplaceComponentFromMove)
@@ -201,12 +201,10 @@ TEST_F(RegistryTest, EmplaceComponentFromMove)
 	PhysComp comp(glm::vec3(1, 2, 3), glm::vec3(4, 5, 6), glm::vec3(7, 8, 9));
 	r.emplaceComponent<PhysComp>(ent, std::move(comp));
 
-	EXPECT_TRUE(r.hasComponent<PhysComp>(ent))
-		<< "Entity should have Physics Component.";
+	EXPECT_TRUE(r.hasComponent<PhysComp>(ent)) << "Entity should have Physics Component.";
 
 	bool has_any = r.hasAnyComponent<PosComp, NameComp>(ent);
-	EXPECT_FALSE(has_any)
-		<< "Entity should not have Position or Name Components.";
+	EXPECT_FALSE(has_any) << "Entity should not have Position or Name Components.";
 }
 
 TEST_F(RegistryTest, BasicReplaceComponent)
@@ -217,16 +215,13 @@ TEST_F(RegistryTest, BasicReplaceComponent)
 	PosComp comp { 3, 5, 7 };
 	r.replaceComponent<PosComp>(ent, comp);
 
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
-		<< "Entity should have Position Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent)) << "Entity should have Position Component.";
 
 	bool has_any = r.hasAnyComponent<PhysComp, NameComp>(ent);
-	EXPECT_FALSE(has_any)
-		<< "Entity should not have Physics or Name Components.";
+	EXPECT_FALSE(has_any) << "Entity should not have Physics or Name Components.";
 
 	auto& pos = r.getComponent<PosComp>(ent);
-	EXPECT_TRUE(pos == comp)
-		<< "Entity's Position Component should be equal.";
+	EXPECT_TRUE(pos == comp) << "Entity's Position Component should be equal.";
 }
 
 TEST_F(RegistryTest, ReplaceMissingComponent)
@@ -245,16 +240,13 @@ TEST_F(RegistryTest, ReplaceComponentFromCopy)
 	PosComp comp { 3, 5, 7 };
 	r.replaceComponent<PosComp>(ent, comp);
 
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
-		<< "Entity should have Position Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent)) << "Entity should have Position Component.";
 
 	bool has_any = r.hasAnyComponent<PhysComp, NameComp>(ent);
-	EXPECT_FALSE(has_any)
-		<< "Entity should not have Physics or Name Components.";
+	EXPECT_FALSE(has_any) << "Entity should not have Physics or Name Components.";
 
 	auto& pos = r.getComponent<PosComp>(ent);
-	EXPECT_TRUE(pos == comp)
-		<< "Entity's Position Component should be equal.";
+	EXPECT_TRUE(pos == comp) << "Entity's Position Component should be equal.";
 }
 
 TEST_F(RegistryTest, ReplaceComponentFromMove)
@@ -266,16 +258,13 @@ TEST_F(RegistryTest, ReplaceComponentFromMove)
 	PosComp comp_copy = comp;
 	r.replaceComponent<PosComp>(ent, std::move(comp));
 
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
-		<< "Entity should have Position Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent)) << "Entity should have Position Component.";
 
 	bool has_any = r.hasAnyComponent<PhysComp, NameComp>(ent);
-	EXPECT_FALSE(has_any)
-		<< "Entity should not have Physics or Name Components.";
+	EXPECT_FALSE(has_any) << "Entity should not have Physics or Name Components.";
 
 	auto& pos = r.getComponent<PosComp>(ent);
-	EXPECT_TRUE(pos == comp_copy)
-		<< "Entity's Position Component should be equal.";
+	EXPECT_TRUE(pos == comp_copy) << "Entity's Position Component should be equal.";
 }
 
 TEST_F(RegistryTest, BasicEmplaceOrReplaceComponent)
@@ -286,16 +275,13 @@ TEST_F(RegistryTest, BasicEmplaceOrReplaceComponent)
 	PosComp comp { 3, 5, 7 };
 	r.emplaceOrReplaceComponent<PosComp>(ent, comp);
 
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
-		<< "Entity should have Position Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent)) << "Entity should have Position Component.";
 
 	bool has_any = r.hasAnyComponent<PhysComp, NameComp>(ent);
-	EXPECT_FALSE(has_any)
-		<< "Entity should not have Physics or Name Components.";
+	EXPECT_FALSE(has_any) << "Entity should not have Physics or Name Components.";
 
 	auto& pos = r.getComponent<PosComp>(ent);
-	EXPECT_TRUE(pos == comp)
-		<< "Entity's Position Component should be equal.";
+	EXPECT_TRUE(pos == comp) << "Entity's Position Component should be equal.";
 }
 
 
@@ -307,12 +293,10 @@ TEST_F(RegistryTest, BasicRemoveComponent)
 	auto ent = r.createEntity();
 	r.emplaceComponent<PosComp>(ent, -1, -2, -3);
 
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
-		<< "Entity should have Position Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent)) << "Entity should have Position Component.";
 
 	r.removeComponent<PosComp>(ent);
-	EXPECT_FALSE(r.hasComponent<PosComp>(ent))
-		<< "Entity should not have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PosComp>(ent)) << "Entity should not have Position Component.";
 }
 
 TEST_F(RegistryTest, BasicClearComponent)
@@ -338,38 +322,27 @@ TEST_F(RegistryTest, ComponentLifecycle)
 	r.emplaceOrReplaceComponent<PosComp>(ent, comp);
 	r.emplaceComponent<PosComp>(ent2, comp);
 
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
-		<< "Entity should have Position Component.";
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent2))
-		<< "Entity should have Position Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent)) << "Entity should have Position Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent2)) << "Entity should have Position Component.";
 
 	auto& pos = r.getComponent<PosComp>(ent);
-	EXPECT_TRUE(pos == comp)
-		<< "Entity's Position Component should be equal.";
+	EXPECT_TRUE(pos == comp) << "Entity's Position Component should be equal.";
 
 	r.removeComponent<PosComp>(ent);
-	EXPECT_FALSE(r.hasComponent<PosComp>(ent))
-		<< "Entity should not have Position Component.";
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent2))
-		<< "Entity should have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PosComp>(ent)) << "Entity should not have Position Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent2)) << "Entity should have Position Component.";
 
 	r.clearComponent<PosComp>();
-	EXPECT_FALSE(r.hasComponent<PosComp>(ent))
-		<< "Entity should not have Position Component.";
-	EXPECT_FALSE(r.hasComponent<PosComp>(ent2))
-		<< "Entity should not have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PosComp>(ent)) << "Entity should not have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PosComp>(ent2)) << "Entity should not have Position Component.";
 
 	r.emplaceComponent<PosComp>(ent, 1, 2, 3);
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
-		<< "Entity should have Position Component.";
-	EXPECT_FALSE(r.hasComponent<PosComp>(ent2))
-		<< "Entity should not have Position Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent)) << "Entity should have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PosComp>(ent2)) << "Entity should not have Position Component.";
 
 	r.emplaceComponent<NameComp>(ent2, "Hello", "World");
-	EXPECT_FALSE(r.hasComponent<NameComp>(ent))
-		<< "Entity should not have Name Component.";
-	EXPECT_TRUE(r.hasComponent<NameComp>(ent2))
-		<< "Entity should have Name Component.";
+	EXPECT_FALSE(r.hasComponent<NameComp>(ent)) << "Entity should not have Name Component.";
+	EXPECT_TRUE(r.hasComponent<NameComp>(ent2)) << "Entity should have Name Component.";
 }
 
 
@@ -383,8 +356,7 @@ TEST_F(RegistryTest, BasicGetComponent)
 
 	auto& comp = r.getComponent<NameComp>(ent);
 	NameComp expected { "Hello", "World" };
-	EXPECT_EQ(comp, expected)
-		<< "Name Component should be Hello World.";
+	EXPECT_EQ(comp, expected) << "Name Component should be Hello World.";
 }
 
 TEST_F(RegistryTest, GetMissingComponent)
@@ -408,16 +380,12 @@ TEST_F(RegistryTest, BasicGetComponents)
 	r.emplaceComponent<PhysComp>(ent, phys_comp);
 
 	auto comps = r.getComponents<PosComp, PhysComp>(ent);
-	EXPECT_EQ(std::get<0>(comps), pos_comp)
-		<< "Position Components should be equal.";
-	EXPECT_EQ(std::get<1>(comps), phys_comp)
-		<< "Physics Components should be equal.";
+	EXPECT_EQ(std::get<0>(comps), pos_comp) << "Position Components should be equal.";
+	EXPECT_EQ(std::get<1>(comps), phys_comp) << "Physics Components should be equal.";
 
 	auto comps2 = r.getComponents<PhysComp, PosComp>(ent);
-	EXPECT_EQ(std::get<0>(comps2), phys_comp)
-		<< "Physics Components should be equal.";
-	EXPECT_EQ(std::get<1>(comps2), pos_comp)
-		<< "Position Components should be equal.";
+	EXPECT_EQ(std::get<0>(comps2), phys_comp) << "Physics Components should be equal.";
+	EXPECT_EQ(std::get<1>(comps2), pos_comp) << "Position Components should be equal.";
 }
 
 TEST_F(RegistryTest, GetSameComponents)
@@ -433,8 +401,7 @@ TEST_F(RegistryTest, GetSameComponents)
 	r.emplaceComponent<PhysComp>(ent, phys_comp);
 
 	auto comps = r.getComponents<PosComp, PosComp>(ent);
-	EXPECT_EQ(std::get<0>(comps), pos_comp)
-		<< "Position Components should be equal.";
+	EXPECT_EQ(std::get<0>(comps), pos_comp) << "Position Components should be equal.";
 }
 
 TEST_F(RegistryTest, GetMissingComponents)
@@ -454,16 +421,12 @@ TEST_F(RegistryTest, BasicHasComponent)
 	auto ent = r.createEntity();
 	r.emplaceComponent<PosComp>(ent, 1, 2, 3);
 
-	EXPECT_TRUE(r.hasComponent<PosComp>(ent))
-		<< "Entity should have Position Component.";
-	EXPECT_FALSE(r.hasComponent<PhysComp>(ent))
-		<< "Entity should not have Physics Component.";
-	EXPECT_FALSE(r.hasComponent<NameComp>(ent))
-		<< "Entity should not have Name Component.";
+	EXPECT_TRUE(r.hasComponent<PosComp>(ent)) << "Entity should have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PhysComp>(ent)) << "Entity should not have Physics Component.";
+	EXPECT_FALSE(r.hasComponent<NameComp>(ent)) << "Entity should not have Name Component.";
 
 	r.emplaceComponent<NameComp>(ent, "First", "Last");
-	EXPECT_TRUE(r.hasComponent<NameComp>(ent))
-		<< "Entity should have Name Component.";
+	EXPECT_TRUE(r.hasComponent<NameComp>(ent)) << "Entity should have Name Component.";
 }
 
 TEST_F(RegistryTest, BasicHasAllComponents)
@@ -471,8 +434,7 @@ TEST_F(RegistryTest, BasicHasAllComponents)
 	auto ent = r.createEntity();
 	r.emplaceComponent<PosComp>(ent, 1, 2, 3);
 
-	EXPECT_TRUE(r.hasAllComponents<PosComp>(ent))
-		<< "Entity should have Position Component.";
+	EXPECT_TRUE(r.hasAllComponents<PosComp>(ent)) << "Entity should have Position Component.";
 	EXPECT_FALSE((r.hasAllComponents<PosComp, PhysComp, NameComp>(ent)))
 		<< "Entity should not have all components.";
 
@@ -515,23 +477,20 @@ TEST_F(RegistryTest, BasicView)
 	auto ent_view = r.view<PosComp>();
 
 	std::unordered_set<EntityID> seen;
-	for (auto [e, pos] : ent_view) {
+	for (auto [e, pos] : ent_view) 
+	{
 		seen.insert(e.id);
 	}
 
-	EXPECT_TRUE(seen.erase(e1.id))
-		<< "Entity e1 should be in the EntityView.";
-	EXPECT_TRUE(seen.erase(e2.id))
-		<< "Entity e2 should be in the EntityView.";
-	EXPECT_TRUE(seen.erase(e3.id))
-		<< "Entity e3 should be in the EntityView.";
+	EXPECT_TRUE(seen.erase(e1.id)) << "Entity e1 should be in the EntityView.";
+	EXPECT_TRUE(seen.erase(e2.id)) << "Entity e2 should be in the EntityView.";
+	EXPECT_TRUE(seen.erase(e3.id)) << "Entity e3 should be in the EntityView.";
 }
 
 TEST_F(RegistryTest, EmptyView)
 {
 	auto ent_view = r.view<PosComp, NameComp>();
-	EXPECT_EQ(viewSize(ent_view), 0)
-		<< "EntityView should be empty.";
+	EXPECT_EQ(viewSize(ent_view), 0) << "EntityView should be empty.";
 }
 
 TEST_F(RegistryTest, RemoveEntityFromView)
@@ -542,15 +501,14 @@ TEST_F(RegistryTest, RemoveEntityFromView)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto ent_view = r.view<PosComp>();
-	EXPECT_EQ(viewSize(ent_view), 2)
-		<< "EntityView should be have 2 entities.";
+	EXPECT_EQ(viewSize(ent_view), 2) << "EntityView should be have 2 entities.";
 
-	for (auto [e, PosComp] : ent_view) {
+	for (auto [e, PosComp] : ent_view) 
+	{
 		r.destroyEntity(e);
 	}
 
-	EXPECT_EQ(r.numEntities(), 0)
-		<< "r should have no remaining entities.";
+	EXPECT_EQ(r.numEntities(), 0) << "r should have no remaining entities.";
 }
 
 TEST_F(RegistryTest, RemoveComponentFromView)
@@ -561,21 +519,18 @@ TEST_F(RegistryTest, RemoveComponentFromView)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto ent_view = r.view<PosComp>();
-	EXPECT_EQ(viewSize(ent_view), 2)
-		<< "EntityView should be have 2 entities.";
+	EXPECT_EQ(viewSize(ent_view), 2) << "EntityView should be have 2 entities.";
 
-	for (auto [e, pos] : ent_view) {
+	for (auto [e, pos] : ent_view) 
+	{
 		r.removeComponent<PosComp>(e);
 	}
 
-	EXPECT_FALSE(r.hasComponent<PosComp>(e1))
-		<< "Entity e1 should not have Position Component.";
-	EXPECT_FALSE(r.hasComponent<PosComp>(e2))
-		<< "Entity e2 should not have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PosComp>(e1)) << "Entity e1 should not have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PosComp>(e2)) << "Entity e2 should not have Position Component.";
 
 	ent_view = r.view<PosComp>();
-	EXPECT_EQ(viewSize(ent_view), 0)
-		<< "EntityView should be empty.";
+	EXPECT_EQ(viewSize(ent_view), 0) << "EntityView should be empty.";
 }
 
 TEST_F(RegistryTest, ModifyComponentFromView)
@@ -586,14 +541,13 @@ TEST_F(RegistryTest, ModifyComponentFromView)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto ent_view = r.view<PosComp>();
-	for (auto [e, pos] : ent_view) {
+	for (auto [e, pos] : ent_view) 
+	{
 		pos.x = 5;
 	}
 
-	EXPECT_EQ(r.getComponent<PosComp>(e1).x, 5)
-		<< "Entity e1 should have Position x-coord of 5.";
-	EXPECT_EQ(r.getComponent<PosComp>(e2).x, 5)
-		<< "Entity e1 should have Position x-coord of 5.";
+	EXPECT_EQ(r.getComponent<PosComp>(e1).x, 5) << "Entity e1 should have Position x-coord of 5.";
+	EXPECT_EQ(r.getComponent<PosComp>(e2).x, 5) << "Entity e1 should have Position x-coord of 5.";
 }
 
 TEST_F(RegistryTest, MultiComponentView)
@@ -604,36 +558,29 @@ TEST_F(RegistryTest, MultiComponentView)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto view = r.view<PosComp>();
-	EXPECT_EQ(viewSize(view), 2)
-		<< "View should have 2 entities.";
+	EXPECT_EQ(viewSize(view), 2) << "View should have 2 entities.";
 
 	r.emplaceComponent<PhysComp>(e1);
 	auto view2 = r.view<PosComp, PhysComp>();
-	EXPECT_EQ(viewSize(view2), 1)
-		<< "View should have 1 entity.";
+	EXPECT_EQ(viewSize(view2), 1) << "View should have 1 entity.";
 
 	auto view3 = r.view<PosComp, NameComp>();
-	EXPECT_EQ(viewSize(view3), 0)
-		<< "View should be empty.";
+	EXPECT_EQ(viewSize(view3), 0) << "View should be empty.";
 
 	r.emplaceComponent<NameComp>(e2);
 	view3 = r.view<PosComp, NameComp>();
-	EXPECT_EQ(viewSize(view3), 1)
-		<< "View should have 1 entity.";
+	EXPECT_EQ(viewSize(view3), 1) << "View should have 1 entity.";
 
 	auto view4 = r.view<PosComp, PhysComp, NameComp>();
-	EXPECT_EQ(viewSize(view4), 0)
-		<< "View should be empty.";
+	EXPECT_EQ(viewSize(view4), 0) << "View should be empty.";
 
 	r.removeComponent<PhysComp>(e1);
 	auto view5 = r.view<PhysComp>();
-	EXPECT_EQ(viewSize(view5), 0)
-		<< "View should be empty.";
+	EXPECT_EQ(viewSize(view5), 0) << "View should be empty.";
 
 	r.removeComponent<PosComp>(e1);
 	view = r.view<PosComp>();
-	EXPECT_EQ(viewSize(view), 1)
-		<< "View should have 1 entity.";
+	EXPECT_EQ(viewSize(view), 1) << "View should have 1 entity.";
 }
 
 TEST_F(RegistryTest, RemoveEntityFromViewEach)
@@ -644,15 +591,14 @@ TEST_F(RegistryTest, RemoveEntityFromViewEach)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto ent_view = r.view<PosComp>();
-	EXPECT_EQ(viewSize(ent_view), 2)
-		<< "EntityView should be have 2 entities.";
+	EXPECT_EQ(viewSize(ent_view), 2) << "EntityView should be have 2 entities.";
 
-	for (auto [e, PosComp] : ent_view.each()) {
+	for (auto [e, PosComp] : ent_view.each()) 
+	{
 		r.destroyEntity(e);
 	}
 
-	EXPECT_EQ(r.numEntities(), 0)
-		<< "r should have no remaining entities.";
+	EXPECT_EQ(r.numEntities(), 0) << "r should have no remaining entities.";
 }
 
 TEST_F(RegistryTest, RemoveComponentFromViewEach)
@@ -663,21 +609,18 @@ TEST_F(RegistryTest, RemoveComponentFromViewEach)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto ent_view = r.view<PosComp>();
-	EXPECT_EQ(viewSize(ent_view), 2)
-		<< "EntityView should be have 2 entities.";
+	EXPECT_EQ(viewSize(ent_view), 2) << "EntityView should be have 2 entities.";
 
-	for (auto [e, pos] : ent_view.each()) {
+	for (auto [e, pos] : ent_view.each()) 
+	{
 		r.removeComponent<PosComp>(e);
 	}
 
-	EXPECT_FALSE(r.hasComponent<PosComp>(e1))
-		<< "Entity e1 should not have Position Component.";
-	EXPECT_FALSE(r.hasComponent<PosComp>(e2))
-		<< "Entity e2 should not have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PosComp>(e1)) << "Entity e1 should not have Position Component.";
+	EXPECT_FALSE(r.hasComponent<PosComp>(e2)) << "Entity e2 should not have Position Component.";
 
 	ent_view = r.view<PosComp>();
-	EXPECT_EQ(viewSize(ent_view), 0)
-		<< "EntityView should be empty.";
+	EXPECT_EQ(viewSize(ent_view), 0) << "EntityView should be empty.";
 }
 
 TEST_F(RegistryTest, ModifyComponentFromViewEach)
@@ -688,13 +631,12 @@ TEST_F(RegistryTest, ModifyComponentFromViewEach)
 	r.emplaceComponent<PosComp>(e2);
 
 	auto ent_view = r.view<PosComp>();
-	for (auto [e, pos] : ent_view.each()) {
+	for (auto [e, pos] : ent_view.each()) 
+	{
 		pos.x = 5;
 	}
 
-	EXPECT_EQ(r.getComponent<PosComp>(e1).x, 5)
-		<< "Entity e1 should have Position x-coord of 5.";
-	EXPECT_EQ(r.getComponent<PosComp>(e2).x, 5)
-		<< "Entity e1 should have Position x-coord of 5.";
+	EXPECT_EQ(r.getComponent<PosComp>(e1).x, 5) << "Entity e1 should have Position x-coord of 5.";
+	EXPECT_EQ(r.getComponent<PosComp>(e2).x, 5) << "Entity e2 should have Position x-coord of 5.";
 }
 
