@@ -90,6 +90,15 @@ struct SafePipeline
 	SafeGPU::UniqueGPUGraphicsPipeline line = nullptr;
 };
 
+enum class RenderStage
+{
+	FrameFinished,
+	CopyPass,
+	RenderPass,
+	RenderGUI,
+};
+
+
 class Renderer 
 {
 	std::shared_ptr<Context> m_context;
@@ -100,13 +109,14 @@ class Renderer
 	SDL_GPUTexture *m_swapchain_texture;
 	SDL_GPURenderPass *m_render_pass;
 	SDL_GPUCommandBuffer *m_cmd_buf;
-	bool m_is_drawing;
 	SafeGPU::UniqueGPUSampler m_sampler;
 	SafeGPU::UniqueGPUTexture m_depth_texture;
 	std::unique_ptr<ImGuiSession> m_imgui_session;
 	std::vector<PositionColorVertex> m_debug_verts;
 
+	RenderStage m_render_stage;
 	SafeGPU::UniqueGPUBuffer m_light_ssbo;
+	std::vector<RenderLight> m_lights;
 	int max_lights = 16;
 
 public:
@@ -138,7 +148,19 @@ public:
 		SDL_GPUPrimitiveType primitive_type
 	) noexcept;
 
+	void setLights(const std::vector<RenderLight>& lights) noexcept;
+
+	void beginCopyPass() noexcept;
+	void copyPass(MeshComponent& mesh, MaterialComponent& material) noexcept;
+	void endCopyPass() noexcept;
+
 	void beginRenderPass(bool b_clear, bool b_depth) noexcept;
+	void renderPass(
+		MeshComponent& mesh,
+		MaterialComponent& material,
+		std::weak_ptr<Camera> camera,
+		const glm::mat4& model_matrix
+	) noexcept;
 
 	void beginDrawing() noexcept;
 
@@ -146,8 +168,7 @@ public:
 		MeshComponent& mesh,
 		MaterialComponent& material,
 		std::weak_ptr<Camera> camera,
-		const glm::mat4& model_matrix,
-		const std::vector<RenderLight>& lights
+		const glm::mat4& model_matrix
 	) noexcept;
 
 	void drawLine(
@@ -157,7 +178,7 @@ public:
 		Camera *cam
 	) noexcept;
 
-	void endDrawing() noexcept;
+	void endRenderPass() noexcept;
 
 private:
 	void bindPipeline(SafePipeline *pipeline) noexcept;

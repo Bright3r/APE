@@ -36,6 +36,7 @@ void GameLayer::draw() noexcept
 		);
 		lights.emplace_back(light);
 	}
+	Engine::renderer()->setLights(lights);
 
 	// Draw each model in scene
 	auto view = world.registry.view<
@@ -50,8 +51,7 @@ void GameLayer::draw() noexcept
 			mesh,
 			material,
 			Engine::getCamera(),
-			model_mat,
-			lights
+			model_mat
 		);
 	}
 }

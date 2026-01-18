@@ -57,7 +57,7 @@ void Engine::pollEvents() noexcept
 	SDL_Event event;
 	while (SDL_PollEvent(&event) != 0) 
 	{
-		ImGui_ImplSDL3_ProcessEvent(&event);
+		// ImGui_ImplSDL3_ProcessEvent(&event);
 
 		switch (event.type) {
 		case SDL_EVENT_WINDOW_RESIZED:
@@ -94,21 +94,26 @@ void Engine::stepGameloop() noexcept
 	s_input.flush();
 
 	// Rendering
-	s_renderer->beginDrawing();
-
-	// 3D
+	//
+	s_renderer->beginCopyPass();
 	for (auto& app : s_layers) 
 	{
 		app->draw();
 	}
+	s_renderer->endCopyPass();
+
+	s_renderer->beginRenderPass(true, true);
+	for (auto& app : s_layers) 
+	{
+		app->draw();
+	}
+	s_renderer->endRenderPass();
 
 	// UI
 	for (auto& app : s_layers) 
 	{
-		app->drawGUI();
+		// app->drawGUI();
 	}
-
-	s_renderer->endDrawing();
 }
 
 void Engine::run() noexcept 
