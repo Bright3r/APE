@@ -122,6 +122,8 @@ class Renderer
 	std::vector<RenderLight> m_lights;
 	int max_lights = 16;
 
+	SDL_GPUCopyPass *m_copy_pass;
+
 public:
 	bool wireframe_mode;
 	SDL_FColor clear_color;

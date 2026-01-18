@@ -32,6 +32,7 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	, m_lights({})
 	, m_render_stage(RenderStage::FrameFinished)
 	, m_debug_buffer(nullptr)
+	, m_copy_pass(nullptr)
 {
 	// Construct default shader
 	m_shader = std::make_shared<Shader>(
@@ -69,6 +70,7 @@ Renderer::Renderer(
 	, m_lights({})
 	, m_render_stage(RenderStage::FrameFinished)
 	, m_debug_buffer(nullptr)
+	, m_copy_pass(nullptr)
 {
 	m_debug_shader = std::make_unique<Shader>(
 		debug_vert_shader_desc,
@@ -339,6 +341,14 @@ void Renderer::beginCopyPass() noexcept
 
 	// Reset debug
 	m_debug_verts.clear();
+
+	APE_CHECK((m_cmd_buf != nullptr),
+		"Renderer::beginCopyPass() Failed: command buffer is null."
+	);
+	m_copy_pass = SDL_BeginGPUCopyPass(m_cmd_buf);
+	APE_CHECK((m_copy_pass != nullptr),
+		"Renderer::endCopyPass() Failed: m_copy_pass == nullptr."
+	);
 }
 
 void Renderer::copyPass(MeshComponent& mesh, MaterialComponent& material) noexcept
@@ -386,6 +396,10 @@ void Renderer::copyPass(MeshComponent& mesh, MaterialComponent& material) noexce
 
 void Renderer::endCopyPass() noexcept
 {
+	APE_CHECK((m_render_stage == RenderStage::CopyPass),
+		"Renderer::endCopyPass() Failed: did not begin copy pass."
+	);
+
 	// Update Light SSBO
 	updateBuffer(
 		m_light_ssbo.get(),
@@ -398,6 +412,11 @@ void Renderer::endCopyPass() noexcept
 		vectorToRawBytes(m_debug_verts),
 		SDL_GPU_BUFFERUSAGE_VERTEX
 	);
+
+	APE_CHECK((m_copy_pass != nullptr),
+		"Renderer::endCopyPass() Failed: m_copy_pass == nullptr."
+	);
+	SDL_EndGPUCopyPass(m_copy_pass);
 }
 
 void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
@@ -735,8 +754,8 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	Uint32 usage
 ) noexcept
 {
-	APE_CHECK((m_render_stage != RenderStage::RenderPass),
-		"Renderer::uploadBuffer() Failed: cannot upload gpu buffer during render pass."
+	APE_CHECK((m_render_stage == RenderStage::CopyPass),
+		"Renderer::uploadBuffer() Failed: must be called within copy pass."
 	);
 
 	// Create GPU buffer
@@ -773,13 +792,11 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	);
 
 	// Write data to transfer buffer
-	std::byte *mapped = static_cast<std::byte*>(
-		SDL_MapGPUTransferBuffer(
-			m_context->device, 
-			transfer_buffer, 
-			false
-		)
-	);
+	std::byte *mapped = static_cast<std::byte*>(SDL_MapGPUTransferBuffer(
+		m_context->device, 
+		transfer_buffer, 
+		false
+	));
 	APE_CHECK((mapped != nullptr),
 	   "Renderer::uploadBuffer Failed: failed to map GPU transfer buffer."
 	);
@@ -789,12 +806,6 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	SDL_UnmapGPUTransferBuffer(m_context->device, transfer_buffer);
 
 	// Upload transfer buffer to GPU read-only memory
-	SDL_GPUCommandBuffer *cmd_buffer = m_cmd_buf;
-	APE_CHECK((cmd_buffer != nullptr),
-		"Renderer::uploadBuffer() Failed: command buffer is null."
-	);
-	SDL_GPUCopyPass *copy_pass = SDL_BeginGPUCopyPass(cmd_buffer);
-
 	SDL_GPUTransferBufferLocation src = {
 		.transfer_buffer = transfer_buffer,
 		.offset = 0,
@@ -804,8 +815,7 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 		.offset = 0,
 		.size = buffer_size,
 	};
-	SDL_UploadToGPUBuffer(copy_pass, &src, &dest, false);
-	SDL_EndGPUCopyPass(copy_pass);
+	SDL_UploadToGPUBuffer(m_copy_pass, &src, &dest, false);
 
 	// Cleanup resources
 	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buffer);
@@ -820,8 +830,8 @@ void Renderer::updateBuffer(
 	Uint32 usage
 ) noexcept
 {
-	APE_CHECK((m_render_stage != RenderStage::RenderPass),
-		"Renderer::updateBuffer() Failed: cannot update gpu buffer during render pass."
+	APE_CHECK((m_render_stage == RenderStage::CopyPass),
+		"Renderer::updateBuffer() Failed: must be called within copy pass."
 	);
 
 	APE_CHECK((buffer != nullptr),
@@ -844,13 +854,11 @@ void Renderer::updateBuffer(
 	);
 
 	// Write data to transfer buffer
-	std::byte *mapped = static_cast<std::byte*>(
-		SDL_MapGPUTransferBuffer(
-			m_context->device, 
-			transfer_buffer, 
-			true
-		)
-	);
+	std::byte *mapped = static_cast<std::byte*>(SDL_MapGPUTransferBuffer(
+		m_context->device, 
+		transfer_buffer, 
+		true
+	));
 	APE_CHECK((mapped != nullptr),
 	   "Renderer::updateBuffer Failed: failed to map GPU transfer buffer."
 	);
@@ -860,12 +868,6 @@ void Renderer::updateBuffer(
 	SDL_UnmapGPUTransferBuffer(m_context->device, transfer_buffer);
 
 	// Upload transfer buffer to GPU read-only memory
-	SDL_GPUCommandBuffer *cmd_buffer = m_cmd_buf;
-	APE_CHECK((cmd_buffer != nullptr),
-		"Renderer::uploadBuffer() Failed: command buffer is null."
-	);
-	SDL_GPUCopyPass *copy_pass = SDL_BeginGPUCopyPass(cmd_buffer);
-
 	SDL_GPUTransferBufferLocation src = {
 		.transfer_buffer = transfer_buffer,
 		.offset = 0,
@@ -875,8 +877,7 @@ void Renderer::updateBuffer(
 		.offset = 0,
 		.size = buffer_size,
 	};
-	SDL_UploadToGPUBuffer(copy_pass, &src, &dest, true);
-	SDL_EndGPUCopyPass(copy_pass);
+	SDL_UploadToGPUBuffer(m_copy_pass, &src, &dest, true);
 
 	// Cleanup resources
 	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buffer);
@@ -902,6 +903,10 @@ SDL_GPUTextureFormat Renderer::getTextureFormat(Image *image) noexcept
 
 SafeGPU::UniqueGPUTexture Renderer::createTexture(Image *image) noexcept
 {
+	APE_CHECK((m_render_stage == RenderStage::CopyPass),
+		"Renderer::createTexture() Failed: must be called within copy pass."
+	);
+
 	// Create texture
 	SDL_GPUTextureCreateInfo tex_desc = {
 		.type = SDL_GPU_TEXTURETYPE_2D,
@@ -938,7 +943,6 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image *image) noexcept
 		transfer_buf, 
 		false
 	));
-
 	std::memcpy(
 		mapped,
 		static_cast<void*>(image->getPixels()),
@@ -948,12 +952,6 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image *image) noexcept
 	SDL_UnmapGPUTransferBuffer(m_context->device, transfer_buf);
 
 	// Upload transfer buffer to gpu
-	SDL_GPUCommandBuffer *cmd_buffer = m_cmd_buf;
-	APE_CHECK((cmd_buffer != nullptr),
-		"Renderer::createTexture() Failed: command buffer is null."
-	);
-	SDL_GPUCopyPass *copy_pass = SDL_BeginGPUCopyPass(cmd_buffer);
-
 	SDL_GPUTextureTransferInfo src = {
 		.transfer_buffer = transfer_buf,
 		.offset = 0,
@@ -964,10 +962,9 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image *image) noexcept
 		.h = image->getHeight(),
 		.d = 1,
 	};
-	SDL_UploadToGPUTexture(copy_pass, &src, &dest, false);
+	SDL_UploadToGPUTexture(m_copy_pass, &src, &dest, false);
 
 	// Cleanup resources
-	SDL_EndGPUCopyPass(copy_pass);
 	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buf);
 
 	return safe_tex;
