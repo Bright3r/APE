@@ -31,6 +31,7 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	, m_light_ssbo(nullptr)
 	, m_lights({})
 	, m_render_stage(RenderStage::FrameFinished)
+	, m_debug_buffer(nullptr)
 {
 	// Construct default shader
 	m_shader = std::make_shared<Shader>(
@@ -67,6 +68,7 @@ Renderer::Renderer(
 	, m_light_ssbo(nullptr)
 	, m_lights({})
 	, m_render_stage(RenderStage::FrameFinished)
+	, m_debug_buffer(nullptr)
 {
 	m_debug_shader = std::make_unique<Shader>(
 		debug_vert_shader_desc,
@@ -135,11 +137,10 @@ void Renderer::reset() noexcept
 	);
 
 
-	// // Ensure previous imgui session is destroyed before creating a new one
-	// m_imgui_session = nullptr;
-	// m_imgui_session = std::make_unique<ImGuiSession>(m_context.get());
-	//
-	// ImGuizmo::Enable(true);
+	// Ensure previous imgui session is destroyed before creating a new one
+	m_imgui_session = nullptr;
+	m_imgui_session = std::make_unique<ImGuiSession>(m_context.get());
+	ImGuizmo::Enable(true);
 }
 
 std::unique_ptr<Shader> Renderer::createShader(
@@ -289,24 +290,55 @@ void Renderer::setLights(const std::vector<RenderLight>& lights) noexcept
 	m_lights = lights;
 }
 
-void Renderer::beginCopyPass() noexcept
+void Renderer::beginFrame() noexcept
 {
-	APE_CHECK((m_render_stage != RenderStage::RenderPass),
-	   "Renderer::beginCopyPass() Failed: cannot copy during render pass"
+	APE_CHECK((m_render_stage == RenderStage::FrameFinished),
+		"Renderer::beginFrame() Failed: previous frame not finished."
 	);
-	m_render_stage = RenderStage::CopyPass;
+	m_render_stage = RenderStage::FrameStarted;
 
 	// Acquire cmd buffer
 	m_cmd_buf = SDL_AcquireGPUCommandBuffer(
 		m_context->device
 	);
 	APE_CHECK((m_cmd_buf != nullptr),
-		"Renderer::beginCopyPass() Failed: command_buffer == null - {},",
+		"Renderer::beginCopyPass() Failed: command_buffer == null.\n {},",
 		SDL_GetError()
 	);
 
+	// Acquire swapchain texture
+	bool succ_acquire_swapchain = SDL_WaitAndAcquireGPUSwapchainTexture(
+		m_cmd_buf,
+		m_context->window,
+		&m_swapchain_texture,
+		NULL,
+		NULL
+	);
+	APE_CHECK(succ_acquire_swapchain,
+		"Renderer::beginRenderPass() Failed: could not acquire swapchain texture."
+		"SDL_WaitAndAcquireGPUSwapchainTexture Failed - {}",
+		SDL_GetError()
+	);
+
+	// Start ImGUI frame
+	ImGui_ImplSDLGPU3_NewFrame();
+	ImGui_ImplSDL3_NewFrame();
+	ImGui::NewFrame();
+	ImGuizmo::BeginFrame();
+}
+
+void Renderer::beginCopyPass() noexcept
+{
+	APE_CHECK((m_render_stage == RenderStage::FrameStarted),
+	   "Renderer::beginCopyPass() Failed: cannot copy before frame is started"
+	);
+	m_render_stage = RenderStage::CopyPass;
+
 	// Reset lighting
 	m_lights.clear();
+
+	// Reset debug
+	m_debug_verts.clear();
 }
 
 void Renderer::copyPass(MeshComponent& mesh, MaterialComponent& material) noexcept
@@ -360,8 +392,13 @@ void Renderer::endCopyPass() noexcept
 		vectorToRawBytes(m_lights),
 		SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ
 	);
-}
 
+	// Create GPU Buffer for debug lines
+	m_debug_buffer = uploadBuffer(
+		vectorToRawBytes(m_debug_verts),
+		SDL_GPU_BUFFERUSAGE_VERTEX
+	);
+}
 
 void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 {
@@ -371,37 +408,13 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 	);
 	m_render_stage = RenderStage::RenderPass;
 
-	// // Acquire cmd buffer
-	// m_cmd_buf = SDL_AcquireGPUCommandBuffer(
-	// 	m_context->device
-	// );
-	// APE_CHECK((m_cmd_buf != nullptr),
-	// 	"Renderer::beginCopyPass() Failed: command_buffer == null - {},",
-	// 	SDL_GetError()
-	// );
-
-	// Acquire swapchain texture
-	bool succ_acquire_swapchain = SDL_WaitAndAcquireGPUSwapchainTexture(
-		m_cmd_buf,
-		m_context->window,
-		&m_swapchain_texture,
-		NULL,
-		NULL
-	);
-	APE_CHECK(succ_acquire_swapchain,
-		"Renderer::beginRenderPass() Failed: could not acquire swapchain texture."
-		"SDL_WaitAndAcquireGPUSwapchainTexture Failed - {}",
-		SDL_GetError()
-	);
-
+	// Setup render pass
 	SDL_GPUColorTargetInfo color_target_info = {
 		.texture = m_swapchain_texture,
 		.clear_color = clear_color,
 		.load_op = b_clear ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD,
 		.store_op = SDL_GPU_STOREOP_STORE,
 	};
-
-	// Setup render pass
 	SDL_GPUDepthStencilTargetInfo depth_target_info = {
 		.texture = m_depth_texture.get(),
 		.clear_depth = 1,
@@ -421,7 +434,14 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 
 	// Bind render pipeline
 	bindPipeline(&m_pipeline);
+}
 
+void Renderer::bindFragmentSSBOs() noexcept
+{
+	// Check that we are already drawing
+	APE_CHECK((m_render_stage == RenderStage::RenderPass),
+		"Renderer::bindFragmentSSBOs() Failed: render pass not started yet."
+	);
 
 	// Fragment Shader Storage Buffers
 	std::vector<SDL_GPUBuffer*> storage_buffers;
@@ -432,13 +452,6 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 		storage_buffers.data(),
 		storage_buffers.size()
 	);
-
-
-	// // Start ImGUI frame
-	// ImGui_ImplSDLGPU3_NewFrame();
-	// ImGui_ImplSDL3_NewFrame();
-	// ImGui::NewFrame();
-	// ImGuizmo::BeginFrame();
 }
 
 void Renderer::renderPass(
@@ -450,19 +463,19 @@ void Renderer::renderPass(
 {
 	// Check that we are already drawing
 	APE_CHECK((m_render_stage == RenderStage::RenderPass),
-		"Renderer::draw() Failed: beginRenderPass() not called."
+		"Renderer::renderPass() Failed: beginRenderPass() not called."
 	);
 
 	// Check that camera is valid
 	APE_CHECK(!camera.expired(),
-		"Renderer::draw() Failed: camera does not exist."
+		"Renderer::renderPass() Failed: camera does not exist."
 	);
 	auto cam = camera.lock();
 
 	// Check if gpu vertex buffer was already created
 	auto& raw_mesh = mesh.model_handle.data->meshes[mesh.mesh_index];
 	APE_CHECK((raw_mesh.vertex_buffer != nullptr),
-		"Renderer::draw() Failed: tried to bind vertex buffer before uploading in copy pass."
+		"Renderer::renderPass() Failed: tried to bind vertex buffer before uploading in copy pass."
 	)
 	// Bind vertex buffer
 	SDL_GPUBufferBinding vertex_buffer_binding = {
@@ -479,7 +492,7 @@ void Renderer::renderPass(
 
 	// Check if gpu index buffer was already created
 	APE_CHECK((raw_mesh.index_buffer != nullptr),
-		"Renderer::draw() Failed: tried to bind index buffer before uploading in copy pass."
+		"Renderer::renderPass() Failed: tried to bind index buffer before uploading in copy pass."
 	)
 	// Bind index buffer
 	SDL_GPUBufferBinding index_buffer_binding = {
@@ -496,7 +509,7 @@ void Renderer::renderPass(
 	// Check if mesh texture was uploaded yet
 	auto& texture = material.texture_handle.data;
 	APE_CHECK((texture->textureBuffer() != nullptr),
-		"Renderer::draw() Failed: tried to bind texture buffer before uploading in copy pass."
+		"Renderer::renderPass() Failed: tried to bind texture buffer before uploading in copy pass."
 	)
 	// Bind texture sampler
 	std::vector<SDL_GPUTextureSamplerBinding> sampler_bindings = {{
@@ -542,7 +555,7 @@ void Renderer::renderPass(
 	);
 	// Bind LightInfo Uniform
 	APE_CHECK((m_lights.size() <= max_lights),
-	   "Renderer::draw() Failed: lights > max_lights."
+		"Renderer::renderPass() Failed: lights > max_lights."
 	);
 	LightInfoUniform light_info;
 	light_info.light_count = m_lights.size();
@@ -592,115 +605,122 @@ void Renderer::drawLine(
 	Camera *cam
 ) noexcept
 {
-	// // Draw in screen space if no camera is provided
-	// if (!cam) 
-	// {
-	// 	m_debug_verts.emplace_back(p0, color[0], color[1], color[2], color[3]);
-	// 	m_debug_verts.emplace_back(p1, color[0], color[1], color[2], color[3]);
-	// 	return;
-	// }
-	//
-	// // Transform line to eye space
-	// glm::vec4 ep0 = cam->getViewMatrix() * glm::vec4(p0, 1.f);
-	// glm::vec4 ep1 = cam->getViewMatrix() * glm::vec4(p1, 1.f);
-	// float near_plane = cam->getNearPlane();
-	//
-	// auto clip_line = [&](glm::vec4& a, glm::vec4& b) {
-	// 	bool a_behind = a.z > -near_plane;
-	// 	bool b_behind = b.z > -near_plane;
-	//
-	// 	if (a_behind && b_behind) return false;
-	// 	if (a_behind) {
-	// 		float t = (-near_plane - a.z) / (b.z - a.z);
-	// 		a = a + t * (b - a);
-	// 	}
-	// 	else if (b_behind) {
-	// 		float t = (-near_plane - a.z) / (b.z - a.z);
-	// 		b = a + t * (b - a);
-	// 	}
-	// 	return true;
-	// };
-	//
-	// // Cull line if clipped by camera
-	// if (!clip_line(ep0, ep1)) return;
-	//
-	// // Transform to clip space
-	// glm::mat4 proj = cam->getProjectionMatrix(m_context->getAspectRatio());
-	// glm::vec4 cp0 = proj * ep0;
-	// glm::vec4 cp1 = proj * ep1;
-	//
-	// // Transform to screen space (perspective divide manually)
-	// glm::vec3 ndc0 = glm::vec3(cp0) / cp0.w;
-	// glm::vec3 ndc1 = glm::vec3(cp1) / cp1.w;
-	//
-	// m_debug_verts.emplace_back(ndc0, color[0], color[1], color[2], color[3]);
-	// m_debug_verts.emplace_back(ndc1, color[0], color[1], color[2], color[3]);
+	if (m_render_stage != RenderStage::CopyPass) return;
+
+	// Draw in screen space if no camera is provided
+	if (!cam) 
+	{
+		m_debug_verts.emplace_back(p0, color[0], color[1], color[2], color[3]);
+		m_debug_verts.emplace_back(p1, color[0], color[1], color[2], color[3]);
+		return;
+	}
+
+	// Transform line to eye space
+	glm::vec4 ep0 = cam->getViewMatrix() * glm::vec4(p0, 1.f);
+	glm::vec4 ep1 = cam->getViewMatrix() * glm::vec4(p1, 1.f);
+	float near_plane = cam->getNearPlane();
+
+	auto clip_line = [&](glm::vec4& a, glm::vec4& b) {
+		bool a_behind = a.z > -near_plane;
+		bool b_behind = b.z > -near_plane;
+
+		if (a_behind && b_behind) return false;
+		if (a_behind) {
+			float t = (-near_plane - a.z) / (b.z - a.z);
+			a = a + t * (b - a);
+		}
+		else if (b_behind) {
+			float t = (-near_plane - a.z) / (b.z - a.z);
+			b = a + t * (b - a);
+		}
+		return true;
+	};
+
+	// Cull line if clipped by camera
+	if (!clip_line(ep0, ep1)) return;
+
+	// Transform to clip space
+	glm::mat4 proj = cam->getProjectionMatrix(m_context->getAspectRatio());
+	glm::vec4 cp0 = proj * ep0;
+	glm::vec4 cp1 = proj * ep1;
+
+	// Transform to screen space (perspective divide manually)
+	glm::vec3 ndc0 = glm::vec3(cp0) / cp0.w;
+	glm::vec3 ndc1 = glm::vec3(cp1) / cp1.w;
+
+	m_debug_verts.emplace_back(ndc0, color[0], color[1], color[2], color[3]);
+	m_debug_verts.emplace_back(ndc1, color[0], color[1], color[2], color[3]);
 }
 
-
-void Renderer::drawDebug() noexcept
+void Renderer::renderDebug() noexcept
 {
-	// if (m_debug_verts.empty()) return;
-	//
-	// // Switch to debug pipeline
-	// bindPipeline(&m_debug_pipeline);
-	//
-	// // Create GPU Buffer for debug lines
-	// SafeGPU::UniqueGPUBuffer debug_line_buffer = uploadBuffer(
-	// 	vectorToRawBytes(m_debug_verts),
-	// 	SDL_GPU_BUFFERUSAGE_VERTEX
-	// );
-	//
-	// // Bind gpu buffer
-	// SDL_GPUBufferBinding line_buffer_binding = {
-	// 	.buffer = debug_line_buffer.get(),
-	// 	.offset = 0,
-	// };
-	// SDL_BindGPUVertexBuffers(
-	// 	m_render_pass,
-	// 	0,
-	// 	&line_buffer_binding,
-	// 	1
-	// );
-	//
-	// // Draw
-	// SDL_DrawGPUPrimitives(
-	// 	m_render_pass,
-	// 	m_debug_verts.size(),
-	// 	1,
-	// 	0,
-	// 	0
-	// );
-	// m_debug_verts.clear();
+	APE_CHECK((m_render_stage == RenderStage::RenderPass),
+		"Renderer::renderDebug() Failed: not in render pass."
+	);
+
+	// Switch to debug pipeline
+	bindPipeline(&m_debug_pipeline);
+
+	// Bind gpu buffer
+	SDL_GPUBufferBinding line_buffer_binding = {
+		.buffer = m_debug_buffer.get(),
+		.offset = 0,
+	};
+	SDL_BindGPUVertexBuffers(
+		m_render_pass,
+		0,
+		&line_buffer_binding,
+		1
+	);
+
+	// Draw
+	SDL_DrawGPUPrimitives(
+		m_render_pass,
+		m_debug_verts.size(),
+		1,
+		0,
+		0
+	);
 }
 
 void Renderer::endRenderPass() noexcept
 {
 	// Check that we are already drawing
 	APE_CHECK((m_render_stage == RenderStage::RenderPass),
-	   "Renderer::endDrawing() Failed: not in render pass."
+		"Renderer::endRenderPass() Failed: not in render pass."
 	);
 
-	// Draw debug visuals
-	// drawDebug();
-
-	// Finish scene render pass
+	// Finish render pass
 	SDL_EndGPURenderPass(m_render_pass);
 	m_render_pass = nullptr;
+
+	m_render_stage = RenderStage::FrameReady;
+}
+
+void Renderer::renderGUI() noexcept
+{
+	APE_CHECK((m_render_stage == RenderStage::FrameReady),
+		"Renderer::renderGUI() Failed: cannot call mid render pass."
+	);
 	m_render_stage = RenderStage::RenderGUI;
 
-	// // Build ImGUI drawing data
-	// ImGui::Render();
-	// ImDrawData *gui_data = ImGui::GetDrawData();
-	// Imgui_ImplSDLGPU3_PrepareDrawData(gui_data, m_cmd_buf);
-	//
-	// // Dispatch render pass for ImGUI
-	// beginRenderPass(false, false);
-	// ImGui_ImplSDLGPU3_RenderDrawData(gui_data, m_cmd_buf, m_render_pass);
-	//
-	// // Finish ImGUI render pass
-	// SDL_EndGPURenderPass(m_render_pass);
-	// m_render_pass = nullptr;
+	// Build ImGUI drawing data
+	ImGui::Render();
+	ImDrawData *gui_data = ImGui::GetDrawData();
+	Imgui_ImplSDLGPU3_PrepareDrawData(gui_data, m_cmd_buf);
+
+	// Dispatch render pass for ImGUI
+	beginRenderPass(false, false);
+	ImGui_ImplSDLGPU3_RenderDrawData(gui_data, m_cmd_buf, m_render_pass);
+	endRenderPass();
+}
+
+void Renderer::submitFrame() noexcept
+{
+	// Check that we are already drawing
+	APE_CHECK((m_render_stage == RenderStage::FrameReady),
+		"Renderer::submitFrame() Failed: frame is not ready."
+	);
 
 	// Draw to swapchain texture
 	SDL_SubmitGPUCommandBuffer(m_cmd_buf);
@@ -748,7 +768,8 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 		&transfer_info
 	);
 	APE_CHECK((transfer_buffer != nullptr),
-	   "Renderer::uploadBuffer Failed: failed to create GPU transfer buffer."
+		"Renderer::uploadBuffer() Failed: failed to create GPU transfer buffer.\n{}",
+		SDL_GetError()
 	);
 
 	// Write data to transfer buffer
@@ -813,13 +834,13 @@ void Renderer::updateBuffer(
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
 		.size = buffer_size,
 	};
-
 	SDL_GPUTransferBuffer *transfer_buffer = SDL_CreateGPUTransferBuffer(
 		m_context->device, 
 		&transfer_info
 	);
 	APE_CHECK((transfer_buffer != nullptr),
-	   "Renderer::updateBuffer Failed: failed to create GPU transfer buffer."
+		"Renderer::updateBuffer() Failed: failed to create GPU transfer buffer.\n{}",
+		SDL_GetError()
 	);
 
 	// Write data to transfer buffer

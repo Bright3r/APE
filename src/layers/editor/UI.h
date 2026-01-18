@@ -242,8 +242,15 @@ JPH::Shape* createColliderShape(ColliderShape selected_shape, bool make_shape) n
 	case Box:
 	{
 		static glm::vec3 bounds(1.f);
-		ImGui::InputFloat3("Half Extents", glm::value_ptr(bounds), "%.2f");
-		if (make_shape) shape = new JPH::BoxShape(JPH::Vec3(bounds.x, bounds.y, bounds.z));
+		ImGui::InputFloat3("Extents", glm::value_ptr(bounds), "%.2f");
+		if (make_shape)
+		{
+			shape = new JPH::BoxShape(JPH::Vec3(
+				bounds.x / 2.f,
+				bounds.y / 2.f,
+				bounds.z / 2.f
+			));
+		}
 		break;
 	}
 	case Sphere:

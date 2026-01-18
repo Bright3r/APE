@@ -93,9 +93,11 @@ struct SafePipeline
 enum class RenderStage
 {
 	FrameFinished,
+	FrameStarted,
 	CopyPass,
 	RenderPass,
 	RenderGUI,
+	FrameReady,
 };
 
 
@@ -113,6 +115,7 @@ class Renderer
 	SafeGPU::UniqueGPUTexture m_depth_texture;
 	std::unique_ptr<ImGuiSession> m_imgui_session;
 	std::vector<PositionColorVertex> m_debug_verts;
+	SafeGPU::UniqueGPUBuffer m_debug_buffer;
 
 	RenderStage m_render_stage;
 	SafeGPU::UniqueGPUBuffer m_light_ssbo;
@@ -150,9 +153,13 @@ public:
 
 	void setLights(const std::vector<RenderLight>& lights) noexcept;
 
+	void beginFrame() noexcept;
+
 	void beginCopyPass() noexcept;
 	void copyPass(MeshComponent& mesh, MaterialComponent& material) noexcept;
 	void endCopyPass() noexcept;
+
+	void bindFragmentSSBOs() noexcept;
 
 	void beginRenderPass(bool b_clear, bool b_depth) noexcept;
 	void renderPass(
@@ -161,8 +168,6 @@ public:
 		std::weak_ptr<Camera> camera,
 		const glm::mat4& model_matrix
 	) noexcept;
-
-	void beginDrawing() noexcept;
 
 	void draw(
 		MeshComponent& mesh,
@@ -178,12 +183,16 @@ public:
 		Camera *cam
 	) noexcept;
 
+	void renderDebug() noexcept;
+
 	void endRenderPass() noexcept;
+
+	void renderGUI() noexcept;
+
+	void submitFrame() noexcept;
 
 private:
 	void bindPipeline(SafePipeline *pipeline) noexcept;
-
-	void drawDebug() noexcept;
 
 	void createDepthTexture() noexcept;
 

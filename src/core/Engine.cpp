@@ -57,7 +57,7 @@ void Engine::pollEvents() noexcept
 	SDL_Event event;
 	while (SDL_PollEvent(&event) != 0) 
 	{
-		// ImGui_ImplSDL3_ProcessEvent(&event);
+		ImGui_ImplSDL3_ProcessEvent(&event);
 
 		switch (event.type) {
 		case SDL_EVENT_WINDOW_RESIZED:
@@ -95,6 +95,8 @@ void Engine::stepGameloop() noexcept
 
 	// Rendering
 	//
+	s_renderer->beginFrame();
+
 	s_renderer->beginCopyPass();
 	for (auto& app : s_layers) 
 	{
@@ -103,17 +105,24 @@ void Engine::stepGameloop() noexcept
 	s_renderer->endCopyPass();
 
 	s_renderer->beginRenderPass(true, true);
+	// Bind light ssbo
+	s_renderer->bindFragmentSSBOs();
 	for (auto& app : s_layers) 
 	{
 		app->draw();
 	}
+	s_renderer->renderDebug();
 	s_renderer->endRenderPass();
 
 	// UI
 	for (auto& app : s_layers) 
 	{
-		// app->drawGUI();
+		app->drawGUI();
 	}
+
+	s_renderer->renderGUI();
+
+	s_renderer->submitFrame();
 }
 
 void Engine::run() noexcept 
