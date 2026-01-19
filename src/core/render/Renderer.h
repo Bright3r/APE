@@ -20,6 +20,13 @@
 #include <memory>
 #include <vector>
 
+// Forward declare Engine
+namespace APE 
+{
+	class Engine;
+};
+
+
 namespace APE::Render 
 {
 
@@ -103,32 +110,37 @@ enum class RenderStage
 
 class Renderer 
 {
+	friend class APE::Engine;
+
+	// Static resources
 	std::shared_ptr<Context> m_context;
 	std::shared_ptr<Shader> m_shader;
 	SafePipeline m_pipeline;
 	std::unique_ptr<Shader> m_debug_shader;
 	SafePipeline m_debug_pipeline;
-	SDL_GPUTexture *m_swapchain_texture;
-	SDL_GPURenderPass *m_render_pass;
-	SDL_GPUCommandBuffer *m_cmd_buf;
 	SafeGPU::UniqueGPUSampler m_sampler;
 	SafeGPU::UniqueGPUTexture m_depth_texture;
 	std::unique_ptr<ImGuiSession> m_imgui_session;
-	std::vector<PositionColorVertex> m_debug_verts;
+
+	// Per-frame resources
+	SDL_GPUCommandBuffer *m_cmd_buf;
+	SDL_GPUTexture *m_swapchain_texture;
+	SDL_GPUCopyPass *m_copy_pass;
+	SDL_GPURenderPass *m_render_pass;
+	SafeGPU::UniqueGPUBuffer m_light_ssbo;
 	SafeGPU::UniqueGPUBuffer m_debug_buffer;
 
+	// Render data
 	RenderStage m_render_stage;
-	SafeGPU::UniqueGPUBuffer m_light_ssbo;
 	std::vector<RenderLight> m_lights;
-	int max_lights = 16;
+	std::vector<PositionColorVertex> m_debug_verts;
+	bool m_wireframe_mode;
+	SDL_FColor m_clear_color;
+	DebugModeUniform m_debug_mode;
 
-	SDL_GPUCopyPass *m_copy_pass;
+	constexpr static int MAX_LIGHTS = 16;
 
 public:
-	bool wireframe_mode;
-	SDL_FColor clear_color;
-	DebugModeUniform debug_mode;
-
 	Renderer(std::shared_ptr<Context> context) noexcept;
 
 	Renderer(
@@ -140,36 +152,18 @@ public:
 	Renderer(const Renderer& other) = delete;
 	Renderer& operator=(const Renderer& other) = delete;
 
+	void setLights(const std::vector<RenderLight>& lights) noexcept;
 
-	void reset() noexcept;
+	bool& wireframeMode() noexcept;
 
-	[[nodiscard]] std::unique_ptr<Shader> createShader(
+	SDL_FColor& clearColor() noexcept;
+
+	DebugModeUniform& debugMode() noexcept;
+
+	std::unique_ptr<Shader> createShader(
 		const ShaderDescription& vert_shader_desc,
 		const ShaderDescription& frag_shader_desc
 	) const noexcept;
-
-	SafePipeline shaderToPipeline(
-		Shader *shader,
-		SDL_GPUPrimitiveType primitive_type
-	) noexcept;
-
-	void setLights(const std::vector<RenderLight>& lights) noexcept;
-
-	void beginFrame() noexcept;
-
-	void beginCopyPass() noexcept;
-	void copyPass(MeshComponent& mesh, MaterialComponent& material) noexcept;
-	void endCopyPass() noexcept;
-
-	void bindFragmentSSBOs() noexcept;
-
-	void beginRenderPass(bool b_clear, bool b_depth) noexcept;
-	void renderPass(
-		MeshComponent& mesh,
-		MaterialComponent& material,
-		std::weak_ptr<Camera> camera,
-		const glm::mat4& model_matrix
-	) noexcept;
 
 	void draw(
 		MeshComponent& mesh,
@@ -185,6 +179,33 @@ public:
 		Camera *cam
 	) noexcept;
 
+private:
+	void reset() noexcept;
+
+	SafePipeline createPipeline(
+		Shader *shader,
+		SDL_GPUPrimitiveType primitive_type
+	) const noexcept;
+
+	void beginFrame() noexcept;
+
+	void beginCopyPass() noexcept;
+
+	void copyPass(MeshComponent& mesh, MaterialComponent& material) noexcept;
+
+	void endCopyPass() noexcept;
+
+	void bindFragmentSSBOs() noexcept;
+
+	void beginRenderPass(bool b_clear, bool b_depth) noexcept;
+
+	void renderPass(
+		MeshComponent& mesh,
+		MaterialComponent& material,
+		std::weak_ptr<Camera> camera,
+		const glm::mat4& model_matrix
+	) noexcept;
+
 	void renderDebug() noexcept;
 
 	void endRenderPass() noexcept;
@@ -193,18 +214,17 @@ public:
 
 	void submitFrame() noexcept;
 
-private:
 	void bindPipeline(SafePipeline *pipeline) noexcept;
 
 	void createDepthTexture() noexcept;
 
 	void createSampler() noexcept;
 
-	[[nodiscard]] SafeGPU::UniqueGPUGraphicsPipeline createPipeline(
+	SafeGPU::UniqueGPUGraphicsPipeline createPipeline(
 		const SDL_GPUGraphicsPipelineCreateInfo& create_info
 	) const noexcept;
 
-	[[nodiscard]] SafeGPU::UniqueGPUBuffer uploadBuffer(
+	SafeGPU::UniqueGPUBuffer uploadBuffer(
 		const std::vector<std::byte>& data,
 		Uint32 usage
 	) noexcept;
@@ -215,14 +235,12 @@ private:
 		Uint32 usage
 	) noexcept;
 
-	[[nodiscard]] static SDL_GPUTextureFormat getTextureFormat(
-		Image *image
-	) noexcept;
+	static SDL_GPUTextureFormat getTextureFormat(Image *image) noexcept;
 
-	[[nodiscard]] SafeGPU::UniqueGPUTexture createTexture(Image *image) noexcept;
+	SafeGPU::UniqueGPUTexture createTexture(Image *image) noexcept;
 
 	template <typename T>
-	[[nodiscard]] static std::vector<std::byte> vectorToRawBytes(
+	static std::vector<std::byte> vectorToRawBytes(
 		const std::vector<T>& data
 	) noexcept
 	{

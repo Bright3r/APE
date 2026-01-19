@@ -174,7 +174,7 @@ void EditorLayer::setup() noexcept
 	);
 	Engine::setCamera(fly_cam);
 	Engine::setTabIn(true);
-	Engine::setFramerate(1000);
+	Engine::setFramerate(10000);
 
 	selected_ent = world.root;
 }

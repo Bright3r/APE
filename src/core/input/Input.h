@@ -11,7 +11,7 @@
 namespace APE 
 {
 	class Engine;
-};	// end of namespace
+};
 
 
 namespace APE::Input 

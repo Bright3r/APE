@@ -17,22 +17,23 @@ namespace APE::Render
 
 Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	: m_context(context)
-	, wireframe_mode(false) 
-	, clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
 	, m_shader(nullptr)
 	, m_pipeline({})
 	, m_debug_shader(nullptr)
 	, m_debug_pipeline({})
-	, m_swapchain_texture(nullptr)
-	, m_render_pass(nullptr)
-	, m_cmd_buf(nullptr)
-	, debug_mode(false)
 	, m_imgui_session(nullptr)
-	, m_light_ssbo(nullptr)
-	, m_lights({})
-	, m_render_stage(RenderStage::FrameFinished)
-	, m_debug_buffer(nullptr)
+	, m_cmd_buf(nullptr)
+	, m_swapchain_texture(nullptr)
 	, m_copy_pass(nullptr)
+	, m_render_pass(nullptr)
+	, m_light_ssbo(nullptr)
+	, m_debug_buffer(nullptr)
+	, m_render_stage(RenderStage::FrameFinished)
+	, m_lights({})
+	, m_debug_verts({})
+	, m_wireframe_mode(false) 
+	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
+	, m_debug_mode(false)
 {
 	// Construct default shader
 	m_shader = std::make_shared<Shader>(
@@ -55,22 +56,23 @@ Renderer::Renderer(
 	std::shared_ptr<Shader> shader
 ) noexcept
 	: m_context(context)
-	, wireframe_mode(false) 
-	, clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
-	, m_shader(shader)
+	, m_shader(nullptr)
 	, m_pipeline({})
 	, m_debug_shader(nullptr)
 	, m_debug_pipeline({})
-	, m_swapchain_texture(nullptr)
-	, m_render_pass(nullptr)
-	, m_cmd_buf(nullptr)
-	, debug_mode(false)
 	, m_imgui_session(nullptr)
-	, m_light_ssbo(nullptr)
-	, m_lights({})
-	, m_render_stage(RenderStage::FrameFinished)
-	, m_debug_buffer(nullptr)
+	, m_cmd_buf(nullptr)
+	, m_swapchain_texture(nullptr)
 	, m_copy_pass(nullptr)
+	, m_render_pass(nullptr)
+	, m_light_ssbo(nullptr)
+	, m_debug_buffer(nullptr)
+	, m_render_stage(RenderStage::FrameFinished)
+	, m_lights({})
+	, m_debug_verts({})
+	, m_wireframe_mode(false) 
+	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
+	, m_debug_mode(false)
 {
 	m_debug_shader = std::make_unique<Shader>(
 		debug_vert_shader_desc,
@@ -81,10 +83,30 @@ Renderer::Renderer(
 	reset();
 }
 
+void Renderer::setLights(const std::vector<RenderLight>& lights) noexcept
+{
+	m_lights = lights;
+}
+
+bool& Renderer::wireframeMode() noexcept
+{
+	return m_wireframe_mode;
+}
+
+SDL_FColor& Renderer::clearColor() noexcept
+{
+	return m_clear_color;
+}
+
+DebugModeUniform& Renderer::debugMode() noexcept
+{
+	return m_debug_mode;
+}
+
 void Renderer::reset() noexcept
 {
 	// Rebuild debug pipeline
-	auto debug_pipeline = shaderToPipeline(
+	auto debug_pipeline = createPipeline(
 		m_debug_shader.get(),
 		SDL_GPU_PRIMITIVETYPE_LINELIST
 	);
@@ -95,7 +117,7 @@ void Renderer::reset() noexcept
 	m_debug_pipeline = std::move(debug_pipeline);
 
 	// Rebuild pipeline for user shader
-	auto pipeline = shaderToPipeline(
+	auto pipeline = createPipeline(
 		m_shader.get(),
 		SDL_GPU_PRIMITIVETYPE_TRIANGLELIST
 	);
@@ -128,7 +150,7 @@ void Renderer::reset() noexcept
 
 	SDL_GPUBufferCreateInfo light_buffer_info { 
 		.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ,
-		.size = static_cast<Uint32>(sizeof(RenderLight) * max_lights),
+		.size = static_cast<Uint32>(sizeof(RenderLight) * MAX_LIGHTS),
 	};
 	SDL_GPUBuffer *light_buffer = SDL_CreateGPUBuffer(m_context->device, &light_buffer_info);
 	m_light_ssbo = SafeGPU::makeUnique<SDL_GPUBuffer>(
@@ -178,10 +200,10 @@ SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
 	);
 }
 
-SafePipeline Renderer::shaderToPipeline(
+SafePipeline Renderer::createPipeline(
 	Shader *shader,
 	SDL_GPUPrimitiveType primitive_type
-) noexcept 
+) const noexcept 
 {
 	if (!shader) 
 	{
@@ -247,51 +269,6 @@ SafePipeline Renderer::shaderToPipeline(
 	return res;
 }
 
-void Renderer::createDepthTexture() noexcept
-{
-	SDL_GPUTextureCreateInfo tex_desc = {
-		.type = SDL_GPU_TEXTURETYPE_2D,
-		.format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
-		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | 
-			SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
-		.width = static_cast<Uint32>(m_context->window_width),
-		.height = static_cast<Uint32>(m_context->window_height),
-		.layer_count_or_depth = 1,
-		.num_levels = 1,
-		.sample_count = SDL_GPU_SAMPLECOUNT_1,
-	};
-
-	SDL_GPUTexture *depth_tex = SDL_CreateGPUTexture(
-		m_context->device, 
-		&tex_desc
-	);
-	m_depth_texture = SafeGPU::makeUnique<SDL_GPUTexture>(
-		depth_tex,
-		[=, this](SDL_GPUTexture *tex) {
-			SDL_ReleaseGPUTexture(m_context->device, tex);
-		}
-	);
-}
-
-void Renderer::bindPipeline(SafePipeline *pipeline) noexcept
-{
-	// Bind render pipeline
-	SDL_GPUGraphicsPipeline *render_pipeline = wireframe_mode ?
-		pipeline->line.get() :
-		pipeline->fill.get();
-
-	APE_CHECK((render_pipeline != nullptr),
-		"Renderer::draw Failed: render_pipeline == nullptr"
-	);
-	SDL_BindGPUGraphicsPipeline(m_render_pass, render_pipeline);
-}
-
-
-void Renderer::setLights(const std::vector<RenderLight>& lights) noexcept
-{
-	m_lights = lights;
-}
-
 void Renderer::beginFrame() noexcept
 {
 	APE_CHECK((m_render_stage == RenderStage::FrameFinished),
@@ -332,7 +309,7 @@ void Renderer::beginFrame() noexcept
 void Renderer::beginCopyPass() noexcept
 {
 	APE_CHECK((m_render_stage == RenderStage::FrameStarted),
-	   "Renderer::beginCopyPass() Failed: cannot copy before frame is started"
+	   "Renderer::beginCopyPass() Failed: cannot copy before frame is started."
 	);
 	m_render_stage = RenderStage::CopyPass;
 
@@ -419,6 +396,24 @@ void Renderer::endCopyPass() noexcept
 	SDL_EndGPUCopyPass(m_copy_pass);
 }
 
+void Renderer::bindFragmentSSBOs() noexcept
+{
+	// Check that we are already drawing
+	APE_CHECK((m_render_stage == RenderStage::RenderPass),
+		"Renderer::bindFragmentSSBOs() Failed: render pass not started yet."
+	);
+
+	// Fragment Shader Storage Buffers
+	std::vector<SDL_GPUBuffer*> storage_buffers;
+	storage_buffers.emplace_back(m_light_ssbo.get());
+	SDL_BindGPUFragmentStorageBuffers(
+		m_render_pass,
+		0,
+		storage_buffers.data(),
+		storage_buffers.size()
+	);
+}
+
 void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 {
 	APE_CHECK(
@@ -430,7 +425,7 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 	// Setup render pass
 	SDL_GPUColorTargetInfo color_target_info = {
 		.texture = m_swapchain_texture,
-		.clear_color = clear_color,
+		.clear_color = m_clear_color,
 		.load_op = b_clear ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD,
 		.store_op = SDL_GPU_STOREOP_STORE,
 	};
@@ -453,24 +448,6 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 
 	// Bind render pipeline
 	bindPipeline(&m_pipeline);
-}
-
-void Renderer::bindFragmentSSBOs() noexcept
-{
-	// Check that we are already drawing
-	APE_CHECK((m_render_stage == RenderStage::RenderPass),
-		"Renderer::bindFragmentSSBOs() Failed: render pass not started yet."
-	);
-
-	// Fragment Shader Storage Buffers
-	std::vector<SDL_GPUBuffer*> storage_buffers;
-	storage_buffers.emplace_back(m_light_ssbo.get());
-	SDL_BindGPUFragmentStorageBuffers(
-		m_render_pass,
-		0,
-		storage_buffers.data(),
-		storage_buffers.size()
-	);
 }
 
 void Renderer::renderPass(
@@ -569,11 +546,11 @@ void Renderer::renderPass(
 	SDL_PushGPUFragmentUniformData(
 		m_cmd_buf,
 		0,
-		&debug_mode,
-		sizeof(debug_mode)
+		&m_debug_mode,
+		sizeof(m_debug_mode)
 	);
 	// Bind LightInfo Uniform
-	APE_CHECK((m_lights.size() <= max_lights),
+	APE_CHECK((m_lights.size() <= MAX_LIGHTS),
 		"Renderer::renderPass() Failed: lights > max_lights."
 	);
 	LightInfoUniform light_info;
@@ -781,7 +758,6 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
 		.size = buffer_size,
 	};
-
 	SDL_GPUTransferBuffer *transfer_buffer = SDL_CreateGPUTransferBuffer(
 		m_context->device, 
 		&transfer_info
@@ -792,10 +768,11 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 	);
 
 	// Write data to transfer buffer
+	bool cycle = false;
 	std::byte *mapped = static_cast<std::byte*>(SDL_MapGPUTransferBuffer(
 		m_context->device, 
 		transfer_buffer, 
-		false
+		cycle
 	));
 	APE_CHECK((mapped != nullptr),
 	   "Renderer::uploadBuffer Failed: failed to map GPU transfer buffer."
@@ -815,7 +792,7 @@ SafeGPU::UniqueGPUBuffer Renderer::uploadBuffer(
 		.offset = 0,
 		.size = buffer_size,
 	};
-	SDL_UploadToGPUBuffer(m_copy_pass, &src, &dest, false);
+	SDL_UploadToGPUBuffer(m_copy_pass, &src, &dest, cycle);
 
 	// Cleanup resources
 	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buffer);
@@ -854,10 +831,11 @@ void Renderer::updateBuffer(
 	);
 
 	// Write data to transfer buffer
+	bool cycle = false;
 	std::byte *mapped = static_cast<std::byte*>(SDL_MapGPUTransferBuffer(
 		m_context->device, 
 		transfer_buffer, 
-		true
+		cycle
 	));
 	APE_CHECK((mapped != nullptr),
 	   "Renderer::updateBuffer Failed: failed to map GPU transfer buffer."
@@ -877,7 +855,7 @@ void Renderer::updateBuffer(
 		.offset = 0,
 		.size = buffer_size,
 	};
-	SDL_UploadToGPUBuffer(m_copy_pass, &src, &dest, true);
+	SDL_UploadToGPUBuffer(m_copy_pass, &src, &dest, cycle);
 
 	// Cleanup resources
 	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buffer);
@@ -938,10 +916,11 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image *image) noexcept
 	);
 
 	// Write data to transfer buffer
+	bool cycle = false;
 	std::byte *mapped = static_cast<std::byte*>(SDL_MapGPUTransferBuffer(
 		m_context->device, 
 		transfer_buf, 
-		false
+		cycle
 	));
 	std::memcpy(
 		mapped,
@@ -962,12 +941,51 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image *image) noexcept
 		.h = image->getHeight(),
 		.d = 1,
 	};
-	SDL_UploadToGPUTexture(m_copy_pass, &src, &dest, false);
+	SDL_UploadToGPUTexture(m_copy_pass, &src, &dest, cycle);
 
 	// Cleanup resources
 	SDL_ReleaseGPUTransferBuffer(m_context->device, transfer_buf);
 
 	return safe_tex;
+}
+
+void Renderer::bindPipeline(SafePipeline *pipeline) noexcept
+{
+	// Bind render pipeline
+	SDL_GPUGraphicsPipeline *render_pipeline = m_wireframe_mode ?
+		pipeline->line.get() :
+		pipeline->fill.get();
+
+	APE_CHECK((render_pipeline != nullptr),
+		"Renderer::draw Failed: render_pipeline == nullptr"
+	);
+	SDL_BindGPUGraphicsPipeline(m_render_pass, render_pipeline);
+}
+
+void Renderer::createDepthTexture() noexcept
+{
+	SDL_GPUTextureCreateInfo tex_desc = {
+		.type = SDL_GPU_TEXTURETYPE_2D,
+		.format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
+		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | 
+			SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
+		.width = static_cast<Uint32>(m_context->window_width),
+		.height = static_cast<Uint32>(m_context->window_height),
+		.layer_count_or_depth = 1,
+		.num_levels = 1,
+		.sample_count = SDL_GPU_SAMPLECOUNT_1,
+	};
+
+	SDL_GPUTexture *depth_tex = SDL_CreateGPUTexture(
+		m_context->device, 
+		&tex_desc
+	);
+	m_depth_texture = SafeGPU::makeUnique<SDL_GPUTexture>(
+		depth_tex,
+		[=, this](SDL_GPUTexture *tex) {
+			SDL_ReleaseGPUTexture(m_context->device, tex);
+		}
+	);
 }
 
 void Renderer::createSampler() noexcept

@@ -125,13 +125,13 @@ static inline void drawDebugPanel(
 	}
 
 	auto renderer = Engine::renderer();
-	if (ImGui::RadioButton("show normals", renderer->debug_mode.show_normals)) 
+	if (ImGui::RadioButton("show normals", renderer->debugMode().show_normals)) 
 	{
-		renderer->debug_mode.show_normals = !renderer->debug_mode.show_normals;
+		renderer->debugMode().show_normals = !renderer->debugMode().show_normals;
 	}
-	if (ImGui::RadioButton("wireframe mode", renderer->wireframe_mode)) 
+	if (ImGui::RadioButton("wireframe mode", renderer->wireframeMode())) 
 	{
-		renderer->wireframe_mode = !renderer->wireframe_mode;
+		renderer->wireframeMode() = !renderer->wireframeMode();
 	}
 
 	ImGui::End();
