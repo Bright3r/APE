@@ -74,7 +74,7 @@ static const ShaderDescription default_vert_shader_desc {
 };
 static const ShaderDescription default_frag_shader_desc {
 	.filepath = "res/shaders/Default.frag.spv",
-	.num_samplers = 1, 
+	.num_samplers = 2, 
 	.num_uniform_buffers = 2, 
 	.num_storage_buffers = 1, 
 	.num_storage_textures = 0,
@@ -107,12 +107,29 @@ static const ShaderDescription shadow_map_vert_shader_desc {
 	.vertex_format = Model::VertexType::getLayout(),
 };
 static const ShaderDescription shadow_map_frag_shader_desc {
-	.filepath = "res/shaders/Default.frag.spv",
+	.filepath = "res/shaders/ShadowMapping.frag.spv",
 	.num_samplers = 0, 
 	.num_uniform_buffers = 0, 
 	.num_storage_buffers = 0, 
 	.num_storage_textures = 0,
 	.vertex_format = Model::VertexType::getLayout(),
+};
+
+static const ShaderDescription quad_vert_shader_desc {
+	.filepath = "res/shaders/quad.vert.spv",
+	.num_samplers = 0, 
+	.num_uniform_buffers = 0, 
+	.num_storage_buffers = 0, 
+	.num_storage_textures = 0,
+	.vertex_format = Position2DVertex::getLayout(),
+};
+static const ShaderDescription quad_frag_shader_desc {
+	.filepath = "res/shaders/quad.frag.spv",
+	.num_samplers = 1, 
+	.num_uniform_buffers = 0, 
+	.num_storage_buffers = 0, 
+	.num_storage_textures = 0,
+	.vertex_format = Position2DVertex::getLayout(),
 };
 
 
@@ -125,6 +142,24 @@ enum class RenderStage
 	RenderPass,
 	RenderGUI,
 	FrameReady,
+};
+
+struct Quad
+{
+	std::vector<Position2DVertex> vertices = {
+		Position2DVertex{{-1.f, -1.f}, {0.f, 0.f}},
+		Position2DVertex{{ 1.f, -1.f}, {1.f, 0.f}},
+		Position2DVertex{{ 1.f,  1.f}, {1.f, 1.f}},
+		Position2DVertex{{-1.f,  1.f}, {0.f, 1.f}}
+	};
+
+	std::vector<Uint32> indices = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	SafeGPU::UniqueGPUBuffer vertex_buffer = nullptr;
+	SafeGPU::UniqueGPUBuffer index_buffer = nullptr;
 };
 
 
@@ -165,6 +200,12 @@ class Renderer
 	bool m_wireframe_mode;
 	SDL_FColor m_clear_color;
 	DebugModeUniform m_debug_mode;
+
+	std::shared_ptr<Shader> m_quad_shader;
+	SafeGPU::SafePipeline m_quad_pipeline;
+	SafeGPU::UniqueGPUSampler m_quad_sampler;
+	
+	Quad m_quad;
 
 public:
 	Renderer(std::shared_ptr<Context> context) noexcept;
@@ -210,7 +251,8 @@ private:
 
 	SafeGPU::SafePipeline createPipeline(
 		Shader *shader,
-		SDL_GPUPrimitiveType primitive_type
+		SDL_GPUPrimitiveType primitive_type,
+		bool render_to_swapchain
 	) const noexcept;
 
 	void beginFrame() noexcept;
@@ -273,7 +315,7 @@ private:
 
 	SafeGPU::UniqueGPUTexture createTexture(Image *image) noexcept;
 
-	SafeGPU::UniqueGPUTexture createDepthTexture(
+	SafeGPU::UniqueGPUTexture createTexture(
 		const SDL_GPUTextureCreateInfo& texture_desc
 	) const noexcept;
 
@@ -288,6 +330,11 @@ private:
 	SDL_GPUSamplerCreateInfo defaultSamplerDesc() const noexcept;
 
 	SDL_GPUSamplerCreateInfo shadowMapSamplerDesc() const noexcept;
+
+	SDL_GPUSamplerCreateInfo quadSamplerDesc() const noexcept;
+
+	void copyQuad() noexcept;
+	void renderQuad(SDL_GPUTexture *texture) noexcept;
 
 
 	template <typename T>

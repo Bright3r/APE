@@ -107,9 +107,9 @@ void EditorLayer::setup() noexcept
 	world.setTag(light_ent, "Light 0");
 	world.registry.emplaceComponent<Render::LightComponent>(light_ent, light);
 
-	auto light_ent2 = world.addModel(box_handle, light_transform);
-	world.setTag(light_ent2, "Light 1");
-	world.registry.emplaceComponent<Render::LightComponent>(light_ent2, light);
+	// auto light_ent2 = world.addModel(box_handle, light_transform);
+	// world.setTag(light_ent2, "Light 1");
+	// world.registry.emplaceComponent<Render::LightComponent>(light_ent2, light);
 
 
 

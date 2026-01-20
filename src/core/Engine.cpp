@@ -92,56 +92,77 @@ void Engine::render() noexcept
 	{
 		app->draw();
 	}
+	s_renderer->copyQuad();
+	// static const char *path = "res/textures/ravioli.bmp";
+	static const char *path = "res/textures/Cobblestone.png";
+	// static const char *path = "res/textures/checkboard.png";
+	static auto s_tex = s_renderer->createTexture(
+		new Render::Image(path)
+	);
 	s_renderer->endCopyPass();
 	//
 	// End of copy pass
 
 
-	// // Shadow mapping render passes
+	// Shadow mapping render passes
+	//
+	for (auto i = 0; i < s_renderer->m_lights.size(); ++i)
+	{
+		s_renderer->beginShadowPass(
+			s_renderer->m_shadow_maps[i].get(),
+			&s_renderer->m_lights[i]
+		);
+
+		for (auto& app : s_layers) 
+		{
+			app->draw();
+		}
+
+		s_renderer->endShadowPass();
+	}
+	//
+	// End of shadow passes
+
+
+	// // Swapchain render pass
 	// //
-	// for (auto i = 0; i < s_renderer->m_lights.size(); ++i)
+	// s_renderer->beginRenderPass(
+	// 	s_renderer->m_pipeline,
+	// 	s_renderer->m_swapchain_texture,
+	// 	true,
+	// 	true,
+	// 	s_renderer->m_depth_texture.get()
+	// );
+	//
+	// // Bind light ssbo
+	// s_renderer->bindFragmentSSBOs();
+	//
+	// // Application graphics
+	// for (auto& app : s_layers) 
 	// {
-	// 	s_renderer->beginShadowPass(
-	// 		s_renderer->m_shadow_maps[i].get(),
-	// 		&s_renderer->m_lights[i]
-	// 	);
-	//
-	// 	for (auto& app : s_layers) 
-	// 	{
-	// 		app->draw();
-	// 	}
-	//
-	// 	s_renderer->endShadowPass();
+	// 	app->draw();
 	// }
-	// //
-	// // End of shadow passes
-
-
-	// Swapchain render pass
 	//
+	// // Debug graphics
+	// s_renderer->renderDebug();
+	//
+	// s_renderer->endRenderPass();
+	// //
+	// // End of swapchain render pass
+	
+
+
+
 	s_renderer->beginRenderPass(
-		s_renderer->m_pipeline,
+		s_renderer->m_quad_pipeline,
 		s_renderer->m_swapchain_texture,
 		true,
-		true,
-		s_renderer->m_depth_texture.get()
+		false
 	);
-
-	// Bind light ssbo
-	s_renderer->bindFragmentSSBOs();
-
-	// Application graphics
-	for (auto& app : s_layers) 
-	{
-		app->draw();
-	}
-
-	// Debug graphics
-	s_renderer->renderDebug();
-
+	s_renderer->renderQuad(s_tex.get());
+	// s_renderer->renderQuad(s_renderer->m_shadow_maps[0].get());
 	s_renderer->endRenderPass();
-	//
-	// End of swapchain render pass
+
 
 
 	// GUI render pass

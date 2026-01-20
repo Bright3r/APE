@@ -7,8 +7,10 @@ cbuffer DebugMode : register(b0, space3)
 
 
 Texture2D uTexture : register(t0, space2);
+Texture2D uShadowMap : register(t1, space2);
 
 SamplerState uSampler : register(s0, space2);
+SamplerState uShadowSampler : register(s1, space2);
 
 struct Light 
 {
@@ -117,7 +119,10 @@ float4 main(Input input) : SV_Target0
 			color += calcDirectionalLight(light, N, V, mat);
 		}
 	}
+	
 
+	float depthValue = uShadowMap.Sample(uShadowSampler, input.UV).r;
+	color = float4(depthValue, depthValue, depthValue, 1.0);
 	return color;
 }
 
