@@ -81,12 +81,88 @@ void Engine::pollEvents() noexcept
 	}
 }
 
+void Engine::render() noexcept
+{
+	s_renderer->beginFrame();
+
+	// Copy pass
+	//
+	s_renderer->beginCopyPass();
+	for (auto& app : s_layers) 
+	{
+		app->draw();
+	}
+	s_renderer->endCopyPass();
+	//
+	// End of copy pass
+
+
+	// // Shadow mapping render passes
+	// //
+	// for (auto i = 0; i < s_renderer->m_lights.size(); ++i)
+	// {
+	// 	s_renderer->beginShadowPass(
+	// 		s_renderer->m_shadow_maps[i].get(),
+	// 		&s_renderer->m_lights[i]
+	// 	);
+	//
+	// 	for (auto& app : s_layers) 
+	// 	{
+	// 		app->draw();
+	// 	}
+	//
+	// 	s_renderer->endShadowPass();
+	// }
+	// //
+	// // End of shadow passes
+
+
+	// Swapchain render pass
+	//
+	s_renderer->beginRenderPass(
+		s_renderer->m_pipeline,
+		s_renderer->m_swapchain_texture,
+		true,
+		true,
+		s_renderer->m_depth_texture.get()
+	);
+
+	// Bind light ssbo
+	s_renderer->bindFragmentSSBOs();
+
+	// Application graphics
+	for (auto& app : s_layers) 
+	{
+		app->draw();
+	}
+
+	// Debug graphics
+	s_renderer->renderDebug();
+
+	s_renderer->endRenderPass();
+	//
+	// End of swapchain render pass
+
+
+	// GUI render pass
+	// 
+	for (auto& app : s_layers) 
+	{
+		app->drawGUI();
+	}
+	s_renderer->renderGUI();
+	//
+	// End of GUI render pass
+
+	s_renderer->submitFrame();
+}
+
 void Engine::stepGameloop() noexcept
 {
 	// Poll User Input
 	pollEvents();
 
-	// Update Application Layers
+	// Application Logic
 	for (auto& app : s_layers) 
 	{
 		app->update();
@@ -94,35 +170,7 @@ void Engine::stepGameloop() noexcept
 	s_input.flush();
 
 	// Rendering
-	//
-	s_renderer->beginFrame();
-
-	s_renderer->beginCopyPass();
-	for (auto& app : s_layers) 
-	{
-		app->draw();
-	}
-	s_renderer->endCopyPass();
-
-	s_renderer->beginRenderPass(true, true);
-	// Bind light ssbo
-	s_renderer->bindFragmentSSBOs();
-	for (auto& app : s_layers) 
-	{
-		app->draw();
-	}
-	s_renderer->renderDebug();
-	s_renderer->endRenderPass();
-
-	// UI
-	for (auto& app : s_layers) 
-	{
-		app->drawGUI();
-	}
-
-	s_renderer->renderGUI();
-
-	s_renderer->submitFrame();
+	render();
 }
 
 void Engine::run() noexcept 

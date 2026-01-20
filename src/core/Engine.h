@@ -54,6 +54,8 @@ public:
 
 	static void pollEvents() noexcept;
 
+	static void render() noexcept;
+
 	static void stepGameloop() noexcept;
 
 	static void run() noexcept;

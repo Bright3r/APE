@@ -41,5 +41,11 @@ using UniqueGPUGraphicsPipeline = UniqueGPUResource<SDL_GPUGraphicsPipeline>;
 using UniqueGPUTexture = UniqueGPUResource<SDL_GPUTexture>;
 using UniqueGPUSampler = UniqueGPUResource<SDL_GPUSampler>;
 
+struct SafePipeline 
+{
+	UniqueGPUGraphicsPipeline fill = nullptr;
+	UniqueGPUGraphicsPipeline line = nullptr;
+};
+
 };	// end of namespace
 

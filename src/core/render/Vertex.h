@@ -48,6 +48,30 @@ struct VertexFormat
 	SDL_GPUVertexInputState getInputState() const && = delete;
 };
 
+struct PositionVertex 
+{
+	glm::vec3 pos;
+
+	[[nodiscard]] static VertexFormat getLayout() noexcept
+	{
+		std::vector<SDL_GPUVertexBufferDescription> buffer_desc = {{
+			.slot = 0,
+			.pitch = sizeof(PositionVertex),
+			.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX,
+			.instance_step_rate = 0,
+		}};
+
+		std::vector<SDL_GPUVertexAttribute> attributes = {{
+			.location = 0,
+			.buffer_slot = 0,
+			.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
+			.offset = 0,
+		}};
+
+		return VertexFormat(attributes, buffer_desc);
+	}
+};
+
 struct PositionColorVertex 
 {
 	glm::vec3 pos;

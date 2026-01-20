@@ -18,9 +18,14 @@ namespace APE::Render
 Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	: m_context(context)
 	, m_shader(nullptr)
-	, m_pipeline({})
 	, m_debug_shader(nullptr)
+	, m_shadow_shader(nullptr)
+	, m_pipeline({})
 	, m_debug_pipeline({})
+	, m_shadow_pipeline({})
+	, m_sampler(nullptr)
+	, m_shadow_sampler(nullptr)
+	, m_depth_texture(nullptr)
 	, m_imgui_session(nullptr)
 	, m_cmd_buf(nullptr)
 	, m_swapchain_texture(nullptr)
@@ -36,17 +41,9 @@ Renderer::Renderer(std::shared_ptr<Context> context) noexcept
 	, m_debug_mode(false)
 {
 	// Construct default shader
-	m_shader = std::make_shared<Shader>(
-		default_vert_shader_desc,
-		default_frag_shader_desc,
-		context->device
-	);
-
-	m_debug_shader = std::make_unique<Shader>(
-		debug_vert_shader_desc,
-		debug_frag_shader_desc,
-		context->device
-	);
+	m_shader = createShader(default_vert_shader_desc, default_frag_shader_desc);
+	m_debug_shader = createShader(debug_vert_shader_desc, debug_frag_shader_desc);
+	m_shadow_shader = createShader(shadow_map_vert_shader_desc, shadow_map_frag_shader_desc);
 
 	reset();
 }
@@ -56,10 +53,15 @@ Renderer::Renderer(
 	std::shared_ptr<Shader> shader
 ) noexcept
 	: m_context(context)
-	, m_shader(nullptr)
-	, m_pipeline({})
+	, m_shader(shader)
 	, m_debug_shader(nullptr)
+	, m_shadow_shader(nullptr)
+	, m_pipeline({})
 	, m_debug_pipeline({})
+	, m_shadow_pipeline({})
+	, m_sampler(nullptr)
+	, m_shadow_sampler(nullptr)
+	, m_depth_texture(nullptr)
 	, m_imgui_session(nullptr)
 	, m_cmd_buf(nullptr)
 	, m_swapchain_texture(nullptr)
@@ -74,11 +76,8 @@ Renderer::Renderer(
 	, m_clear_color(SDL_FColor { 0.f, 1.f, 1.f, 1.f })
 	, m_debug_mode(false)
 {
-	m_debug_shader = std::make_unique<Shader>(
-		debug_vert_shader_desc,
-		debug_frag_shader_desc,
-		context->device
-	);
+	m_debug_shader = createShader(debug_vert_shader_desc, debug_frag_shader_desc);
+	m_shadow_shader = createShader(shadow_map_vert_shader_desc, shadow_map_frag_shader_desc);
 
 	reset();
 }
@@ -105,6 +104,17 @@ DebugModeUniform& Renderer::debugMode() noexcept
 
 void Renderer::reset() noexcept
 {
+	// Rebuild pipeline for user shader
+	auto pipeline = createPipeline(
+		m_shader.get(),
+		SDL_GPU_PRIMITIVETYPE_TRIANGLELIST
+	);
+	if (!pipeline.fill || !pipeline.line) 
+	{
+		return;
+	}
+	m_pipeline = std::move(pipeline);
+
 	// Rebuild debug pipeline
 	auto debug_pipeline = createPipeline(
 		m_debug_shader.get(),
@@ -116,16 +126,17 @@ void Renderer::reset() noexcept
 	}
 	m_debug_pipeline = std::move(debug_pipeline);
 
-	// Rebuild pipeline for user shader
-	auto pipeline = createPipeline(
-		m_shader.get(),
+	// Rebuild shadow mapping pipeline
+	auto shadow_pipeline = createPipeline(
+		m_shadow_shader.get(),
 		SDL_GPU_PRIMITIVETYPE_TRIANGLELIST
 	);
-	if (!pipeline.fill || !pipeline.line) 
+	if (!shadow_pipeline.fill || !shadow_pipeline.line) 
 	{
 		return;
 	}
-	m_pipeline = std::move(pipeline);
+	m_shadow_pipeline = std::move(shadow_pipeline);
+
 
 	// Disable vsync
 	SDL_GPUSwapchainComposition swapchain_comp = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
@@ -145,9 +156,19 @@ void Renderer::reset() noexcept
 	);
 
 	// Allocate resources
-	createSampler();
-	createDepthTexture();
+	//
+	// Samplers
+	m_sampler = createSampler(defaultSamplerDesc());
+	m_shadow_sampler = createSampler(shadowMapSamplerDesc());
 
+	// Depth textures
+	m_depth_texture = createDepthTexture(defaultDepthTextureDesc());
+	for (auto i = 0; i < MAX_LIGHTS; ++i)
+	{
+		m_shadow_maps[i] = createDepthTexture(shadowMapTextureDesc());
+	}
+
+	// Light SSBO
 	SDL_GPUBufferCreateInfo light_buffer_info { 
 		.usage = SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ,
 		.size = static_cast<Uint32>(sizeof(RenderLight) * MAX_LIGHTS),
@@ -160,19 +181,19 @@ void Renderer::reset() noexcept
 		}
 	);
 
-
 	// Ensure previous imgui session is destroyed before creating a new one
+	//
 	m_imgui_session = nullptr;
 	m_imgui_session = std::make_unique<ImGuiSession>(m_context.get());
 	ImGuizmo::Enable(true);
 }
 
-std::unique_ptr<Shader> Renderer::createShader(
+std::shared_ptr<Shader> Renderer::createShader(
 	const ShaderDescription& vert_shader_desc,
 	const ShaderDescription& frag_shader_desc
 ) const noexcept
 {
-	return std::make_unique<Shader>(
+	return std::make_shared<Shader>(
 		vert_shader_desc,
 		frag_shader_desc,
 		m_context->device
@@ -200,7 +221,7 @@ SafeGPU::UniqueGPUGraphicsPipeline Renderer::createPipeline(
 	);
 }
 
-SafePipeline Renderer::createPipeline(
+SafeGPU::SafePipeline Renderer::createPipeline(
 	Shader *shader,
 	SDL_GPUPrimitiveType primitive_type
 ) const noexcept 
@@ -220,21 +241,18 @@ SafePipeline Renderer::createPipeline(
 		),
 		.blend_state = {},
 	}};
-
 	SDL_GPURasterizerState rasterizer_state = {
 		.cull_mode = SDL_GPU_CULLMODE_BACK,
 		// .cull_mode = SDL_GPU_CULLMODE_NONE,
 		.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE,
 	};
-
 	SDL_GPUDepthStencilState depth_stencil_state = {
 		.compare_op = SDL_GPU_COMPAREOP_LESS,
 		.write_mask = 0xff,
 		.enable_depth_test = true,
 		.enable_depth_write = true,
 		.enable_stencil_test = false,
-	};
-	
+	};	
 	SDL_GPUGraphicsPipelineTargetInfo target_info = {
 		.color_target_descriptions = color_target_descriptions.data(),
 		.num_color_targets = static_cast<Uint32>(color_target_descriptions.size()),
@@ -256,7 +274,7 @@ SafePipeline Renderer::createPipeline(
 		.target_info = target_info
 	};
 
-	SafePipeline res;
+	SafeGPU::SafePipeline res;
 
 	// Create fill pipeline
 	pipeline_create_info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
@@ -396,6 +414,105 @@ void Renderer::endCopyPass() noexcept
 	SDL_EndGPUCopyPass(m_copy_pass);
 }
 
+void Renderer::beginShadowPass(
+	SDL_GPUTexture *shadow_map,
+	RenderLight *light
+) noexcept
+{
+	APE_CHECK((m_lights.size() <= MAX_LIGHTS),
+		"Renderer::beginShadowPass() Failed: m_lights.size > MAX_LIGHTS."
+	);
+	APE_CHECK((light != nullptr),
+		"Renderer::beginShadowPass() Failed: light == nullptr."
+	);
+
+	beginRenderPass(
+		m_shadow_pipeline,
+		m_swapchain_texture,
+		true,
+		true,
+		shadow_map
+	);
+	m_shadow_pass_light = light;
+	m_render_stage = RenderStage::ShadowPass;
+}
+
+void Renderer::shadowPass(MeshComponent& mesh, const glm::mat4& model_matrix) noexcept
+{
+	APE_CHECK((m_render_stage == RenderStage::ShadowPass),
+		"Renderer::shadowPass() Failed: beginShadowPass() not called."
+	);
+
+	auto light = m_shadow_pass_light;
+	float near_plane = 1.f;
+	float far_plane = 7.5f;
+	glm::mat4 light_proj = glm::ortho(-10.f, 10.f, -10.f, 10.f, near_plane, far_plane);
+	glm::mat4 light_view = glm::lookAt(
+		glm::vec3(light->position),
+		glm::vec3(light->position) + light->dir,
+		glm::vec3(0, 1, 0)
+	);
+	glm::mat4 light_space_mat = light_proj * light_view;
+
+	// Bind Shadow Map Uniform
+	LightShadowMapUniform shadow_map_uniform {
+		light_space_mat,
+		model_matrix
+	};
+	SDL_PushGPUVertexUniformData(
+		m_cmd_buf,
+		0,
+		&shadow_map_uniform,
+		sizeof(shadow_map_uniform)
+	);
+
+
+	// Check if gpu vertex buffer was already created
+	auto& raw_mesh = mesh.model_handle.data->meshes[mesh.mesh_index];
+	APE_CHECK((raw_mesh.vertex_buffer != nullptr),
+		"Renderer::shadowPass() Failed: tried to bind vertex buffer before uploading in copy pass."
+	)
+	// Bind vertex buffer
+	SDL_GPUBufferBinding vertex_buffer_binding = {
+		.buffer = raw_mesh.vertex_buffer.get(),
+		.offset = 0,
+	};
+	SDL_BindGPUVertexBuffers(
+		m_render_pass,
+		0,
+		&vertex_buffer_binding,
+		1
+	);
+
+
+	// Check if gpu index buffer was already created
+	APE_CHECK((raw_mesh.index_buffer != nullptr),
+		"Renderer::shadowPass() Failed: tried to bind index buffer before uploading in copy pass."
+	)
+	// Bind index buffer
+	SDL_GPUBufferBinding index_buffer_binding = {
+		.buffer = raw_mesh.index_buffer.get(),
+		.offset = 0,
+	};
+	SDL_BindGPUIndexBuffer(
+		m_render_pass,
+		&index_buffer_binding,
+		SDL_GPU_INDEXELEMENTSIZE_32BIT
+	);
+
+	SDL_DrawGPUIndexedPrimitives(
+		m_render_pass,
+		raw_mesh.indices.size(),
+		1, 0, 0, 0
+	);
+}
+
+void Renderer::endShadowPass() noexcept
+{
+	m_render_stage = RenderStage::RenderPass;
+	endRenderPass();
+}
+
 void Renderer::bindFragmentSSBOs() noexcept
 {
 	// Check that we are already drawing
@@ -414,23 +531,31 @@ void Renderer::bindFragmentSSBOs() noexcept
 	);
 }
 
-void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
+void Renderer::beginRenderPass(
+	const SafeGPU::SafePipeline& pipeline,
+	SDL_GPUTexture *target_texture,
+	bool b_clear,
+	bool b_depth,
+	SDL_GPUTexture *depth_texture
+) noexcept
 {
-	APE_CHECK(
-		(m_render_stage == RenderStage::CopyPass || m_render_stage == RenderStage::RenderGUI),
-		"Renderer::beginRenderPass() Failed: copy pass never completed."
+	bool is_render_ready = (m_render_stage == RenderStage::CopyPass) || 
+		(m_render_stage == RenderStage::RenderGUI) ||
+		(m_render_stage == RenderStage::FrameReady);
+	APE_CHECK(is_render_ready,
+		"Renderer::beginRenderPass() Failed: cannot begin a new render pass."
 	);
 	m_render_stage = RenderStage::RenderPass;
 
 	// Setup render pass
 	SDL_GPUColorTargetInfo color_target_info = {
-		.texture = m_swapchain_texture,
+		.texture = target_texture,
 		.clear_color = m_clear_color,
 		.load_op = b_clear ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD,
 		.store_op = SDL_GPU_STOREOP_STORE,
 	};
 	SDL_GPUDepthStencilTargetInfo depth_target_info = {
-		.texture = m_depth_texture.get(),
+		.texture = depth_texture,
 		.clear_depth = 1,
 		.load_op = b_clear ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD,
 		.store_op = SDL_GPU_STOREOP_STORE,
@@ -447,7 +572,7 @@ void Renderer::beginRenderPass(bool b_clear, bool b_depth) noexcept
 	);
 
 	// Bind render pipeline
-	bindPipeline(&m_pipeline);
+	bindPipeline(pipeline);
 }
 
 void Renderer::renderPass(
@@ -589,6 +714,9 @@ void Renderer::draw(
 	case RenderStage::RenderPass:
 		renderPass(mesh, material, camera, model_matrix);
 		break;
+	case RenderStage::ShadowPass:
+		shadowPass(mesh, model_matrix);
+		break;
 	default:
 		APE_ABORT("Renderer::draw() Failed: not in copy pass or render pass.");
 	}
@@ -655,7 +783,7 @@ void Renderer::renderDebug() noexcept
 	);
 
 	// Switch to debug pipeline
-	bindPipeline(&m_debug_pipeline);
+	bindPipeline(m_debug_pipeline);
 
 	// Bind gpu buffer
 	SDL_GPUBufferBinding line_buffer_binding = {
@@ -706,7 +834,7 @@ void Renderer::renderGUI() noexcept
 	Imgui_ImplSDLGPU3_PrepareDrawData(gui_data, m_cmd_buf);
 
 	// Dispatch render pass for ImGUI
-	beginRenderPass(false, false);
+	beginRenderPass(m_pipeline, m_swapchain_texture, false);
 	ImGui_ImplSDLGPU3_RenderDrawData(gui_data, m_cmd_buf, m_render_pass);
 	endRenderPass();
 }
@@ -949,12 +1077,12 @@ SafeGPU::UniqueGPUTexture Renderer::createTexture(Image *image) noexcept
 	return safe_tex;
 }
 
-void Renderer::bindPipeline(SafePipeline *pipeline) noexcept
+void Renderer::bindPipeline(const SafeGPU::SafePipeline& pipeline) noexcept
 {
 	// Bind render pipeline
 	SDL_GPUGraphicsPipeline *render_pipeline = m_wireframe_mode ?
-		pipeline->line.get() :
-		pipeline->fill.get();
+		pipeline.line.get() :
+		pipeline.fill.get();
 
 	APE_CHECK((render_pipeline != nullptr),
 		"Renderer::draw Failed: render_pipeline == nullptr"
@@ -962,25 +1090,15 @@ void Renderer::bindPipeline(SafePipeline *pipeline) noexcept
 	SDL_BindGPUGraphicsPipeline(m_render_pass, render_pipeline);
 }
 
-void Renderer::createDepthTexture() noexcept
+SafeGPU::UniqueGPUTexture Renderer::createDepthTexture(
+	const SDL_GPUTextureCreateInfo& texture_desc
+) const noexcept
 {
-	SDL_GPUTextureCreateInfo tex_desc = {
-		.type = SDL_GPU_TEXTURETYPE_2D,
-		.format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
-		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | 
-			SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
-		.width = static_cast<Uint32>(m_context->window_width),
-		.height = static_cast<Uint32>(m_context->window_height),
-		.layer_count_or_depth = 1,
-		.num_levels = 1,
-		.sample_count = SDL_GPU_SAMPLECOUNT_1,
-	};
-
 	SDL_GPUTexture *depth_tex = SDL_CreateGPUTexture(
 		m_context->device, 
-		&tex_desc
+		&texture_desc
 	);
-	m_depth_texture = SafeGPU::makeUnique<SDL_GPUTexture>(
+	return SafeGPU::makeUnique<SDL_GPUTexture>(
 		depth_tex,
 		[=, this](SDL_GPUTexture *tex) {
 			SDL_ReleaseGPUTexture(m_context->device, tex);
@@ -988,9 +1106,53 @@ void Renderer::createDepthTexture() noexcept
 	);
 }
 
-void Renderer::createSampler() noexcept
+SafeGPU::UniqueGPUResource<SDL_GPUSampler> Renderer::createSampler(
+	const SDL_GPUSamplerCreateInfo& sampler_desc
+) const noexcept
 {
-	SDL_GPUSamplerCreateInfo sampler_desc = {
+	SDL_GPUSampler *sampler = SDL_CreateGPUSampler(
+		m_context->device,
+		&sampler_desc
+	);
+	return SafeGPU::makeUnique<SDL_GPUSampler>(
+		sampler,
+		[=, this](SDL_GPUSampler *sam) {
+			SDL_ReleaseGPUSampler(m_context->device, sam);
+		}
+	);
+}
+
+SDL_GPUTextureCreateInfo Renderer::defaultDepthTextureDesc() const noexcept
+{
+	return SDL_GPUTextureCreateInfo {
+		.type = SDL_GPU_TEXTURETYPE_2D,
+		.format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
+		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
+		.width = static_cast<Uint32>(m_context->window_width),
+		.height = static_cast<Uint32>(m_context->window_height),
+		.layer_count_or_depth = 1,
+		.num_levels = 1,
+		.sample_count = SDL_GPU_SAMPLECOUNT_1,
+	};
+}
+
+SDL_GPUTextureCreateInfo Renderer::shadowMapTextureDesc() const noexcept
+{
+	return SDL_GPUTextureCreateInfo {
+		.type = SDL_GPU_TEXTURETYPE_2D,
+		.format = SDL_GPU_TEXTUREFORMAT_D32_FLOAT,
+		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
+		.width = static_cast<Uint32>(SHADOW_MAP_RES),
+		.height = static_cast<Uint32>(SHADOW_MAP_RES),
+		.layer_count_or_depth = 1,
+		.num_levels = 1,
+		.sample_count = SDL_GPU_SAMPLECOUNT_1,
+	};
+}
+
+SDL_GPUSamplerCreateInfo Renderer::defaultSamplerDesc() const noexcept
+{
+	return SDL_GPUSamplerCreateInfo {
 		.min_filter = SDL_GPU_FILTER_LINEAR,
 		.mag_filter = SDL_GPU_FILTER_LINEAR,
 		.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
@@ -1000,17 +1162,20 @@ void Renderer::createSampler() noexcept
 		.max_anisotropy = 8,
 		.enable_anisotropy = true,
 	};
-	SDL_GPUSampler *sampler = SDL_CreateGPUSampler(
-		m_context->device,
-		&sampler_desc
-	);
+}
 
-	m_sampler = SafeGPU::makeUnique<SDL_GPUSampler>(
-		sampler,
-		[=, this](SDL_GPUSampler *sam) {
-			SDL_ReleaseGPUSampler(m_context->device, sam);
-		}
-	);
+SDL_GPUSamplerCreateInfo Renderer::shadowMapSamplerDesc() const noexcept
+{
+	return SDL_GPUSamplerCreateInfo {
+		.min_filter = SDL_GPU_FILTER_NEAREST,
+		.mag_filter = SDL_GPU_FILTER_NEAREST,
+		.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
+		.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		// .max_anisotropy = 8,
+		.enable_anisotropy = false,
+	};
 }
 
 }; // end of namespace

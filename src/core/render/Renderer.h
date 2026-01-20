@@ -11,6 +11,7 @@
 #include "core/render/Vertex.h"
 
 #include <SDL3/SDL_gpu.h>
+#include <array>
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlgpu3.h>
@@ -30,6 +31,7 @@ namespace APE
 namespace APE::Render 
 {
 
+// Uniform Buffer Formats
 struct CameraUniform 
 {
 	glm::vec4 position;
@@ -54,7 +56,14 @@ struct LightInfoUniform
 	float pad[3];
 };
 
+struct LightShadowMapUniform
+{
+	glm::mat4 light_space_matrix;
+	glm::mat4 model;
+};
 
+
+// Shader Descriptions
 static const ShaderDescription default_vert_shader_desc {
 	.filepath = "res/shaders/Default.vert.spv",
 	.num_samplers = 0, 
@@ -63,7 +72,6 @@ static const ShaderDescription default_vert_shader_desc {
 	.num_storage_textures = 0,
 	.vertex_format = Model::VertexType::getLayout(),
 };
-
 static const ShaderDescription default_frag_shader_desc {
 	.filepath = "res/shaders/Default.frag.spv",
 	.num_samplers = 1, 
@@ -81,7 +89,6 @@ static const ShaderDescription debug_vert_shader_desc {
 	.num_storage_textures = 0,
 	.vertex_format = PositionColorVertex::getLayout(),
 };
-
 static const ShaderDescription debug_frag_shader_desc {
 	.filepath = "res/shaders/SolidColor.frag.spv",
 	.num_samplers = 0, 
@@ -91,17 +98,30 @@ static const ShaderDescription debug_frag_shader_desc {
 	.vertex_format = PositionColorVertex::getLayout(),
 };
 
-struct SafePipeline 
-{
-	SafeGPU::UniqueGPUGraphicsPipeline fill = nullptr;
-	SafeGPU::UniqueGPUGraphicsPipeline line = nullptr;
+static const ShaderDescription shadow_map_vert_shader_desc {
+	.filepath = "res/shaders/ShadowMapping.vert.spv",
+	.num_samplers = 0, 
+	.num_uniform_buffers = 1, 
+	.num_storage_buffers = 0, 
+	.num_storage_textures = 0,
+	.vertex_format = Model::VertexType::getLayout(),
 };
+static const ShaderDescription shadow_map_frag_shader_desc {
+	.filepath = "res/shaders/Default.frag.spv",
+	.num_samplers = 0, 
+	.num_uniform_buffers = 0, 
+	.num_storage_buffers = 0, 
+	.num_storage_textures = 0,
+	.vertex_format = Model::VertexType::getLayout(),
+};
+
 
 enum class RenderStage
 {
 	FrameFinished,
 	FrameStarted,
 	CopyPass,
+	ShadowPass,
 	RenderPass,
 	RenderGUI,
 	FrameReady,
@@ -112,14 +132,21 @@ class Renderer
 {
 	friend class APE::Engine;
 
+	constexpr static int MAX_LIGHTS = 16;
+	constexpr static int SHADOW_MAP_RES = 1024;
+
 	// Static resources
 	std::shared_ptr<Context> m_context;
 	std::shared_ptr<Shader> m_shader;
-	SafePipeline m_pipeline;
-	std::unique_ptr<Shader> m_debug_shader;
-	SafePipeline m_debug_pipeline;
+	std::shared_ptr<Shader> m_debug_shader;
+	std::shared_ptr<Shader> m_shadow_shader;
+	SafeGPU::SafePipeline m_pipeline;
+	SafeGPU::SafePipeline m_debug_pipeline;
+	SafeGPU::SafePipeline m_shadow_pipeline;
 	SafeGPU::UniqueGPUSampler m_sampler;
+	SafeGPU::UniqueGPUSampler m_shadow_sampler;
 	SafeGPU::UniqueGPUTexture m_depth_texture;
+	std::array<SafeGPU::UniqueGPUTexture, MAX_LIGHTS> m_shadow_maps;
 	std::unique_ptr<ImGuiSession> m_imgui_session;
 
 	// Per-frame resources
@@ -129,6 +156,7 @@ class Renderer
 	SDL_GPURenderPass *m_render_pass;
 	SafeGPU::UniqueGPUBuffer m_light_ssbo;
 	SafeGPU::UniqueGPUBuffer m_debug_buffer;
+	RenderLight *m_shadow_pass_light;
 
 	// Render data
 	RenderStage m_render_stage;
@@ -137,8 +165,6 @@ class Renderer
 	bool m_wireframe_mode;
 	SDL_FColor m_clear_color;
 	DebugModeUniform m_debug_mode;
-
-	constexpr static int MAX_LIGHTS = 16;
 
 public:
 	Renderer(std::shared_ptr<Context> context) noexcept;
@@ -160,7 +186,7 @@ public:
 
 	DebugModeUniform& debugMode() noexcept;
 
-	std::unique_ptr<Shader> createShader(
+	std::shared_ptr<Shader> createShader(
 		const ShaderDescription& vert_shader_desc,
 		const ShaderDescription& frag_shader_desc
 	) const noexcept;
@@ -182,7 +208,7 @@ public:
 private:
 	void reset() noexcept;
 
-	SafePipeline createPipeline(
+	SafeGPU::SafePipeline createPipeline(
 		Shader *shader,
 		SDL_GPUPrimitiveType primitive_type
 	) const noexcept;
@@ -197,7 +223,19 @@ private:
 
 	void bindFragmentSSBOs() noexcept;
 
-	void beginRenderPass(bool b_clear, bool b_depth) noexcept;
+	void beginShadowPass(SDL_GPUTexture *shadow_map, RenderLight *light) noexcept;
+
+	void shadowPass(MeshComponent& mesh, const glm::mat4& model_matrix) noexcept;
+
+	void endShadowPass() noexcept;
+
+	void beginRenderPass(
+		const SafeGPU::SafePipeline& pipeline,
+		SDL_GPUTexture *target_texture,
+		bool b_clear,
+		bool b_depth = false,
+		SDL_GPUTexture *depth_texture = nullptr
+	) noexcept;
 
 	void renderPass(
 		MeshComponent& mesh,
@@ -214,11 +252,7 @@ private:
 
 	void submitFrame() noexcept;
 
-	void bindPipeline(SafePipeline *pipeline) noexcept;
-
-	void createDepthTexture() noexcept;
-
-	void createSampler() noexcept;
+	void bindPipeline(const SafeGPU::SafePipeline& pipeline) noexcept;
 
 	SafeGPU::UniqueGPUGraphicsPipeline createPipeline(
 		const SDL_GPUGraphicsPipelineCreateInfo& create_info
@@ -238,6 +272,23 @@ private:
 	static SDL_GPUTextureFormat getTextureFormat(Image *image) noexcept;
 
 	SafeGPU::UniqueGPUTexture createTexture(Image *image) noexcept;
+
+	SafeGPU::UniqueGPUTexture createDepthTexture(
+		const SDL_GPUTextureCreateInfo& texture_desc
+	) const noexcept;
+
+	SafeGPU::UniqueGPUResource<SDL_GPUSampler> createSampler(
+		const SDL_GPUSamplerCreateInfo& sampler_desc
+	) const noexcept;
+
+	SDL_GPUTextureCreateInfo defaultDepthTextureDesc() const noexcept;
+
+	SDL_GPUTextureCreateInfo shadowMapTextureDesc() const noexcept;
+
+	SDL_GPUSamplerCreateInfo defaultSamplerDesc() const noexcept;
+
+	SDL_GPUSamplerCreateInfo shadowMapSamplerDesc() const noexcept;
+
 
 	template <typename T>
 	static std::vector<std::byte> vectorToRawBytes(
